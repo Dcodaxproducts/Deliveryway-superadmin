@@ -1,7 +1,31 @@
 import api from "@/lib/axios";
+import type {
+  GetPaymentMethodsResponse,
+  UpdatePaymentMethodsPayload,
+  UpdatePaymentMethodsResponse,
+} from "@/types/global-settings";
 
 export type GlobalSettingsValues = {
-  [key: string]: any;
+  globalTaxPercentage: number;
+  vatHandlingRule: string;
+  defaultCommissionPercentage: number;
+  defaultHybridFeePercentage: number;
+  defaultCurrency: string;
+  currencyDisplayFormat: string;
+  defaultLanguage: string;
+  dateFormat: string;
+  timezone: string;
+  primaryColor: string;
+  secondaryColor: string;
+  fontFamily: string;
+  isTaxEnforced: boolean;
+  isCommissionEnforced: boolean;
+  isCurrencyEnforced: boolean;
+  isLocalizationEnforced: boolean;
+};
+
+type GlobalSettingsResponse = Partial<GlobalSettingsValues> & {
+  id?: string;
 };
 
 /**
@@ -13,8 +37,11 @@ export type GlobalSettingsValues = {
 /**
  * Get global settings
  */
-export const getGlobalSettings = async () => {
-  const { data } = await api.get("/admin/global-settings");
+export const getGlobalSettings = async (): Promise<GlobalSettingsResponse> => {
+  const { data } = await api.get<{
+    data?: GlobalSettingsResponse;
+  } & GlobalSettingsResponse>("/admin/global-settings");
+
   return data?.data ?? data;
 };
 
@@ -25,5 +52,31 @@ export const updateGlobalSettings = async (
   payload: Partial<GlobalSettingsValues>
 ) => {
   const { data } = await api.patch("/admin/global-settings", payload);
+  return data;
+};
+
+/**
+ * Get platform payment methods
+ */
+export const getGlobalPaymentMethods =
+  async (): Promise<GetPaymentMethodsResponse> => {
+    const { data } = await api.get<GetPaymentMethodsResponse>(
+      "/admin/global-settings/payment-methods"
+    );
+
+    return data;
+  };
+
+/**
+ * Update platform payment methods
+ */
+export const updateGlobalPaymentMethods = async (
+  payload: UpdatePaymentMethodsPayload
+): Promise<UpdatePaymentMethodsResponse> => {
+  const { data } = await api.patch<UpdatePaymentMethodsResponse>(
+    "/admin/global-settings/payment-methods",
+    payload
+  );
+
   return data;
 };

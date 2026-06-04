@@ -4,6 +4,9 @@ import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -18,10 +21,37 @@ import {
   useGetGlobalSettings,
   useUpdateGlobalSettings,
 } from "@/hooks/useGlobalSettings";
+import {
+  useGlobalPaymentMethodsQuery,
+  useUpdateGlobalPaymentMethodsMutation,
+} from "@/hooks/useGlobalPaymentMethods";
+import type {
+  GlobalPaymentMethod,
+  PaymentMethodCode,
+} from "@/types/global-settings";
 
 type SelectOption = {
   label: string;
   value: string;
+};
+
+type SettingsFormValues = {
+  globalTaxPercentage: string;
+  vatHandlingRule: string;
+  defaultCommissionPercentage: string;
+  defaultHybridFeePercentage: string;
+  defaultCurrency: string;
+  currencyDisplayFormat: string;
+  defaultLanguage: string;
+  dateFormat: string;
+  timezone: string;
+  primaryColor: string;
+  secondaryColor: string;
+  fontFamily: string;
+  isTaxEnforced: boolean;
+  isCommissionEnforced: boolean;
+  isCurrencyEnforced: boolean;
+  isLocalizationEnforced: boolean;
 };
 
 const LANGUAGE_OPTIONS: SelectOption[] = [
@@ -50,6 +80,19 @@ const FONT_OPTIONS: SelectOption[] = [
   { label: "Manrope", value: "Manrope" },
 ];
 
+const PAYMENT_METHOD_CODES: PaymentMethodCode[] = [
+  "COD",
+  "STRIPE",
+  "EASYPAISA",
+  "JAZZCASH",
+  "BANK_TRANSFER",
+  "WALLET",
+];
+
+const isPaymentMethodCode = (code: string): code is PaymentMethodCode => {
+  return PAYMENT_METHOD_CODES.includes(code as PaymentMethodCode);
+};
+
 const CURRENCY_OPTIONS: Array<SelectOption & { symbol: string }> = [
   { label: "EUR", value: "EUR", symbol: "€" },
   { label: "USD", value: "USD", symbol: "$" },
@@ -63,11 +106,20 @@ const getCurrencySymbol = (currency: string) => {
   );
 };
 
-export default function SettingsForm() {
+export function SettingsForm() {
   const { data } = useGetGlobalSettings();
   const { mutate, isPending } = useUpdateGlobalSettings();
+  const {
+    data: paymentMethodsResponse,
+    isLoading: isPaymentMethodsLoading,
+    isError: isPaymentMethodsError,
+  } = useGlobalPaymentMethodsQuery();
+  const {
+    mutate: updatePaymentMethods,
+    isPending: isPaymentMethodsPending,
+  } = useUpdateGlobalPaymentMethodsMutation();
 
-  const [form, setForm] = useState<any>({
+  const [form, setForm] = useState<SettingsFormValues>({
     globalTaxPercentage: "",
     vatHandlingRule: "EXCLUSIVE",
     defaultCommissionPercentage: "",
@@ -88,15 +140,30 @@ export default function SettingsForm() {
 
   const [currencyFormat, setCurrencyFormat] = useState("suffix");
   const [dateFormat, setDateFormat] = useState("dd/mm/yyyy");
+  const [paymentMethods, setPaymentMethods] = useState<GlobalPaymentMethod[]>(
+    []
+  );
 
   useEffect(() => {
     if (!data) return;
 
-    const { id, ...rest } = data;
+    const { id: _id, ...rest } = data;
 
-    const nextForm = {
+    const nextForm: SettingsFormValues = {
       ...form,
-      ...rest,
+      ...Object.fromEntries(
+        Object.entries(rest).map(([key, value]) => [key, String(value)])
+      ),
+      isTaxEnforced: Boolean(rest.isTaxEnforced ?? form.isTaxEnforced),
+      isCommissionEnforced: Boolean(
+        rest.isCommissionEnforced ?? form.isCommissionEnforced
+      ),
+      isCurrencyEnforced: Boolean(
+        rest.isCurrencyEnforced ?? form.isCurrencyEnforced
+      ),
+      isLocalizationEnforced: Boolean(
+        rest.isLocalizationEnforced ?? form.isLocalizationEnforced
+      ),
       defaultCurrency: rest.defaultCurrency || "EUR",
       defaultLanguage: rest.defaultLanguage || "de",
       timezone: rest.timezone || "Europe/Berlin",
@@ -125,11 +192,24 @@ export default function SettingsForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
-  const updateField = (key: string, value: any) => {
-    setForm((prev: any) => ({ ...prev, [key]: value }));
+  useEffect(() => {
+    const loadedMethods = paymentMethodsResponse?.data ?? [];
+
+    const validMethods = loadedMethods.filter((method) =>
+      isPaymentMethodCode(method.code)
+    );
+
+    setPaymentMethods(validMethods);
+  }, [paymentMethodsResponse]);
+
+  const updateField = <Key extends keyof SettingsFormValues>(
+    key: Key,
+    value: SettingsFormValues[Key]
+  ) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const toNumber = (value: any) => {
+  const toNumber = (value: string | number | null | undefined) => {
     if (value === "" || value === null || value === undefined) return 0;
 
     const numberValue = Number(value);
@@ -174,6 +254,48 @@ export default function SettingsForm() {
 
     mutate(payload);
   };
+
+  const updatePaymentMethod = (
+    code: PaymentMethodCode,
+    value: Partial<Omit<GlobalPaymentMethod, "code">>
+  ) => {
+    setPaymentMethods((prev) =>
+      prev.map((method) =>
+        method.code === code ? { ...method, ...value } : method
+      )
+    );
+  };
+
+  const hasDuplicatePaymentMethods = () => {
+    return new Set(paymentMethods.map((method) => method.code)).size !==
+      paymentMethods.length;
+  };
+
+  const handlePaymentMethodsSave = () => {
+    const validMethods = paymentMethods.filter((method) =>
+      isPaymentMethodCode(method.code)
+    );
+
+    if (validMethods.length !== paymentMethods.length) {
+      return;
+    }
+
+    if (hasDuplicatePaymentMethods()) {
+      return;
+    }
+
+    updatePaymentMethods({
+      paymentMethods: validMethods.map((method) => ({
+        code: method.code,
+        label: method.label,
+        isActive: method.isActive,
+      })),
+    });
+  };
+
+  const paymentMethodsValidationMessage = hasDuplicatePaymentMethods()
+    ? "Duplicate payment method codes are not allowed."
+    : "";
 
   return (
     <div className="flex flex-col lg:grid lg:grid-cols-12 gap-[48px] p-4 lg:p-[30px] bg-white rounded-[14px]">
@@ -276,7 +398,7 @@ export default function SettingsForm() {
             placeholder="Add Percentage"
             prefix="%"
             value={form.defaultCommissionPercentage}
-            onChange={(value: any) =>
+            onChange={(value) =>
               updateField("defaultCommissionPercentage", value)
             }
           />
@@ -286,7 +408,7 @@ export default function SettingsForm() {
             placeholder="Add Percentage"
             prefix="%"
             value={form.defaultHybridFeePercentage}
-            onChange={(value: any) =>
+            onChange={(value) =>
               updateField("defaultHybridFeePercentage", value)
             }
           />
@@ -356,7 +478,7 @@ export default function SettingsForm() {
             placeholder="Select Language"
             value={form.defaultLanguage}
             options={LANGUAGE_OPTIONS}
-            onChange={(value: any) => updateField("defaultLanguage", value)}
+            onChange={(value) => updateField("defaultLanguage", value)}
           />
 
           <div className="space-y-[12px]">
@@ -389,7 +511,7 @@ export default function SettingsForm() {
             placeholder="Select Timezone"
             value={form.timezone}
             options={TIMEZONE_OPTIONS}
-            onChange={(value: any) => updateField("timezone", value)}
+            onChange={(value) => updateField("timezone", value)}
           />
         </section>
 
@@ -412,8 +534,104 @@ export default function SettingsForm() {
             placeholder="Select font"
             value={form.fontFamily}
             options={FONT_OPTIONS}
-            onChange={(value: any) => updateField("fontFamily", value)}
+            onChange={(value) => updateField("fontFamily", value)}
           />
+        </section>
+
+        <section className="space-y-[24px]">
+          <div className="space-y-[6px]">
+            <Label>Platform Payment Methods</Label>
+            <p className="text-sm text-gray">
+              Enable or disable payment methods available across the platform.
+            </p>
+          </div>
+
+          {isPaymentMethodsLoading ? (
+            <div className="rounded-[10px] border border-[#BBBBBB] p-4 text-sm text-gray">
+              Loading payment methods...
+            </div>
+          ) : isPaymentMethodsError ? (
+            <Alert variant="destructive">
+              <AlertDescription>
+                Failed to load payment methods. Please try again.
+              </AlertDescription>
+            </Alert>
+          ) : paymentMethods.length === 0 ? (
+            <div className="rounded-[10px] border border-[#BBBBBB] p-4 text-sm text-gray">
+              No payment methods are available.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {paymentMethods.map((method) => (
+                <div
+                  key={method.code}
+                  className="grid gap-4 rounded-[10px] border border-[#BBBBBB] p-4 md:grid-cols-[1fr_auto] md:items-center"
+                >
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant="outline">{method.code}</Badge>
+                      <span className="text-sm text-gray">
+                        Payment method code
+                      </span>
+                    </div>
+
+                    <div className="space-y-[6px]">
+                      <Label>Label</Label>
+                      <Input
+                        value={method.label}
+                        onChange={(event) =>
+                          updatePaymentMethod(method.code, {
+                            label: event.target.value,
+                          })
+                        }
+                        className="border-[#BBBBBB] focus:border-primary"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3 md:min-w-[160px] md:justify-end">
+                    <Label className="text-sm">
+                      {method.isActive ? "Active" : "Inactive"}
+                    </Label>
+                    <Switch
+                      checked={method.isActive}
+                      onCheckedChange={(checked) =>
+                        updatePaymentMethod(method.code, {
+                          isActive: checked,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {paymentMethodsValidationMessage ? (
+            <Alert variant="destructive">
+              <AlertDescription>
+                {paymentMethodsValidationMessage}
+              </AlertDescription>
+            </Alert>
+          ) : null}
+
+          <div className="flex justify-end">
+            <Button
+              onClick={handlePaymentMethodsSave}
+              disabled={
+                isPaymentMethodsPending ||
+                isPaymentMethodsLoading ||
+                isPaymentMethodsError ||
+                paymentMethods.length === 0 ||
+                Boolean(paymentMethodsValidationMessage)
+              }
+              className="px-10 py-2 md:py-0"
+            >
+              {isPaymentMethodsPending
+                ? "Saving..."
+                : "Save Payment Methods"}
+            </Button>
+          </div>
         </section>
 
         <section className="flex flex-col sm:flex-row gap-4 justify-end">
@@ -447,8 +665,8 @@ function FormGroup({
   placeholder?: string;
   type?: "text" | "select";
   prefix?: string;
-  value: any;
-  onChange: (value: any) => void;
+  value: string;
+  onChange: (value: string) => void;
   options?: SelectOption[];
 }) {
   return (

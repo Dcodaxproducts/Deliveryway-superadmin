@@ -1,6 +1,6 @@
 "use client"
 import Container from '../../../components/container';
-import SettingsForm from '@/components/forms/settings-form'
+import { SettingsForm } from '@/components/forms/settings-form'
 import Header from '@/components/header'
 
 const SettingsPage = () => {

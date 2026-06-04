@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import { useEffect, useState } from "react";
+import type { ChangeEvent } from "react";
+import { AxiosError } from "axios";
 import { toast } from "sonner";
 
 import { registerTenantSchema, updateTenantSchema } from "@/validations/tenants";
@@ -23,11 +25,70 @@ import { useFileUpload } from "@/hooks/useFileUpload";
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  initialData?: any;
+  initialData?: BusinessOwnerModalData;
   onSuccess?: () => void;
 };
 
-export default function AddBusinessOwnerModal({
+type BusinessOwnerModalData = {
+  id: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  avatarUrl?: string;
+  bio?: string;
+  name?: string;
+  slug?: string;
+  logoUrl?: string;
+  isActive?: boolean;
+  user?: {
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    avatarUrl?: string;
+    bio?: string;
+  };
+  tenant?: {
+    name?: string;
+    slug?: string;
+    logoUrl?: string;
+    bio?: string;
+  };
+};
+
+type FormValues = {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  avatarUrl: string;
+  bio: string;
+  tenantName: string;
+  tenantSlug: string;
+  tenantLogoUrl: string;
+  tenantBio: string;
+  isActive: boolean;
+};
+
+type ApiErrorResponse = {
+  message?: string;
+};
+
+const getErrorMessage = (error: unknown) => {
+  if (error instanceof AxiosError) {
+    return (
+      (error.response?.data as ApiErrorResponse | undefined)?.message ||
+      "Something went wrong"
+    );
+  }
+
+  if (error instanceof Error) {
+    return error.message || "Something went wrong";
+  }
+
+  return "Something went wrong";
+};
+
+export function AddBusinessOwnerModal({
   open,
   onOpenChange,
   initialData,
@@ -101,12 +162,15 @@ export default function AddBusinessOwnerModal({
   }, [open]);
 
   /* ---------- Change ---------- */
-  const handleChange = (key: string, value: any) => {
+  const handleChange = <Key extends keyof FormValues>(
+    key: Key,
+    value: FormValues[Key]
+  ) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
   /* ---------- Upload ---------- */
-  const handleAvatarFile = async (e: any) => {
+  const handleAvatarFile = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -114,7 +178,7 @@ export default function AddBusinessOwnerModal({
     if (url) handleChange("avatarUrl", url);
   };
 
-  const handleTenantLogoFile = async (e: any) => {
+  const handleTenantLogoFile = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -163,6 +227,13 @@ export default function AddBusinessOwnerModal({
             lastName: form.lastName,
             avatarUrl: form.avatarUrl,
             bio: form.bio,
+          },
+          branchAdmin: {
+            email: form.email,
+            password: form.password,
+            firstName: form.firstName,
+            lastName: form.lastName,
+            phone: "",
           },
           tenant: {
             name: form.tenantName,
@@ -238,9 +309,9 @@ export default function AddBusinessOwnerModal({
 
       onSuccess?.();
       onOpenChange(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("API Error:", err);
-      toast.error(err?.response?.data?.message || "Something went wrong");
+      toast.error(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -368,6 +439,8 @@ focus-visible:ring-red-500"
     </Dialog>
   );
 }
+
+export { AddBusinessOwnerModal as default };
 
 function FormField({
   label,
