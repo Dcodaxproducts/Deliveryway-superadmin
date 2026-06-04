@@ -1,0 +1,85 @@
+import Container from "../../../components/container";
+import Header from "@/components/header";
+import { ConfigInput } from "@/components/models/config-input";
+import ConfigSection from "@/components/models/config-section";
+import BusinessModelTable from "@/components/tables/businessmodel-table";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
+const GlobalConfigPage = () => {
+    return (
+        <Container>
+            <Header
+                title="Global Configuration"
+                description="Manage default settings that apply to all new restaurant tenants."
+            />
+
+            <Alert className="bg-[#FEF3C7] border-[#FCD34D] rounded-xl p-4  lg:p-[20px] w-full">
+                <div className="flex gap-3">
+                    <div className="flex items-center justify-center size-6 rounded-full bg-[#F59E0B] text-white text-sm shrink-0">
+                        !
+                    </div>
+
+                    <div>
+                        <AlertTitle className="text-[#92400E] font-semibold text-base mb-[4px]">
+                            Global Configuration Notice
+                        </AlertTitle>
+                        <AlertDescription className="text-[#92400E] text-sm">
+                            These settings will apply as defaults for all new restaurants. Existing restaurants will retain their current configurations unless manually updated.
+                        </AlertDescription>
+                    </div>
+                </div>
+            </Alert>
+
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-[32px]">
+                {/* Column 1 */}
+                <div className="space-y-[32px]">
+                    <ConfigSection title="Tax Configuration" description="Set Default Tax Percentages For All Transactions">
+                        <ConfigInput label="VAT Rate" placeholder="8" suffix="%" />
+                        <ConfigInput label="Service Tax" placeholder="8" suffix="%" />
+                        <ConfigInput label="Local Tax" placeholder="8" suffix="%" />
+                    </ConfigSection>
+
+                    <ConfigSection title="Subscription (Flat Fee) Model" description="Monthly Subscription Tiers For Restaurants">
+                        <ConfigInput label="Basic Plan" placeholder="99" suffix="€/Mo" />
+                        <ConfigInput label="Premium Plan" placeholder="199" suffix="€/Mo" />
+                        <ConfigInput label="Enterprise Plan" placeholder="499" suffix="€/Mo" />
+                    </ConfigSection>
+
+                    <ConfigSection title="Regional Settings" description="Default Localization For New Tenants">
+                        <ConfigInput label="Default Language" type="select" placeholder="Select Language" />
+                        <ConfigInput label="Default Currency" type="select" placeholder="Select Currency" />
+                        <ConfigInput label="Default Timezone" type="select" placeholder="Select Timezone" />
+                    </ConfigSection>
+                </div>
+
+                {/* Column 2 */}
+                <div className="space-y-[32px]">
+                    <ConfigSection title="Commission Model" description="Default Commission Rates For Order Types">
+                        <ConfigInput label="Default Commission Rate" placeholder="8" suffix="%" />
+                        <ConfigInput label="Delivery Commission" placeholder="8" suffix="%" />
+                        <ConfigInput label="Pickup Commission" placeholder="8" suffix="%" />
+                    </ConfigSection>
+
+                    <ConfigSection title="Hybrid Model" description="Combination Of Base Fee And Commission">
+                        <ConfigInput label="Base Monthly Fee" placeholder="49" suffix="€/Mo" />
+                        <ConfigInput label="Commission Rate" placeholder="8" suffix="%" />
+                        <div className="p-4 bg-gray-50 rounded-[8px] text-xs font-medium text-gray-500">
+                            Example: €49/Month + 8% Per Order
+                        </div>
+                    </ConfigSection>
+
+                    <ConfigSection title="Payment & Order Settings" description="Default Order And Delivery Configurations">
+                        <ConfigInput label="Minimum Order Value" placeholder="5" suffix="€" />
+                        <ConfigInput label="Standard Delivery Fee" placeholder="3.50" suffix="€" />
+                        <ConfigInput label="Free Delivery Threshold" placeholder="25" suffix="€" />
+                    </ConfigSection>
+                </div>
+            </div>
+
+            <BusinessModelTable />
+        </Container>
+    );
+};
+
+export default GlobalConfigPage;

@@ -1,0 +1,521 @@
+"use client";
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  CheckCircle2,
+  Clock3,
+  Loader2,
+  MoreVertical,
+  Pencil,
+  ShieldCheck,
+  Trash2,
+  UserCheck,
+  UserX,
+  XCircle,
+} from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+import {
+  useGetTenants,
+  useDeleteTenant,
+  useUpdateTenant,
+  useApproveBusinessAdmin,
+} from "@/hooks/useTenants";
+import Pagination from "@/components/pagination";
+import DeleteDialog from "@/components/dialogs/delete-dialog";
+import AddBusinessOwnerModal from "../pages/business-owners/AddBusinessOwnerModal";
+import { useRouter } from "next/navigation";
+
+type RequirementTone = "success" | "warning" | "danger" | "muted" | "primary";
+
+type RequirementBadgeProps = {
+  label: string;
+  value: string;
+  tone: RequirementTone;
+  icon: React.ReactNode;
+};
+
+const getToneClasses = (tone: RequirementTone) => {
+  const tones: Record<RequirementTone, string> = {
+    success: "border-green-100 bg-green-50 text-green-700",
+    warning: "border-amber-100 bg-amber-50 text-amber-700",
+    danger: "border-red-100 bg-red-50 text-red-700",
+    muted: "border-gray-100 bg-gray-50 text-gray-600",
+    primary: "border-primary/10 bg-primary/5 text-primary",
+  };
+
+  return tones[tone];
+};
+
+function RequirementBadge({ label, value, tone, icon }: RequirementBadgeProps) {
+  return (
+    <div
+      className={`inline-flex min-w-[118px] items-center gap-2 rounded-xl border px-2.5 py-2 ${getToneClasses(
+        tone,
+      )}`}
+    >
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white/70">
+        {icon}
+      </span>
+
+      <span className="min-w-0 leading-none">
+        <span className="block text-[10px] font-semibold uppercase tracking-wide opacity-70">
+          {label}
+        </span>
+        <span className="mt-1 block truncate text-xs font-semibold">
+          {value}
+        </span>
+      </span>
+    </div>
+  );
+}
+
+const getOverallStatus = (item: any) => {
+  const isActive = Boolean(item?.isActive);
+  const isApproved = Boolean(item?.isApproved);
+  const isVerified = Boolean(item?.isVerified);
+
+  if (isActive && isApproved && isVerified) {
+    return {
+      label: "Access granted",
+      description: "2FA verified, approved, and active",
+      className: "bg-green-50 text-green-700 ring-green-100",
+      icon: <CheckCircle2 size={14} />,
+    };
+  }
+
+  if (!isActive) {
+    return {
+      label: "Access disabled",
+      description: "Super admin has disabled platform access",
+      className: "bg-gray-100 text-gray-600 ring-gray-200",
+      icon: <UserX size={14} />,
+    };
+  }
+
+  if (!isApproved && !isVerified) {
+    return {
+      label: "Approval & 2FA pending",
+      description: "User must verify 2FA and be approved",
+      className: "bg-amber-50 text-amber-700 ring-amber-100",
+      icon: <Clock3 size={14} />,
+    };
+  }
+
+  if (!isApproved) {
+    return {
+      label: "Pending approval",
+      description: "Waiting for super admin approval",
+      className: "bg-primary/5 text-primary ring-primary/10",
+      icon: <ShieldCheck size={14} />,
+    };
+  }
+
+  return {
+    label: "2FA pending",
+    description: "User has not completed registration verification",
+    className: "bg-amber-50 text-amber-700 ring-amber-100",
+    icon: <Clock3 size={14} />,
+  };
+};
+
+export default function BusinessOwnerTable({
+  refreshKey,
+  search,
+  setExportData,
+}: {
+  refreshKey: number;
+  search: string;
+  setExportData?: (data: any[]) => void;
+}) {
+  const router = useRouter();
+
+  const [page, setPage] = useState(1);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editData, setEditData] = useState<any>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [openActionId, setOpenActionId] = useState<string | null>(null);
+  const [activeUpdatingId, setActiveUpdatingId] = useState<string | null>(null);
+  const [approvalUpdatingId, setApprovalUpdatingId] = useState<string | null>(
+    null,
+  );
+
+  const actionMenuRef = useRef<HTMLDivElement | null>(null);
+
+  const { data, isLoading, refetch } = useGetTenants({
+    page,
+    search,
+    sortOrder: "DESC",
+    withDeleted: false,
+    includeInactive: true,
+  });
+
+  const { mutate: deleteTenant } = useDeleteTenant();
+  const { mutate: updateTenant } = useUpdateTenant();
+  const { mutate: approveBusinessAdmin } = useApproveBusinessAdmin();
+
+  const businessOwners = data?.data || [];
+  const meta = data?.meta;
+
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
+
+  useEffect(() => {
+    refetch();
+  }, [refreshKey, refetch]);
+
+  useEffect(() => {
+    if (businessOwners.length) {
+      setExportData?.(businessOwners);
+    }
+  }, [businessOwners, setExportData, refreshKey]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!actionMenuRef.current) return;
+
+      if (!actionMenuRef.current.contains(event.target as Node)) {
+        setOpenActionId(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleDelete = () => {
+    if (!deleteId) return;
+
+    setIsDeleting(true);
+
+    deleteTenant(deleteId, {
+      onSuccess: () => {
+        setDeleteId(null);
+        refetch();
+      },
+      onSettled: () => setIsDeleting(false),
+    });
+  };
+
+  const handleActiveToggle = (item: any, nextValue: boolean) => {
+    if (!item?.id) return;
+
+    setActiveUpdatingId(item.id);
+
+    updateTenant(
+      {
+        id: item.id,
+        data: {
+          isActive: nextValue,
+        },
+      },
+      {
+        onSuccess: () => {
+          refetch();
+        },
+        onSettled: () => {
+          setActiveUpdatingId(null);
+        },
+      },
+    );
+  };
+
+  const handleApproveOwner = (item: any) => {
+    if (!item?.ownerId || approvalUpdatingId === item?.id) return;
+
+    setApprovalUpdatingId(item.id);
+
+    approveBusinessAdmin(item.ownerId, {
+      onSuccess: () => {
+        refetch();
+        setOpenActionId(null);
+      },
+      onSettled: () => {
+        setApprovalUpdatingId(null);
+      },
+    });
+  };
+
+  const handleActionActiveToggle = (item: any) => {
+    handleActiveToggle(item, !item?.isActive);
+    setOpenActionId(null);
+  };
+
+  const handleEdit = (item: any) => {
+    setOpenActionId(null);
+    router.push(`/business-owners/${item.id}/edit`);
+  };
+
+  const handleDeleteClick = (item: any) => {
+    setOpenActionId(null);
+    setDeleteId(item.id);
+  };
+
+  const tableColSpan = 6;
+
+  const skeletonRows = useMemo(() => Array.from({ length: 6 }), []);
+
+  return (
+    <>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[70px]">SL</TableHead>
+            <TableHead>Business Owner</TableHead>
+            <TableHead>Details</TableHead>
+            <TableHead>Tenant</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="w-[90px] text-center">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+
+        <TableBody>
+          {isLoading
+            ? skeletonRows.map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell colSpan={tableColSpan}>
+                    <div className="h-10 w-full animate-pulse rounded bg-gray-100" />
+                  </TableCell>
+                </TableRow>
+              ))
+            : businessOwners.map((item: any, i: number) => {
+                const businessOwnerName = item.name || "N/A";
+                const businessName = item.name || "-";
+                const businessSlug = item.slug || "-";
+                const businessBio = item.bio || "-";
+
+                const logoUrl =
+                  typeof item.logoUrl === "string" &&
+                  item.logoUrl !== "[object Object]"
+                    ? item.logoUrl
+                    : null;
+
+                const status = getOverallStatus(item);
+                const isActiveUpdating = activeUpdatingId === item.id;
+                const isApprovalUpdating = approvalUpdatingId === item.id;
+                const isActionMenuOpen = openActionId === item.id;
+
+                return (
+                  <TableRow key={item.id} className="align-top">
+                    <TableCell className="pt-5">{i + 1}</TableCell>
+
+                    <TableCell className="pt-5 font-medium capitalize">
+                      {businessOwnerName}
+                    </TableCell>
+
+                    <TableCell className="pt-5">
+                      <div className="flex min-w-0 flex-col">
+                        <span className="font-medium text-gray-900">
+                          {businessName}
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          {businessSlug}
+                        </span>
+                        <span className="line-clamp-1 text-xs text-gray-400">
+                          {businessBio}
+                        </span>
+                      </div>
+                    </TableCell>
+
+                    <TableCell className="pt-5">
+                      <div className="flex min-w-0 items-center gap-2">
+                        {logoUrl ? (
+                          <img
+                            src={logoUrl}
+                            alt={businessName}
+                            className="h-8 w-8 shrink-0 rounded-lg border object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border bg-gray-50 text-xs font-semibold text-gray-500">
+                            {businessName.slice(0, 1).toUpperCase()}
+                          </div>
+                        )}
+
+                        <span className="max-w-[180px] truncate text-sm text-gray-600">
+                          {item.id}
+                        </span>
+                      </div>
+                    </TableCell>
+
+                    <TableCell className="min-w-[330px] py-4">
+                      <div className="space-y-3">
+                        <div>
+                          <span
+                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ${status.className}`}
+                          >
+                            {status.icon}
+                            {status.label}
+                          </span>
+                          <p className="mt-1 text-[11px] leading-5 text-gray-500">
+                            {status.description}
+                          </p>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          <RequirementBadge
+                            label="2FA"
+                            value={item?.isVerified ? "Verified" : "Pending"}
+                            tone={item?.isVerified ? "success" : "warning"}
+                            icon={
+                              item?.isVerified ? (
+                                <ShieldCheck size={14} />
+                              ) : (
+                                <Clock3 size={14} />
+                              )
+                            }
+                          />
+
+                          <RequirementBadge
+                            label="Approval"
+                            value={item?.isApproved ? "Approved" : "Required"}
+                            tone={item?.isApproved ? "success" : "primary"}
+                            icon={
+                              item?.isApproved ? (
+                                <UserCheck size={14} />
+                              ) : (
+                                <ShieldCheck size={14} />
+                              )
+                            }
+                          />
+
+                          <RequirementBadge
+                            label="Access"
+                            value={item?.isActive ? "Active" : "Disabled"}
+                            tone={item?.isActive ? "success" : "danger"}
+                            icon={
+                              item?.isActive ? (
+                                <CheckCircle2 size={14} />
+                              ) : (
+                                <UserX size={14} />
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+                    </TableCell>
+
+                    <TableCell className="pt-5 text-center">
+                      <div
+                        className="relative inline-flex justify-center"
+                        ref={isActionMenuOpen ? actionMenuRef : null}
+                      >
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setOpenActionId((prev) =>
+                              prev === item.id ? null : item.id,
+                            )
+                          }
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 hover:text-gray-900"
+                          aria-label="Open business owner actions"
+                        >
+                          <MoreVertical size={17} />
+                        </button>
+
+                        {isActionMenuOpen ? (
+                          <div className="absolute right-0 top-10 z-30 w-[230px] overflow-hidden rounded-xl border border-gray-100 bg-white py-1 text-left shadow-xl">
+                            <button
+                              type="button"
+                              onClick={() => handleEdit(item)}
+                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50"
+                            >
+                              <Pencil size={15} />
+                              Edit business owner
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleApproveOwner(item)}
+                              disabled={Boolean(item?.isApproved) || !item?.ownerId || isApprovalUpdating}
+                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {isApprovalUpdating ? (
+                                <Loader2 size={15} className="animate-spin" />
+                              ) : item?.isApproved ? (
+                                <CheckCircle2 size={15} />
+                              ) : (
+                                <ShieldCheck size={15} />
+                              )}
+                              {isApprovalUpdating
+                                ? "Approving..."
+                                : item?.isApproved
+                                  ? "Already approved"
+                                  : "Approve"}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleActionActiveToggle(item)}
+                              disabled={isActiveUpdating}
+                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {isActiveUpdating ? (
+                                <Loader2 size={15} className="animate-spin" />
+                              ) : item?.isActive ? (
+                                <UserX size={15} />
+                              ) : (
+                                <UserCheck size={15} />
+                              )}
+                              {isActiveUpdating
+                                ? "Updating access..."
+                                : item?.isActive
+                                  ? "Disable platform access"
+                                  : "Enable platform access"}
+                            </button>
+
+                            <div className="my-1 h-px bg-gray-100" />
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteClick(item)}
+                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 transition hover:bg-red-50"
+                            >
+                              <Trash2 size={15} />
+                              Delete
+                            </button>
+                          </div>
+                        ) : null}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+        </TableBody>
+      </Table>
+
+      {meta ? <Pagination {...meta} onPageChange={setPage} /> : null}
+
+      <DeleteDialog
+        open={Boolean(deleteId)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteId(null);
+          }
+        }}
+        onConfirm={handleDelete}
+        isLoading={isDeleting}
+      />
+
+      <AddBusinessOwnerModal
+        open={Boolean(editData)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditData(null);
+          }
+        }}
+        initialData={editData}
+      />
+    </>
+  );
+}

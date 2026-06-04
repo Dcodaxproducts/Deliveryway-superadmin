@@ -1,0 +1,137 @@
+"use client";
+
+import { useState } from "react";
+import { Search, SlidersHorizontal, X } from "lucide-react";
+import Container from "@/components/container";
+import Header from "@/components/header";
+import FeatureCatalogTable from "@/components/pages/pricing-models/pricing-engine/FeatureCatalogTable";
+
+type SupportFilter = "ALL" | "WITH_LIMIT" | "WITHOUT_LIMIT";
+
+export default function PricingEnginePage() {
+  const [search, setSearch] = useState("");
+  const [supportFilter, setSupportFilter] = useState<SupportFilter>("ALL");
+
+  const hasActiveFilters = search.trim() || supportFilter !== "ALL";
+
+  const handleResetFilters = () => {
+    setSearch("");
+    setSupportFilter("ALL");
+  };
+
+  return (
+    <Container>
+      <div className="w-full">
+        <div className="mb-7 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <Header
+            title="Pricing Engine"
+            description="View available package plan feature modules that can be enabled inside subscription plans."
+          />
+        </div>
+
+        <div className="mb-6 rounded-2xl bg-white p-5 shadow-sm">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="inline-flex w-fit rounded-lg bg-gray-100 p-1">
+              <button
+                type="button"
+                onClick={() => setSupportFilter("ALL")}
+                className={`
+                  h-10 rounded-md px-6 text-sm font-semibold transition
+                  ${
+                    supportFilter === "ALL"
+                      ? "bg-white text-primary shadow-sm"
+                      : "text-gray hover:text-primary"
+                  }
+                `}
+              >
+                All Modules
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSupportFilter("WITH_LIMIT")}
+                className={`
+                  h-10 rounded-md px-6 text-sm font-semibold transition
+                  ${
+                    supportFilter === "WITH_LIMIT"
+                      ? "bg-white text-primary shadow-sm"
+                      : "text-gray hover:text-primary"
+                  }
+                `}
+              >
+                Limit Supported
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSupportFilter("WITHOUT_LIMIT")}
+                className={`
+                  h-10 rounded-md px-6 text-sm font-semibold transition
+                  ${
+                    supportFilter === "WITHOUT_LIMIT"
+                      ? "bg-white text-primary shadow-sm"
+                      : "text-gray hover:text-primary"
+                  }
+                `}
+              >
+                Standard
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="relative">
+                <Search
+                  size={16}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray"
+                />
+
+                <input
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Search features..."
+                  className="
+                    h-10 w-full rounded-lg border border-transparent bg-gray-100
+                    pl-9 pr-3 text-sm text-dark outline-none transition
+                    placeholder:text-gray focus:border-primary focus:bg-white
+                    sm:w-[260px]
+                  "
+                />
+              </div>
+
+              <button
+                type="button"
+                className="
+                  inline-flex h-10 w-10 items-center justify-center rounded-lg
+                  bg-gray-100 text-gray transition hover:bg-red-50 hover:text-primary
+                "
+                title="Filters"
+              >
+                <SlidersHorizontal size={18} />
+              </button>
+
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="
+                    inline-flex h-10 items-center justify-center gap-2 rounded-lg
+                    border border-gray-100 bg-white px-4 text-sm font-semibold text-gray
+                    transition hover:border-primary hover:bg-red-50 hover:text-primary
+                  "
+                >
+                  <X size={15} />
+                  Reset
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <FeatureCatalogTable
+          search={search}
+          supportFilter={supportFilter}
+        />
+      </div>
+    </Container>
+  );
+}
