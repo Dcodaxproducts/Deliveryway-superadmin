@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Info } from "lucide-react";
+import { CreditCard, Info } from "lucide-react";
 
 import {
   useGetGlobalSettings,
@@ -104,6 +104,10 @@ const getCurrencySymbol = (currency: string) => {
   return (
     CURRENCY_OPTIONS.find((item) => item.value === currency)?.symbol || "€"
   );
+};
+
+const formatPaymentMethodCode = (code: PaymentMethodCode) => {
+  return code.replaceAll("_", " ");
 };
 
 export function SettingsForm() {
@@ -296,48 +300,52 @@ export function SettingsForm() {
   const paymentMethodsValidationMessage = hasDuplicatePaymentMethods()
     ? "Duplicate payment method codes are not allowed."
     : "";
+  const activePaymentMethodsCount = paymentMethods.filter(
+    (method) => method.isActive
+  ).length;
 
   return (
-    <div className="flex flex-col lg:grid lg:grid-cols-12 gap-[48px] p-4 lg:p-[30px] bg-white rounded-[14px]">
-      <div className="hidden lg:block lg:col-span-4 space-y-8 relative">
-        <div className="flex items-center gap-[12px] cursor-pointer">
-          <Info size={18} className="text-gray" />
-          <span className="text-base font-semibold text-[#646982] group-hover:text-primary transition-colors">
-            Tax Settings
-          </span>
+    <div className="space-y-6">
+      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-[48px] p-4 lg:p-[30px] bg-white rounded-[14px]">
+        <div className="hidden lg:block lg:col-span-4 space-y-8 relative">
+          <div className="flex items-center gap-[12px] cursor-pointer">
+            <Info size={18} className="text-gray" />
+            <span className="text-base font-semibold text-[#646982] group-hover:text-primary transition-colors">
+              Tax Settings
+            </span>
+          </div>
+
+          <div className="flex items-center gap-[12px] cursor-pointer absolute top-88">
+            <Info size={18} className="text-gray" />
+            <span className="text-base font-semibold text-[#646982] group-hover:text-primary transition-colors">
+              Commission Settings
+            </span>
+          </div>
+
+          <div className="flex items-center gap-[12px] cursor-pointer absolute top-143">
+            <Info size={18} className="text-gray" />
+            <span className="text-base font-semibold text-[#646982] group-hover:text-primary transition-colors">
+              Currency Settings
+            </span>
+          </div>
+
+          <div className="flex items-center gap-[12px] cursor-pointer absolute bottom-143">
+            <Info size={18} className="text-gray" />
+            <span className="text-base font-semibold text-[#646982] group-hover:text-primary transition-colors">
+              Localization Settings
+            </span>
+          </div>
+
+          <div className="flex items-center gap-[12px] cursor-pointer absolute bottom-70">
+            <Info size={18} className="text-gray" />
+            <span className="text-base font-semibold text-[#646982] group-hover:text-primary transition-colors">
+              Branding (Quick Setup)
+            </span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-[12px] cursor-pointer absolute top-88">
-          <Info size={18} className="text-gray" />
-          <span className="text-base font-semibold text-[#646982] group-hover:text-primary transition-colors">
-            Commission Settings
-          </span>
-        </div>
-
-        <div className="flex items-center gap-[12px] cursor-pointer absolute top-143">
-          <Info size={18} className="text-gray" />
-          <span className="text-base font-semibold text-[#646982] group-hover:text-primary transition-colors">
-            Currency Settings
-          </span>
-        </div>
-
-        <div className="flex items-center gap-[12px] cursor-pointer absolute bottom-143">
-          <Info size={18} className="text-gray" />
-          <span className="text-base font-semibold text-[#646982] group-hover:text-primary transition-colors">
-            Localization Settings
-          </span>
-        </div>
-
-        <div className="flex items-center gap-[12px] cursor-pointer absolute bottom-70">
-          <Info size={18} className="text-gray" />
-          <span className="text-base font-semibold text-[#646982] group-hover:text-primary transition-colors">
-            Branding (Quick Setup)
-          </span>
-        </div>
-      </div>
-
-      <div className="lg:col-span-8 space-y-[48px]">
-        <section className="space-y-[24px]">
+        <div className="lg:col-span-8 space-y-[48px]">
+          <section className="space-y-[24px]">
           <div className="space-y-[6px]">
             <Label>Global Tax %</Label>
             <p className="text-sm text-gray mb-2">
@@ -538,102 +546,6 @@ export function SettingsForm() {
           />
         </section>
 
-        <section className="space-y-[24px]">
-          <div className="space-y-[6px]">
-            <Label>Platform Payment Methods</Label>
-            <p className="text-sm text-gray">
-              Enable or disable payment methods available across the platform.
-            </p>
-          </div>
-
-          {isPaymentMethodsLoading ? (
-            <div className="rounded-[10px] border border-[#BBBBBB] p-4 text-sm text-gray">
-              Loading payment methods...
-            </div>
-          ) : isPaymentMethodsError ? (
-            <Alert variant="destructive">
-              <AlertDescription>
-                Failed to load payment methods. Please try again.
-              </AlertDescription>
-            </Alert>
-          ) : paymentMethods.length === 0 ? (
-            <div className="rounded-[10px] border border-[#BBBBBB] p-4 text-sm text-gray">
-              No payment methods are available.
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {paymentMethods.map((method) => (
-                <div
-                  key={method.code}
-                  className="grid gap-4 rounded-[10px] border border-[#BBBBBB] p-4 md:grid-cols-[1fr_auto] md:items-center"
-                >
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant="outline">{method.code}</Badge>
-                      <span className="text-sm text-gray">
-                        Payment method code
-                      </span>
-                    </div>
-
-                    <div className="space-y-[6px]">
-                      <Label>Label</Label>
-                      <Input
-                        value={method.label}
-                        onChange={(event) =>
-                          updatePaymentMethod(method.code, {
-                            label: event.target.value,
-                          })
-                        }
-                        className="border-[#BBBBBB] focus:border-primary"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-3 md:min-w-[160px] md:justify-end">
-                    <Label className="text-sm">
-                      {method.isActive ? "Active" : "Inactive"}
-                    </Label>
-                    <Switch
-                      checked={method.isActive}
-                      onCheckedChange={(checked) =>
-                        updatePaymentMethod(method.code, {
-                          isActive: checked,
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {paymentMethodsValidationMessage ? (
-            <Alert variant="destructive">
-              <AlertDescription>
-                {paymentMethodsValidationMessage}
-              </AlertDescription>
-            </Alert>
-          ) : null}
-
-          <div className="flex justify-end">
-            <Button
-              onClick={handlePaymentMethodsSave}
-              disabled={
-                isPaymentMethodsPending ||
-                isPaymentMethodsLoading ||
-                isPaymentMethodsError ||
-                paymentMethods.length === 0 ||
-                Boolean(paymentMethodsValidationMessage)
-              }
-              className="px-10 py-2 md:py-0"
-            >
-              {isPaymentMethodsPending
-                ? "Saving..."
-                : "Save Payment Methods"}
-            </Button>
-          </div>
-        </section>
-
         <section className="flex flex-col sm:flex-row gap-4 justify-end">
           <Button variant="outline" disabled={isPending}>
             Cancel
@@ -642,12 +554,147 @@ export function SettingsForm() {
           <Button
             onClick={handleSubmit}
             disabled={isPending}
-            className="px-10 py-2 md:py-0"
+            className="h-auto px-10 py-3"
           >
             {isPending ? "Saving..." : "Save & Activate"}
           </Button>
         </section>
       </div>
+      </div>
+
+      <section className="space-y-[24px] rounded-[14px] bg-white p-4 lg:p-[30px]">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="space-y-[6px]">
+            <Label className="text-base font-semibold text-dark">
+              Platform Payment Methods
+            </Label>
+            <p className="text-sm text-gray">
+              Enable or disable payment methods available across the platform.
+            </p>
+          </div>
+
+          <div className="flex w-fit items-center gap-2 rounded-[10px] border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2 text-sm text-gray">
+            <span className="font-semibold text-dark">
+              {activePaymentMethodsCount}
+            </span>
+            of {paymentMethods.length || PAYMENT_METHOD_CODES.length} active
+          </div>
+        </div>
+
+        {isPaymentMethodsLoading ? (
+          <div className="rounded-[12px] border border-dashed border-[#BBBBBB] bg-[#F9FAFB] p-5 text-sm text-gray">
+            Loading payment methods...
+          </div>
+        ) : isPaymentMethodsError ? (
+          <Alert variant="destructive">
+            <AlertDescription>
+              Failed to load payment methods. Please try again.
+            </AlertDescription>
+          </Alert>
+        ) : paymentMethods.length === 0 ? (
+          <div className="rounded-[12px] border border-dashed border-[#BBBBBB] bg-[#F9FAFB] p-5 text-sm text-gray">
+            No payment methods are available.
+          </div>
+        ) : (
+          <div className="grid gap-4 xl:grid-cols-2">
+            {paymentMethods.map((method) => (
+              <div
+                key={method.code}
+                className={`rounded-[12px] border p-4 transition-colors ${
+                  method.isActive
+                    ? "border-primary/35 bg-primary/[0.03]"
+                    : "border-[#E5E7EB] bg-[#F9FAFB]"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <div
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] ${
+                        method.isActive
+                          ? "bg-primary/10 text-primary"
+                          : "bg-white text-gray"
+                      }`}
+                    >
+                      <CreditCard size={18} />
+                    </div>
+
+                    <div className="min-w-0 space-y-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className="rounded-[8px] border-[#D1D5DB] bg-white px-2.5 py-1 text-[11px] tracking-normal text-dark"
+                        >
+                          {formatPaymentMethodCode(method.code)}
+                        </Badge>
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                            method.isActive
+                              ? "bg-green/10 text-green"
+                              : "bg-gray-100 text-gray"
+                          }`}
+                        >
+                          {method.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-gray">
+                        Code is managed by the platform API and cannot be
+                        edited.
+                      </p>
+                    </div>
+                  </div>
+
+                  <Switch
+                    checked={method.isActive}
+                    onCheckedChange={(checked) =>
+                      updatePaymentMethod(method.code, {
+                        isActive: checked,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="mt-4 space-y-[6px]">
+                  <Label>Display Label</Label>
+                  <Input
+                    value={method.label}
+                    onChange={(event) =>
+                      updatePaymentMethod(method.code, {
+                        label: event.target.value,
+                      })
+                    }
+                    className="h-[48px] border-[#BBBBBB] bg-white focus:border-primary"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {paymentMethodsValidationMessage ? (
+          <Alert variant="destructive">
+            <AlertDescription>
+              {paymentMethodsValidationMessage}
+            </AlertDescription>
+          </Alert>
+        ) : null}
+
+        <div className="flex justify-end">
+          <Button
+            onClick={handlePaymentMethodsSave}
+            disabled={
+              isPaymentMethodsPending ||
+              isPaymentMethodsLoading ||
+              isPaymentMethodsError ||
+              paymentMethods.length === 0 ||
+              Boolean(paymentMethodsValidationMessage)
+            }
+            className="h-auto px-10 py-3"
+          >
+            {isPaymentMethodsPending ? "Saving..." : "Save Payment Methods"}
+          </Button>
+        </div>
+      </section>
     </div>
   );
 }
