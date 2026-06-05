@@ -4,14 +4,17 @@ import { Eye, Store } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Branch } from "@/types/restaurant";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 export default function BranchList({ branches }: { branches: Branch[] }) {
+  const branchesText = useTranslations("branches");
+
   return (
     <div className="space-y-[12px]">
-      <h3 className="text-xl font-semibold text-dark">List of Branches</h3>
+      <h3 className="text-xl font-semibold text-dark">{branchesText("listTitle")}</h3>
 
       {branches?.length === 0 ? (
-        <p className="text-gray-400 text-center py-10 border border-dashed rounded-[14px]">No branches found.</p>
+        <p className="text-gray-400 text-center py-10 border border-dashed rounded-[14px]">{branchesText("noneFound")}</p>
       ) : (
         branches?.map((branch: Branch) => (
           <Link
@@ -33,13 +36,13 @@ export default function BranchList({ branches }: { branches: Branch[] }) {
                     <>
                       <div className="size-2 rounded-full bg-green hidden sm:block ml-2" />
                       <Badge className="bg-green/10 text-green hover:bg-green/10 border-none px-2.5 h-[28px] md:h-[32px] text-sm font-semibold whitespace-nowrap">
-                        Default Branch
+                        {branchesText("defaultBranch")}
                       </Badge>
                     </>
                   )}
                 </div>
                 <p className="text-sm text-gray">
-                  ID: #{branch.id.slice(-5)} | {branch.settings?.allowedOrderTypes?.length || 0} Order Types Allowed
+                  {branchesText("id")}: #{branch.id.slice(-5)} | {branch.settings?.allowedOrderTypes?.length || 0} {branchesText("orderTypesAllowed")}
                 </p>
               </div>
             </div>

@@ -8,6 +8,7 @@ import {
 import { formatDate } from "@/utils/format-date";
 import { useGetOrderTrend } from "@/hooks/useOrder";
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 
 // ✅ fallback data (always show graph)
 const fallbackData = [
@@ -21,6 +22,9 @@ const fallbackData = [
 ];
 
 export default function SummarySection({ data }: { data: any }) {
+    const common = useTranslations("common");
+    const profile = useTranslations("profile");
+    const restaurants = useTranslations("restaurants");
 
     const { data: trendData, isLoading } = useGetOrderTrend({
         restaurantId: data?.id,
@@ -44,16 +48,16 @@ export default function SummarySection({ data }: { data: any }) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-[32px] w-full">
             {/* Branch Info Card */}
             <div className="space-y-[12px] lg:col-span-5">
-                <h3 className="text-xl font-semibold text-dark">Basic Info</h3>
+                <h3 className="text-xl font-semibold text-dark">{profile("basicInfo")}</h3>
                 <Card className="border-2 border-gray-50 rounded-[14px] px-[10px] py-[16px]">
                     <div className="space-y-4">
-                        <InfoRow label="Restaurant Name" value={data?.name || "N/A"} />
-                        <InfoRow label="Email" value={data?.supportContact?.email || "N/A"} />
-                        <InfoRow label="Contact Number" value={data?.supportContact?.phone || "N/A"} />
-                        <InfoRow label="Tagline" value={data?.tagline || "N/A"} />
-                        <InfoRow label="Domain" value={data?.customDomain || "N/A"} />
-                        <InfoRow label="Status" value={data?.isActive ? "Active" : "Inactive"} />
-                        <InfoRow label="Joined Date" value={data?.createdAt ? formatDate(data.createdAt) : "N/A"} />
+                        <InfoRow label={restaurants("restaurantName")} value={data?.name || common("notAvailable")} />
+                        <InfoRow label={restaurants("email")} value={data?.supportContact?.email || common("notAvailable")} />
+                        <InfoRow label={profile("contactNumber")} value={data?.supportContact?.phone || common("notAvailable")} />
+                        <InfoRow label={restaurants("tagline")} value={data?.tagline || common("notAvailable")} />
+                        <InfoRow label={restaurants("domain")} value={data?.customDomain || common("notAvailable")} />
+                        <InfoRow label={common("status")} value={data?.isActive ? common("active") : common("inactive")} />
+                        <InfoRow label={profile("joinedDate")} value={data?.createdAt ? formatDate(data.createdAt) : common("notAvailable")} />
                     </div>
                 </Card>
             </div>
@@ -88,7 +92,7 @@ export default function SummarySection({ data }: { data: any }) {
                             />
 
                             <Tooltip
-                                formatter={(value: any) => [`${value} orders`, "Orders"]}
+                                formatter={(value: any) => [`${value} ${profile("orders").toLowerCase()}`, profile("orders")]}
                                 labelFormatter={(_, payload: any) => {
                                     if (payload?.[0]?.payload?.date) {
                                         return formatDate(payload[0].payload.date);
@@ -111,14 +115,14 @@ export default function SummarySection({ data }: { data: any }) {
                     {/* ✅ Only show loading (no false empty state) */}
                     {isLoading && (
                         <div className="text-center text-sm text-gray mt-4">
-                            Loading trend...
+                            {profile("loadingTrend")}
                         </div>
                     )}
                 </div>
 
                 <div className="flex justify-center items-center gap-2 mt-4">
                     <div className="size-2 rounded-full bg-primary" />
-                    <span className="text-xs font-bold text-gray">Order Trends</span>
+                    <span className="text-xs font-bold text-gray">{profile("orderTrends")}</span>
                 </div>
             </Card>
         </div>

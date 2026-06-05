@@ -1,23 +1,27 @@
 import { z } from "zod";
 
-export const restaurantSchema = z.object({
-  name: z.string().min(2, "Restaurant name is required"),
-  tenantId: z.string().min(1, "Tenant ID is required"),
-  slug: z.string().min(1, "Slug is required"),
- logoUrl: z.string().optional().default(""),
-coverImage: z.string().optional().default(""),
-  customDomain: z.string().optional(),
-  tagline: z.string().optional(),
-  bio: z.string().max(500, "Bio must be under 500 characters").optional(),
-  supportContact: z.object({
-    email: z.string().email("Invalid email"),
-    whatsapp: z.string().min(10, "Invalid WhatsApp number"),
-    phone: z.string().min(10, "Invalid phone number"),
-  }),
-  branding: z.object({
-    primaryColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Invalid hex color"),
-    secondaryColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Invalid hex color"),
-    fontFamily: z.string().default("Inter"),
-  })
-});
-export type RestaurantValues = z.infer<typeof restaurantSchema>;
+type TranslationFunction = (key: string) => string;
+
+export const createRestaurantSchema = (t: TranslationFunction) =>
+  z.object({
+    name: z.string().min(2, t("restaurantNameRequired")),
+    tenantId: z.string().min(1, t("tenantIdRequired")),
+    slug: z.string().min(1, t("slugRequired")),
+    logoUrl: z.string().optional().default(""),
+    coverImage: z.string().optional().default(""),
+    customDomain: z.string().optional(),
+    tagline: z.string().optional(),
+    bio: z.string().max(500, t("bioMax")).optional(),
+    supportContact: z.object({
+      email: z.string().email(t("invalidEmail")),
+      whatsapp: z.string().min(10, t("invalidWhatsapp")),
+      phone: z.string().min(10, t("invalidPhone")),
+    }),
+    branding: z.object({
+      primaryColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, t("invalidHexColor")),
+      secondaryColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, t("invalidHexColor")),
+      fontFamily: z.string().default("Inter"),
+    })
+  });
+
+export type RestaurantValues = z.infer<ReturnType<typeof createRestaurantSchema>>;

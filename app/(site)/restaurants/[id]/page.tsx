@@ -8,8 +8,10 @@ import Header from "@/components/header"
 import { useGetRestaurant, useGetRestaurantBranches } from "@/hooks/useRestaurant";
 import { useParams } from "next/navigation";
 import RestaurantDetailsSkeleton from "@/components/skeleton/restaurant-details-skeleton";
+import { useTranslations } from "next-intl";
 
 const RestaurantDetailsPage = () => {
+    const restaurants = useTranslations("restaurants");
     const params = useParams();
     const id = params.id as string;
 
@@ -22,7 +24,7 @@ const RestaurantDetailsPage = () => {
 
     return (
         <Container>
-            <Header title="Restaurant Details" />
+            <Header title={restaurants("detailsTitle")} />
             <div className="flex flex-col gap-[32px] w-full bg-white p-4 lg:p-[30px] rounded-[14px]">
                 <Hero data={restaurantData} />
                 <SummarySection data={restaurantData} />

@@ -20,8 +20,12 @@ import { useGetBranch } from "@/hooks/useRestaurant";
 import { Skeleton } from "@/components/ui/skeleton";
 import MyImage from "@/components/MyImage";
 import { Label } from "@/components/ui/label";
+import { useTranslations } from "next-intl";
 
 export default function BranchDetailsPage() {
+  const common = useTranslations("common");
+  const branches = useTranslations("branches");
+  const profile = useTranslations("profile");
   const params = useParams();
   const branchId = params.id as string;
 
@@ -63,9 +67,9 @@ export default function BranchDetailsPage() {
     return (
       <Container>
         <div className="flex flex-col items-center justify-center min-h-[400px] w-full bg-white rounded-[14px] p-10 text-center">
-          <p className="text-red-500 font-semibold text-lg">Error loading branch details</p>
-          <p className="text-gray-400 text-sm mb-4">The branch might not exist or there is a connection issue.</p>
-          <button onClick={() => window.location.reload()} className="px-6 py-2 bg-primary text-white rounded-lg transition-all">Try Again</button>
+          <p className="text-red-500 font-semibold text-lg">{branches("loadErrorTitle")}</p>
+          <p className="text-gray-400 text-sm mb-4">{branches("loadErrorDescription")}</p>
+          <button onClick={() => window.location.reload()} className="px-6 py-2 bg-primary text-white rounded-lg transition-all">{branches("tryAgain")}</button>
         </div>
       </Container>
     );
@@ -77,13 +81,13 @@ export default function BranchDetailsPage() {
     branch.address?.area,
     branch.address?.city,
     branch.address?.country
-  ].filter(Boolean).join(", ") || "No address provided";
+  ].filter(Boolean).join(", ") || branches("noAddressProvided");
 
   return (
     <Container>
       <Header
-        title={"Branch Details"}
-        description="Detailed configuration and overview of the restaurant branch"
+        title={branches("detailsTitle")}
+        description={branches("detailsDescription")}
       />
 
       <div className="flex flex-col gap-[32px] w-full bg-white p-4 lg:p-[30px] rounded-[14px]">
@@ -92,19 +96,19 @@ export default function BranchDetailsPage() {
         <div className="relative w-full h-[240px] rounded-[14px] overflow-hidden">
           <MyImage
             src={branch.coverImage || "/placeholder-branch.png"}
-            alt={branch.name ?? "Branch Cover"}
+            alt={branch.name ?? branches("branchCover")}
             fill
             className="w-full h-full object-cover rounded-none"
           />
           <div className="absolute top-4 right-4 flex gap-2">
             {branch.isMain && (
-              <Badge className="bg-green text-white border-none px-4 py-1">Main Branch</Badge>
+              <Badge className="bg-green text-white border-none px-4 py-1">{branches("mainBranch")}</Badge>
             )}
             <Badge className={cn(
               "border-none px-4 py-1",
               branch.isActive ? "bg-primary text-white" : "bg-gray-400 text-white"
             )}>
-              {branch.isActive ? "Active" : "Inactive"}
+              {branch.isActive ? common("active") : common("inactive")}
             </Badge>
           </div>
         </div>
@@ -113,20 +117,20 @@ export default function BranchDetailsPage() {
           <div className="lg:col-span-5 space-y-[32px]">
             <section className="space-y-4">
               <h3 className="text-lg font-semibold text-dark flex items-center gap-2">
-                <MapPin size={20} className="text-primary" /> Basic Information
+                <MapPin size={20} className="text-primary" /> {branches("basicInformation")}
               </h3>
               <Card className="border-2 border-gray-50 rounded-[14px] p-6 space-y-4">
-                <InfoRow label="Branch Name" value={branch.name ?? "-"} className="capitalize" />
-                <InfoRow label="Restaurant" value={branch.restaurant?.name ?? "N/A"} className="capitalize" />
-                <InfoRow label="Address" value={fullAddress} />
-                <InfoRow label="Description" value={branch.description || "No description provided"} className="capitalize" />
-                <InfoRow label="Branch ID" value={branch.id ? `#${branch.id}` : "-"} />
+                <InfoRow label={branches("branchName")} value={branch.name ?? "-"} className="capitalize" />
+                <InfoRow label={branches("restaurant")} value={branch.restaurant?.name ?? common("notAvailable")} className="capitalize" />
+                <InfoRow label={branches("address")} value={fullAddress} />
+                <InfoRow label={branches("description")} value={branch.description || branches("noDescriptionProvided")} className="capitalize" />
+                <InfoRow label={branches("branchId")} value={branch.id ? `#${branch.id}` : "-"} />
                 <div className="pt-2 flex flex-wrap gap-4">
                   <div className="flex items-center gap-2 text-gray text-sm">
-                    <Phone size={16} /> {branch.settings?.contact?.phone ?? "No Phone"}
+                    <Phone size={16} /> {branch.settings?.contact?.phone ?? branches("noPhone")}
                   </div>
                   <div className="flex items-center gap-2 text-green text-sm">
-                    <MessageCircle size={16} /> {branch.settings?.contact?.whatsapp ?? "No WhatsApp"}
+                    <MessageCircle size={16} /> {branch.settings?.contact?.whatsapp ?? branches("noWhatsapp")}
                   </div>
                 </div>
               </Card>
@@ -134,12 +138,12 @@ export default function BranchDetailsPage() {
 
             <section className="space-y-4">
               <h3 className="text-lg font-semibold text-dark flex items-center gap-2">
-                <Percent size={20} className="text-primary" /> Taxation & Automation
+                <Percent size={20} className="text-primary" /> {branches("taxationAutomation")}
               </h3>
               <Card className="border-2 border-gray-50 rounded-[14px] p-6 space-y-4">
-                <InfoRow label="Tax Percentage" value={`${branch.settings?.taxation?.taxPercentage ?? 0}%`} />
-                <InfoRow label="Auto Accept Orders" value={branch.settings?.automation?.autoAcceptOrders ? "Enabled" : "Disabled"} />
-                <InfoRow label="Estimated Prep Time" value={`${branch.settings?.automation?.estimatedPrepTime ?? 0} Mins`} />
+                <InfoRow label={branches("taxPercentage")} value={`${branch.settings?.taxation?.taxPercentage ?? 0}%`} />
+                <InfoRow label={branches("autoAcceptOrders")} value={branch.settings?.automation?.autoAcceptOrders ? common("enabled") : common("disabled")} />
+                <InfoRow label={branches("estimatedPrepTime")} value={`${branch.settings?.automation?.estimatedPrepTime ?? 0} ${branches("mins")}`} />
               </Card>
             </section>
           </div>
@@ -148,28 +152,28 @@ export default function BranchDetailsPage() {
           <div className="lg:col-span-7 space-y-[32px]">
             <section className="space-y-4">
               <h3 className="text-lg font-semibold text-dark flex items-center gap-2">
-                <Truck size={20} className="text-primary" /> Delivery Configuration
+                <Truck size={20} className="text-primary" /> {branches("deliveryConfiguration")}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card className="border-2 border-gray-50 rounded-[14px] p-6">
-                  <Label className="font-medium">Delivery Radius</Label>
+                  <Label className="font-medium">{branches("deliveryRadius")}</Label>
                   <p className="text-2xl font-semibold text-gray">{branch.settings?.deliveryConfig?.radiusKm ?? 0} KM</p>
                 </Card>
                 <Card className="border-2 border-gray-50 rounded-[14px] p-6">
-                  <Label className="font-medium">Delivery Fee</Label>
+                  <Label className="font-medium">{branches("deliveryFee")}</Label>
                   <p className="text-2xl font-semibold text-gray">${branch.settings?.deliveryConfig?.deliveryFee ?? 0}</p>
                 </Card>
                 <Card className="border-2 border-gray-50 rounded-[14px] p-6 col-span-1 md:col-span-2">
                   <div className="flex justify-between items-start gap-2">
                     <div>
-                      <Label className="font-medium mb-2">Free Delivery Threshold</Label>
+                      <Label className="font-medium mb-2">{branches("freeDeliveryThreshold")}</Label>
                       <p className="text-xl font-semibold text-gray">${branch.settings?.deliveryConfig?.freeDeliveryThreshold ?? 0}</p>
                     </div>
                     <Badge className={cn(
                       "border-none",
                       branch.settings?.deliveryConfig?.isFreeDelivery ? "bg-green/10 text-green" : "bg-gray-100 text-gray-500"
                     )}>
-                      {branch.settings?.deliveryConfig?.isFreeDelivery ? "Free Delivery Active" : "Standard Rates"}
+                      {branch.settings?.deliveryConfig?.isFreeDelivery ? branches("freeDeliveryActive") : branches("standardRates")}
                     </Badge>
                   </div>
                 </Card>
@@ -178,24 +182,24 @@ export default function BranchDetailsPage() {
 
             <section className="space-y-4">
               <h3 className="text-lg font-semibold text-dark flex items-center gap-2">
-                <Settings2 size={20} className="text-primary" /> Order & Payments
+                <Settings2 size={20} className="text-primary" /> {branches("orderPayments")}
               </h3>
               <Card className="border-2 border-gray-50 rounded-[14px] p-6 space-y-6">
                 <div className="space-y-3">
                   <p className="text-sm font-medium text-gray flex items-center gap-2">
-                    <Clock size={16} /> Allowed Order Types
+                    <Clock size={16} /> {branches("allowedOrderTypes")}
                   </p>
                   <div className="flex gap-2 flex-wrap">
                     {branch.settings?.allowedOrderTypes?.length ? (
                       branch.settings.allowedOrderTypes.map((type: string) => (
                         <Badge key={type} variant="secondary" className="rounded-md capitalize">{type.toLowerCase().replace('_', ' ')}</Badge>
                       ))
-                    ) : <span className="text-gray-400 text-sm italic">None specified</span>}
+                    ) : <span className="text-gray-400 text-sm italic">{profile("noneSpecified")}</span>}
                   </div>
                 </div>
                 <div className="space-y-3">
                   <p className="text-sm font-medium text-gray flex items-center gap-2">
-                    <CreditCard size={16} /> Payment Methods
+                    <CreditCard size={16} /> {branches("paymentMethods")}
                   </p>
                   <div className="flex gap-2 flex-wrap">
                     {branch.settings?.allowedPaymentMethods?.length ? (
@@ -204,7 +208,7 @@ export default function BranchDetailsPage() {
                           {method.replace('_', ' ')}
                         </Badge>
                       ))
-                    ) : <span className="text-gray-400 text-sm italic">None specified</span>}
+                    ) : <span className="text-gray-400 text-sm italic">{profile("noneSpecified")}</span>}
                   </div>
                 </div>
               </Card>

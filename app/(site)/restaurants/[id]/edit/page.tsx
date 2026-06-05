@@ -5,8 +5,10 @@ import Container from "@/components/container"
 import Header from "@/components/header"
 import { useGetRestaurant } from "@/hooks/useRestaurant"
 import { useParams } from "next/navigation"
+import { useTranslations } from "next-intl"
 
 const EditRestaurant = () => {
+    const restaurants = useTranslations("restaurants");
     const params = useParams();
     const { data: restaurant, isLoading } = useGetRestaurant(params.id as string);
     
@@ -15,7 +17,7 @@ const EditRestaurant = () => {
     return (
         <Container>
             <Header
-                title="Edit Restaurant Details"
+                title={restaurants("editRestaurant")}
             />
             <div className="w-full">
                 <RestaurantForm 

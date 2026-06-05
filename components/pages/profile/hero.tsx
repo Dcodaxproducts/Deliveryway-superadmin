@@ -2,8 +2,11 @@
 
 import Image from "@/components/MyImage";
 import MyImage from "@/components/MyImage";
+import { useTranslations } from "next-intl";
 
 export default function Hero({ data }: { data: any }) {
+    const restaurants = useTranslations("restaurants");
+
     return (
         <div className="w-full rounded-[14px] overflow-hidden space-y-[24px] md:space-y-[32px]">
 
@@ -11,7 +14,7 @@ export default function Hero({ data }: { data: any }) {
           <div className="relative w-full h-[120px] md:h-[175px]">
     <Image
         src={data?.coverImage || "/profile-banner.png"}
-        alt={data?.name ? `${data.name} Banner` : "Restaurant Banner"}
+        alt={data?.name ? `${data.name} ${restaurants("banner")}` : restaurants("restaurantBanner")}
         fill
         className="object-cover rounded-[14px]"
         priority
@@ -25,7 +28,7 @@ export default function Hero({ data }: { data: any }) {
                     <div className="relative size-[120px] md:w-[196px] md:h-[196px] mt-[-60px] md:mt-[-128px] rounded-full overflow-hidden bg-white shadow-md shrink-0">
                         <MyImage
                             src={data?.logoUrl || "/placeholder.svg"}
-                            alt={data?.name || "Restaurant Logo"}
+                            alt={data?.name || restaurants("restaurantLogo")}
                             fill
                             className="object-contain"
                         />

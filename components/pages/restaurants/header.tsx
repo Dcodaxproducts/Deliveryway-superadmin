@@ -4,9 +4,11 @@ import { HelpCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Header from '../../header'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
 export default function RestaurantsHeader({ title, description }: HeaderProps) {
     const router = useRouter()
+    const restaurants = useTranslations("restaurants")
     return (
         <div className="flex flex-col gap-4 md:gap-6 lg:flex-row lg:items-center lg:justify-between w-full">
             <Header
@@ -36,7 +38,7 @@ export default function RestaurantsHeader({ title, description }: HeaderProps) {
                     onClick={() => router.push('/restaurants/add')}
                     className="w-full sm:w-auto whitespace-nowrap"
                 >
-                    Add New Restaurant
+                    {restaurants("addRestaurant")}
                 </Button>
             </div>
         </div>

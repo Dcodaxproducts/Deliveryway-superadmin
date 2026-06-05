@@ -6,12 +6,13 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Info, Image as ImageIcon, X, Loader2 } from "lucide-react"
 import { HexColorPicker } from "react-colorful"
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-import { restaurantSchema, type RestaurantValues } from "@/validations/restaurant"
+import { createRestaurantSchema, type RestaurantValues } from "@/validations/restaurant"
 import { useCreateRestaurant, useUpdateRestaurant } from "@/hooks/useRestaurant"
 import { useFileUpload } from '@/hooks/useFileUpload'
 
@@ -29,6 +30,10 @@ export default function RestaurantForm({
   initialData
 }: RestaurantFormProps) {
   const router = useRouter()
+  const common = useTranslations("common")
+  const restaurants = useTranslations("restaurants")
+  const validation = useTranslations("validation")
+  const restaurantSchema = createRestaurantSchema(validation)
   const createMutation = useCreateRestaurant()
   const updateMutation = useUpdateRestaurant()
 
@@ -42,7 +47,7 @@ const [logoPreviewBlob, setLogoPreviewBlob] = useState("")
 const [coverPreviewBlob, setCoverPreviewBlob] = useState("")
   const mutate =
     mode === 'edit' && restaurantId
-      ? (data: any) => updateMutation.mutate({ id: restaurantId, data })
+      ? (data: RestaurantValues) => updateMutation.mutate({ id: restaurantId, data })
       : createMutation.mutate
 
   const isPending = mode === 'edit'
@@ -172,16 +177,16 @@ const removeCover = (e: React.MouseEvent) => {
       onSubmit={handleSubmit(onSubmit, (formErrors) => console.log(formErrors))}
       className="p-[30px] space-y-[48px] bg-white rounded-[14px]"
     >
-      <FormSection label="Setup Basic Info">
+      <FormSection label={restaurants("setupBasicInfo")}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-[24px]">
           <FormGroup
-            label="Restaurant Name *"
+            label={`${restaurants("restaurantName")} *`}
             placeholder="Pizza Hut"
             error={errors.name?.message}
             {...register("name")}
           />
           <FormGroup
-            label="Slug *"
+            label={`${restaurants("slug")} *`}
             placeholder="pizza-hut"
             error={errors.slug?.message}
             {...register("slug")}
@@ -189,14 +194,14 @@ const removeCover = (e: React.MouseEvent) => {
         </div>
 
         <FormGroup
-          label="Tenant ID *"
+          label={`${restaurants("tenantId")} *`}
           placeholder="cmmoib..."
           error={errors.tenantId?.message}
           {...register("tenantId")}
         />
 
   <div className="space-y-[6px]">
-  <Label>Logo Upload *</Label>
+  <Label>{restaurants("logoUpload")} *</Label>
   <input
     type="file"
     className="hidden"
@@ -210,9 +215,9 @@ const removeCover = (e: React.MouseEvent) => {
     type="logo"
       preview={logoPreview}
       onRemove={removeLogo}
-      selectedText="Logo selected"
-      emptyTitle="Click to upload logo"
-      emptyHint="JPG, JPEG, PNG less than 1MB"
+      selectedText={restaurants("logoSelected")}
+      emptyTitle={restaurants("uploadLogo")}
+      emptyHint={restaurants("uploadLogoHint")}
       previewHeight="h-[240px]"
     />
   </div>
@@ -220,7 +225,7 @@ const removeCover = (e: React.MouseEvent) => {
   {uploading && uploadingTarget === 'logo' && (
     <p className="text-sm text-gray-500 flex items-center gap-2">
       <Loader2 className="size-4 animate-spin" />
-      Uploading logo... {progress > 0 ? `${progress}%` : ""}
+      {restaurants("uploadingLogo")} {progress > 0 ? `${progress}%` : ""}
     </p>
   )}
 
@@ -232,7 +237,7 @@ const removeCover = (e: React.MouseEvent) => {
 </div>
 
 <div className="space-y-[6px]">
-  <Label>Cover Image</Label>
+  <Label>{restaurants("coverImage")}</Label>
   <input
     type="file"
     className="hidden"
@@ -246,9 +251,9 @@ const removeCover = (e: React.MouseEvent) => {
      type="cover"
       preview={coverPreview}
       onRemove={removeCover}
-      selectedText="Cover selected"
-      emptyTitle="Click to upload cover image"
-      emptyHint="Recommended wide banner image"
+      selectedText={restaurants("coverSelected")}
+      emptyTitle={restaurants("uploadCover")}
+      emptyHint={restaurants("uploadCoverHint")}
       previewHeight="h-[260px]"
     />
   </div>
@@ -256,7 +261,7 @@ const removeCover = (e: React.MouseEvent) => {
   {uploading && uploadingTarget === 'cover' && (
     <p className="text-sm text-gray-500 flex items-center gap-2">
       <Loader2 className="size-4 animate-spin" />
-      Uploading cover image... {progress > 0 ? `${progress}%` : ""}
+      {restaurants("uploadingCover")} {progress > 0 ? `${progress}%` : ""}
     </p>
   )}
 
@@ -267,23 +272,23 @@ const removeCover = (e: React.MouseEvent) => {
   <Input type="hidden" {...register("coverImage")} />
 </div>
         <FormGroup
-          label="Tagline"
+          label={restaurants("tagline")}
           placeholder="Best pizza in town"
           error={errors.tagline?.message}
           {...register("tagline")}
         />
 
         <FormGroup
-          label="Bio"
+          label={restaurants("bio")}
           placeholder="Tell us about your brand"
           error={errors.bio?.message}
           {...register("bio")}
         />
       </FormSection>
 
-      <FormSection label="Support & Contact">
+      <FormSection label={restaurants("supportContact")}>
         <FormGroup
-          label="Support Email"
+          label={restaurants("supportEmail")}
           placeholder="support@brand.com"
           error={errors.supportContact?.email?.message}
           {...register("supportContact.email")}
@@ -291,14 +296,14 @@ const removeCover = (e: React.MouseEvent) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-[24px]">
           <FormGroup
-            label="WhatsApp"
+            label={restaurants("whatsapp")}
             placeholder="+92300..."
             error={errors.supportContact?.whatsapp?.message}
             {...register("supportContact.whatsapp")}
           />
 
           <FormGroup
-            label="Phone"
+            label={restaurants("phone")}
             placeholder="+92300..."
             error={errors.supportContact?.phone?.message}
             {...register("supportContact.phone")}
@@ -306,19 +311,19 @@ const removeCover = (e: React.MouseEvent) => {
         </div>
       </FormSection>
 
-      <FormSection label="Domain & Visibility">
+      <FormSection label={restaurants("domainVisibility")}>
         <FormGroup
-          label="Custom Domain"
+          label={restaurants("customDomain")}
           placeholder="www.yourdomain.com"
           error={errors.customDomain?.message}
           {...register("customDomain")}
         />
       </FormSection>
 
-      <FormSection label="Branding (Quick Setup)">
+      <FormSection label={restaurants("branding")}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-[24px]">
           <div className="space-y-[6px]">
-            <Label>Primary Color</Label>
+            <Label>{restaurants("primaryColor")}</Label>
             <div className="flex gap-2">
               <div
                 className="size-[52px] rounded-md shrink-0 border cursor-pointer"
@@ -355,7 +360,7 @@ const removeCover = (e: React.MouseEvent) => {
           </div>
 
           <div className="space-y-[6px]">
-            <Label>Secondary Color</Label>
+            <Label>{restaurants("secondaryColor")}</Label>
             <div className="flex gap-2">
               <div
                 className="size-[52px] rounded-md shrink-0 border cursor-pointer"
@@ -393,7 +398,7 @@ const removeCover = (e: React.MouseEvent) => {
         </div>
 
         <FormGroup
-          label="Font Family"
+          label={restaurants("fontFamily")}
           placeholder="Inter"
           error={errors.branding?.fontFamily?.message}
           {...register("branding.fontFamily")}
@@ -407,7 +412,7 @@ const removeCover = (e: React.MouseEvent) => {
           className="h-[52px] rounded-[12px] px-8"
           onClick={() => router.back()}
         >
-          Cancel
+          {common("cancel")}
         </Button>
 
       <Button
@@ -417,12 +422,12 @@ const removeCover = (e: React.MouseEvent) => {
   className="h-[52px] px-8 disabled:opacity-50 disabled:cursor-not-allowed"
 >
   {isPending
-    ? 'Saving...'
+    ? common("saving")
     : uploading
-    ? 'Uploading...'
+    ? restaurants("uploading")
     : mode === 'edit'
-    ? 'Update Restaurant'
-    : 'Save & Activate'}
+    ? restaurants("updateRestaurant")
+    : restaurants("saveActivate")}
 </Button>
       </div>
     </form>
