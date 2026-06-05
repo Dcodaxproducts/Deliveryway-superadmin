@@ -1,6 +1,7 @@
 "use client";
 
 import { Users, UserCheck, UserX } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type BusinessOwnerStats = {
   totalBusinessOwners?: number;
@@ -14,19 +15,20 @@ interface StatsSectionProps {
 }
 
 const StatsSection = ({ stats, loading = false }: StatsSectionProps) => {
+  const businessOwners = useTranslations("businessOwners");
   const cards = [
     {
-      title: "Total Business Owners",
+      title: businessOwners("totalBusinessOwners"),
       value: stats?.totalBusinessOwners ?? 0,
       icon: Users,
     },
     {
-      title: "Active Business Owners",
+      title: businessOwners("activeBusinessOwners"),
       value: stats?.activeBusinessOwners ?? 0,
       icon: UserCheck,
     },
     {
-      title: "Inactive Business Owners",
+      title: businessOwners("inactiveBusinessOwners"),
       value: stats?.inactiveBusinessOwners ?? 0,
       icon: UserX,
     },

@@ -29,14 +29,15 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import {
-  registerTenantSchema,
-  updateTenantSchema,
+  createRegisterTenantSchema,
+  createUpdateTenantSchema,
 } from "@/validations/tenants";
 import { useRegisterTenant, useUpdateTenant } from "@/hooks/useTenants";
 import { useFileUpload } from "@/hooks/useFileUpload";
@@ -324,6 +325,13 @@ export default function BusinessOwnerForm({
   initialData,
 }: BusinessOwnerFormProps) {
   const router = useRouter();
+  const authLabel = useTranslations("auth");
+  const common = useTranslations("common");
+  const businessOwners = useTranslations("businessOwners");
+  const branches = useTranslations("branches");
+  const restaurants = useTranslations("restaurants");
+  const validation = useTranslations("validation");
+  const toasts = useTranslations("toasts");
   const { uploadFile, uploading } = useFileUpload();
 
   const createMutation = useRegisterTenant();
@@ -331,6 +339,8 @@ export default function BusinessOwnerForm({
 
   const isEdit = mode === "edit" && Boolean(tenantId);
   const isPending = isEdit ? updateMutation.isPending : createMutation.isPending;
+  const registerTenantSchema = createRegisterTenantSchema(validation);
+  const updateTenantSchema = createUpdateTenantSchema(validation);
 
   const ownerAvatarRef = useRef<HTMLInputElement>(null);
   const tenantLogoRef = useRef<HTMLInputElement>(null);
@@ -445,6 +455,13 @@ export default function BusinessOwnerForm({
   const postalCodeRules = normalizeArray(
     watch("branch.settings.deliveryConfig.postalCodeRules")
   );
+  const uploadLabels = {
+    preview: businessOwners("preview"),
+    imageSelected: businessOwners("imageSelected"),
+    clickToUpload: businessOwners("clickToUpload"),
+    orDragDrop: businessOwners("orDragDrop"),
+    uploadHint: businessOwners("uploadHint"),
+  };
 
   const [mapsReady, setMapsReady] = useState(false);
   const [mapsLoading, setMapsLoading] = useState(false);
@@ -493,7 +510,7 @@ export default function BusinessOwnerForm({
 
     if (fileUrl) {
       setValue(field, fileUrl, { shouldValidate: true });
-      toast.success("Image uploaded successfully");
+      toast.success(toasts("imageUploaded"));
     }
   };
 
@@ -544,7 +561,7 @@ export default function BusinessOwnerForm({
         position,
         map: branchMapRef.current,
         draggable: true,
-        title: "Branch location",
+        title: businessOwners("branchLocation"),
       });
 
       branchMarkerRef.current.addListener("dragend", () => {
@@ -578,7 +595,7 @@ export default function BusinessOwnerForm({
     const hasCoordinates = Number.isFinite(Number(lat)) && Number.isFinite(Number(lng));
 
     if (!components.length && !hasCoordinates) {
-      setMapsError("Please select a valid Google Maps address.");
+      setMapsError(businessOwners("maps.selectValidAddress"));
       return;
     }
 
@@ -645,12 +662,12 @@ export default function BusinessOwnerForm({
     const query = addressQuery.trim();
 
     if (!query) {
-      setMapsError("Please enter an address to search.");
+      setMapsError(businessOwners("maps.enterAddress"));
       return;
     }
 
     if (!window.google?.maps?.Geocoder) {
-      setMapsError("Google Maps is not ready yet.");
+      setMapsError(businessOwners("maps.notReady"));
       return;
     }
 
@@ -663,7 +680,7 @@ export default function BusinessOwnerForm({
       if (status === "OK" && results?.[0]) {
         applyPlaceToBranchForm(results[0]);
       } else {
-        setMapsError("No matching address found. Try a more specific address.");
+        setMapsError(businessOwners("maps.noAddressMatch"));
       }
 
       setAddressSearching(false);
@@ -829,7 +846,7 @@ export default function BusinessOwnerForm({
     const lng = place?.geometry?.location?.lng?.();
 
     if (!Number.isFinite(Number(lat)) || !Number.isFinite(Number(lng))) {
-      setMapsError("Selected map result does not include coordinates.");
+      setMapsError(businessOwners("maps.noCoordinates"));
       return;
     }
 
@@ -852,7 +869,7 @@ export default function BusinessOwnerForm({
         zoneSearchMarkerRef.current = new window.google.maps.Marker({
           position: center,
           map: zoneMapRef.current,
-          title: "Searched area center",
+          title: businessOwners("searchedAreaCenter"),
         });
       } else {
         zoneSearchMarkerRef.current.setPosition(center);
@@ -867,12 +884,12 @@ export default function BusinessOwnerForm({
     const query = zoneSearch.trim();
 
     if (!query) {
-      setMapsError("Please enter an area, city, street, or landmark to search.");
+      setMapsError(businessOwners("maps.enterArea"));
       return;
     }
 
     if (!window.google?.maps?.Geocoder) {
-      setMapsError("Google Maps is not ready yet.");
+      setMapsError(businessOwners("maps.notReady"));
       return;
     }
 
@@ -885,7 +902,7 @@ export default function BusinessOwnerForm({
       if (status === "OK" && results?.[0]) {
         applyZoneSearchPlace(results[0]);
       } else {
-        setMapsError("No matching area found. Try a more specific search.");
+        setMapsError(businessOwners("maps.noAreaMatch"));
       }
 
       setZoneSearching(false);
@@ -1127,7 +1144,7 @@ export default function BusinessOwnerForm({
     }
     // intentionally run on mount/revisit only
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [businessOwners]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1143,7 +1160,7 @@ export default function BusinessOwnerForm({
       setMapsReady(false);
       setMapsLoading(false);
       setMapsError(
-        "Google Maps API key is missing. Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in env."
+        businessOwners("maps.apiKeyMissing")
       );
       return;
     }
@@ -1161,7 +1178,7 @@ export default function BusinessOwnerForm({
     const handleError = () => {
       setMapsReady(false);
       setMapsLoading(false);
-      setMapsError("Failed to load Google Maps. Please verify the API key.");
+      setMapsError(businessOwners("maps.loadFailed"));
     };
 
     setMapsLoading(true);
@@ -1197,7 +1214,7 @@ export default function BusinessOwnerForm({
       script.removeEventListener("load", handleLoad);
       script.removeEventListener("error", handleError);
     };
-  }, []);
+  }, [businessOwners]);
 
   useEffect(() => {
     if (!mapsReady || !addressAutocompleteRef.current) return;
@@ -1222,7 +1239,7 @@ export default function BusinessOwnerForm({
       const place = addressAutocompleteInstanceRef.current?.getPlace?.();
 
       if (!place?.geometry) {
-        setMapsError("Please select an address from Google Maps suggestions.");
+        setMapsError(businessOwners("maps.selectAddressSuggestion"));
         return;
       }
 
@@ -1361,7 +1378,7 @@ export default function BusinessOwnerForm({
       const place = zoneAutocompleteInstanceRef.current?.getPlace?.();
 
       if (!place?.geometry) {
-        setMapsError("Please select an area from Google Maps suggestions.");
+        setMapsError(businessOwners("maps.selectAreaSuggestion"));
         return;
       }
 
@@ -1503,7 +1520,7 @@ export default function BusinessOwnerForm({
           data: payload,
         });
 
-        toast.success("Business owner updated successfully");
+        toast.success(toasts("businessOwnerUpdated"));
         router.back();
         return;
       }
@@ -1563,10 +1580,24 @@ export default function BusinessOwnerForm({
       };
 
       await createMutation.mutateAsync(payload);
-      toast.success("Business owner created successfully");
+      toast.success(toasts("businessOwnerCreated"));
       router.back();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Something went wrong");
+    } catch (err: unknown) {
+      const message =
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err &&
+        typeof err.response === "object" &&
+        err.response !== null &&
+        "data" in err.response &&
+        typeof err.response.data === "object" &&
+        err.response.data !== null &&
+        "message" in err.response.data &&
+        typeof err.response.data.message === "string"
+          ? err.response.data.message
+          : toasts("somethingWentWrong");
+
+      toast.error(message);
     }
   };
 
@@ -1576,17 +1607,17 @@ export default function BusinessOwnerForm({
       className="space-y-[48px] rounded-[14px] bg-white p-[30px]"
     >
       {!isEdit && (
-        <FormSection label="Owner Account">
+        <FormSection label={businessOwners("ownerAccount")}>
           <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
             <FormGroup
-              label="First Name *"
+              label={`${businessOwners("firstName")} *`}
               placeholder="John"
               error={readError(errors, "user.firstName")}
               disabled={isEdit}
               {...register("user.firstName")}
             />
             <FormGroup
-              label="Last Name *"
+              label={`${businessOwners("lastName")} *`}
               placeholder="Doe"
               error={readError(errors, "user.lastName")}
               disabled={isEdit}
@@ -1596,15 +1627,15 @@ export default function BusinessOwnerForm({
 
           <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
             <FormGroup
-              label="Email *"
+              label={`${authLabel("email")} *`}
               placeholder="owner@brand.com"
               error={readError(errors, "user.email")}
               disabled={isEdit}
               {...register("user.email")}
             />
             <FormGroup
-              label="Password *"
-              placeholder="Minimum 8 characters"
+              label={`${authLabel("password")} *`}
+              placeholder={businessOwners("minimumCharacters")}
               type="password"
               error={readError(errors, "user.password")}
               disabled={isEdit}
@@ -1613,15 +1644,15 @@ export default function BusinessOwnerForm({
           </div>
 
           <FormGroup
-            label="Owner Bio"
-            placeholder="Short bio about the business owner"
+            label={businessOwners("ownerBio")}
+            placeholder={businessOwners("ownerBioPlaceholder")}
             error={readError(errors, "user.bio")}
             disabled={isEdit}
             {...register("user.bio")}
           />
 
           <div className="space-y-[6px]">
-            <Label>Owner Avatar</Label>
+            <Label>{businessOwners("ownerAvatar")}</Label>
             <input
               type="file"
               className="hidden"
@@ -1634,6 +1665,7 @@ export default function BusinessOwnerForm({
               <UploadBox
                 preview={previews["user.avatarUrl"] || ownerAvatar}
                 disabled={isEdit}
+                labels={uploadLabels}
                 onRemove={() => removeImage("user.avatarUrl", ownerAvatarRef)}
               />
             </div>
@@ -1642,27 +1674,26 @@ export default function BusinessOwnerForm({
       )}
 
       {!isEdit && (
-        <FormSection label="Branch Admin Account">
+        <FormSection label={businessOwners("branchAdminAccount")}>
           <div className="rounded-2xl border border-primary/10 bg-primary/5 p-4">
             <p className="text-sm font-semibold text-gray-900">
-              Branch admin login
+              {businessOwners("branchAdminLogin")}
             </p>
             <p className="mt-1 text-sm leading-6 text-gray-600">
-              This account will manage the created branch after registration.
-              It is separate from the business owner account.
+              {businessOwners("branchAdminLoginDescription")}
             </p>
           </div>
 
           <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
             <FormGroup
-              label="First Name *"
-              placeholder="Branch admin first name"
+                label={`${businessOwners("firstName")} *`}
+                placeholder={businessOwners("branchAdminFirstNamePlaceholder")}
               error={readError(errors, "branchAdmin.firstName")}
               {...register("branchAdmin.firstName")}
             />
             <FormGroup
-              label="Last Name *"
-              placeholder="Branch admin last name"
+                label={`${businessOwners("lastName")} *`}
+                placeholder={businessOwners("branchAdminLastNamePlaceholder")}
               error={readError(errors, "branchAdmin.lastName")}
               {...register("branchAdmin.lastName")}
             />
@@ -1670,14 +1701,14 @@ export default function BusinessOwnerForm({
 
           <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
             <FormGroup
-              label="Email *"
+                label={`${authLabel("email")} *`}
               placeholder="branch.admin@brand.com"
               error={readError(errors, "branchAdmin.email")}
               {...register("branchAdmin.email")}
             />
             <FormGroup
-              label="Password *"
-              placeholder="Minimum 8 characters"
+                label={`${authLabel("password")} *`}
+                placeholder={businessOwners("minimumCharacters")}
               type="password"
               error={readError(errors, "branchAdmin.password")}
               {...register("branchAdmin.password")}
@@ -1685,7 +1716,7 @@ export default function BusinessOwnerForm({
           </div>
 
           <FormGroup
-            label="Phone"
+            label={restaurants("phone")}
             placeholder="+923001234567"
             error={readError(errors, "branchAdmin.phone")}
             {...register("branchAdmin.phone")}
@@ -1693,16 +1724,16 @@ export default function BusinessOwnerForm({
         </FormSection>
       )}
 
-      <FormSection label="Tenant / Business">
+      <FormSection label={businessOwners("tenantBusiness")}>
         <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
           <FormGroup
-            label="Business Name *"
+            label={`${businessOwners("businessName")} *`}
             placeholder="Dcodax Foods"
             error={isEdit ? readError(errors, "name") : readError(errors, "tenant.name")}
             {...(isEdit ? register("name") : register("tenant.name"))}
           />
           <FormGroup
-            label="Business Slug *"
+            label={`${businessOwners("businessSlug")} *`}
             placeholder="dcodax-foods"
             error={isEdit ? readError(errors, "slug") : readError(errors, "tenant.slug")}
             {...(isEdit ? register("slug") : register("tenant.slug"))}
@@ -1710,14 +1741,14 @@ export default function BusinessOwnerForm({
         </div>
 
         <FormGroup
-          label="Business Bio"
-          placeholder="Describe the business"
+          label={businessOwners("businessBio")}
+          placeholder={businessOwners("businessBioPlaceholder")}
           error={isEdit ? readError(errors, "bio") : readError(errors, "tenant.bio")}
           {...(isEdit ? register("bio") : register("tenant.bio"))}
         />
 
         <div className="space-y-[6px]">
-          <Label>Business Logo</Label>
+          <Label>{businessOwners("businessLogo")}</Label>
           <input
             type="file"
             className="hidden"
@@ -1733,6 +1764,7 @@ export default function BusinessOwnerForm({
                 previews[isEdit ? "logoUrl" : "tenant.logoUrl"] ||
                 (isEdit ? watch("logoUrl") : tenantLogo)
               }
+              labels={uploadLabels}
               onRemove={() =>
                 removeImage(
                   isEdit ? "logoUrl" : "tenant.logoUrl",
@@ -1747,13 +1779,13 @@ export default function BusinessOwnerForm({
           <>
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
               <FormGroup
-                label="Website"
+                label={businessOwners("website")}
                 placeholder="https://brand.com"
                 error={readError(errors, "tenant.socialLinks.website")}
                 {...register("tenant.socialLinks.website")}
               />
               <FormGroup
-                label="Facebook"
+                label={businessOwners("facebook")}
                 placeholder="https://facebook.com/brand"
                 error={readError(errors, "tenant.socialLinks.facebook")}
                 {...register("tenant.socialLinks.facebook")}
@@ -1762,13 +1794,13 @@ export default function BusinessOwnerForm({
 
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
               <FormGroup
-                label="Instagram"
+                label={businessOwners("instagram")}
                 placeholder="https://instagram.com/brand"
                 error={readError(errors, "tenant.socialLinks.instagram")}
                 {...register("tenant.socialLinks.instagram")}
               />
               <FormGroup
-                label="LinkedIn"
+                label={businessOwners("linkedin")}
                 placeholder="https://linkedin.com/company/brand"
                 error={readError(errors, "tenant.socialLinks.linkedin")}
                 {...register("tenant.socialLinks.linkedin")}
@@ -1780,16 +1812,16 @@ export default function BusinessOwnerForm({
 
       {!isEdit && (
         <>
-          <FormSection label="Restaurant Setup">
+          <FormSection label={restaurants("restaurantSetup")}>
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
               <FormGroup
-                label="Restaurant Name *"
+                label={`${restaurants("restaurantName")} *`}
                 placeholder="Dcodax Kitchen"
                 error={readError(errors, "restaurant.name")}
                 {...register("restaurant.name")}
               />
               <FormGroup
-                label="Restaurant Slug *"
+                label={`${restaurants("slug")} *`}
                 placeholder="dcodax-kitchen"
                 error={readError(errors, "restaurant.slug")}
                 {...register("restaurant.slug")}
@@ -1797,21 +1829,21 @@ export default function BusinessOwnerForm({
             </div>
 
             <FormGroup
-              label="Tagline"
+              label={restaurants("tagline")}
               placeholder="Best meals in town"
               error={readError(errors, "restaurant.tagline")}
               {...register("restaurant.tagline")}
             />
 
             <FormGroup
-              label="Restaurant Bio"
-              placeholder="Describe the restaurant"
+              label={businessOwners("restaurantBio")}
+              placeholder={businessOwners("restaurantBioPlaceholder")}
               error={readError(errors, "restaurant.bio")}
               {...register("restaurant.bio")}
             />
 
             <FormGroup
-              label="Custom Domain"
+              label={restaurants("customDomain")}
               placeholder="order.brand.com"
               error={readError(errors, "restaurant.customDomain")}
               {...register("restaurant.customDomain")}
@@ -1819,7 +1851,7 @@ export default function BusinessOwnerForm({
 
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
               <div className="space-y-[6px]">
-                <Label>Restaurant Logo</Label>
+                <Label>{restaurants("restaurantLogo")}</Label>
                 <input
                   type="file"
                   className="hidden"
@@ -1830,6 +1862,7 @@ export default function BusinessOwnerForm({
                 <div onClick={() => restaurantLogoRef.current?.click()}>
                   <UploadBox
                     preview={previews["restaurant.logoUrl"] || restaurantLogo}
+                    labels={uploadLabels}
                     onRemove={() =>
                       removeImage("restaurant.logoUrl", restaurantLogoRef)
                     }
@@ -1838,7 +1871,7 @@ export default function BusinessOwnerForm({
               </div>
 
               <div className="space-y-[6px]">
-                <Label>Restaurant Cover</Label>
+                <Label>{restaurants("coverImage")}</Label>
                 <input
                   type="file"
                   className="hidden"
@@ -1849,6 +1882,7 @@ export default function BusinessOwnerForm({
                 <div onClick={() => restaurantCoverRef.current?.click()}>
                   <UploadBox
                     preview={previews["restaurant.coverImage"] || restaurantCover}
+                    labels={uploadLabels}
                     onRemove={() =>
                       removeImage("restaurant.coverImage", restaurantCoverRef)
                     }
@@ -1858,22 +1892,22 @@ export default function BusinessOwnerForm({
             </div>
           </FormSection>
 
-          <FormSection label="Restaurant Support & Social">
+          <FormSection label={businessOwners("restaurantSupportSocial")}>
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-3">
               <FormGroup
-                label="Support Email"
+                label={restaurants("supportEmail")}
                 placeholder="support@brand.com"
                 error={readError(errors, "restaurant.supportContact.email")}
                 {...register("restaurant.supportContact.email")}
               />
               <FormGroup
-                label="WhatsApp"
+                label={restaurants("whatsapp")}
                 placeholder="+923001234567"
                 error={readError(errors, "restaurant.supportContact.whatsapp")}
                 {...register("restaurant.supportContact.whatsapp")}
               />
               <FormGroup
-                label="Phone"
+                label={restaurants("phone")}
                 placeholder="+923001234567"
                 error={readError(errors, "restaurant.supportContact.phone")}
                 {...register("restaurant.supportContact.phone")}
@@ -1882,13 +1916,13 @@ export default function BusinessOwnerForm({
 
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
               <FormGroup
-                label="Facebook"
+                label={businessOwners("facebook")}
                 placeholder="https://facebook.com/restaurant"
                 error={readError(errors, "restaurant.socialMedia.facebook")}
                 {...register("restaurant.socialMedia.facebook")}
               />
               <FormGroup
-                label="Instagram"
+                label={businessOwners("instagram")}
                 placeholder="https://instagram.com/restaurant"
                 error={readError(errors, "restaurant.socialMedia.instagram")}
                 {...register("restaurant.socialMedia.instagram")}
@@ -1897,13 +1931,13 @@ export default function BusinessOwnerForm({
 
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
               <FormGroup
-                label="TikTok"
+                label={businessOwners("tiktok")}
                 placeholder="https://tiktok.com/@restaurant"
                 error={readError(errors, "restaurant.socialMedia.tiktok")}
                 {...register("restaurant.socialMedia.tiktok")}
               />
               <FormGroup
-                label="YouTube"
+                label={businessOwners("youtube")}
                 placeholder="https://youtube.com/@restaurant"
                 error={readError(errors, "restaurant.socialMedia.youtube")}
                 {...register("restaurant.socialMedia.youtube")}
@@ -1911,17 +1945,17 @@ export default function BusinessOwnerForm({
             </div>
           </FormSection>
 
-          <FormSection label="Branch Setup">
+          <FormSection label={businessOwners("branchSetup")}>
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
               <FormGroup
-                label="Branch Name *"
-                placeholder="Main Branch"
+                label={`${branches("branchName")} *`}
+                placeholder={branches("mainBranch")}
                 error={readError(errors, "branch.name")}
                 {...register("branch.name")}
               />
               <FormGroup
-                label="Branch Description"
-                placeholder="Short description"
+                label={businessOwners("branchDescription")}
+                placeholder={businessOwners("shortDescription")}
                 error={readError(errors, "branch.description")}
                 {...register("branch.description")}
               />
@@ -1929,7 +1963,7 @@ export default function BusinessOwnerForm({
 
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
               <div className="space-y-[6px]">
-                <Label>Branch Logo</Label>
+                <Label>{businessOwners("branchLogo")}</Label>
                 <input
                   type="file"
                   className="hidden"
@@ -1940,13 +1974,14 @@ export default function BusinessOwnerForm({
                 <div onClick={() => branchLogoRef.current?.click()}>
                   <UploadBox
                     preview={previews["branch.logoUrl"] || branchLogo}
+                    labels={uploadLabels}
                     onRemove={() => removeImage("branch.logoUrl", branchLogoRef)}
                   />
                 </div>
               </div>
 
               <div className="space-y-[6px]">
-                <Label>Branch Cover</Label>
+                <Label>{branches("branchCover")}</Label>
                 <input
                   type="file"
                   className="hidden"
@@ -1957,6 +1992,7 @@ export default function BusinessOwnerForm({
                 <div onClick={() => branchCoverRef.current?.click()}>
                   <UploadBox
                     preview={previews["branch.coverImage"] || branchCover}
+                    labels={uploadLabels}
                     onRemove={() =>
                       removeImage("branch.coverImage", branchCoverRef)
                     }
@@ -1966,14 +2002,14 @@ export default function BusinessOwnerForm({
             </div>
           </FormSection>
 
-          <FormSection label="Branch Address">
+          <FormSection label={businessOwners("branchAddress")}>
             <div className="space-y-4 rounded-2xl border border-gray-100 bg-gray-50 p-4">
               <div>
                 <p className="text-sm font-semibold text-gray-900">
-                  Address from Google Maps
+                  {businessOwners("addressFromGoogleMaps")}
                 </p>
                 <p className="mt-1 text-sm leading-6 text-gray-600">
-                  Search an address, select a Google suggestion, click on the map, or drag the marker to set branch coordinates.
+                  {businessOwners("addressFromGoogleMapsDescription")}
                 </p>
               </div>
 
@@ -1992,7 +2028,7 @@ export default function BusinessOwnerForm({
                       setSelectedGoogleAddress("");
                     }}
                     onKeyDown={handleAddressKeyDown}
-                    placeholder="Search branch address"
+                    placeholder={businessOwners("searchBranchAddress")}
                     className="h-[52px] rounded-xl border-[#BBBBBB] pl-11 pr-11 focus:border-primary"
                   />
 
@@ -2026,7 +2062,7 @@ export default function BusinessOwnerForm({
                   ) : (
                     <Search size={16} />
                   )}
-                  Search Map
+                  {businessOwners("searchMap")}
                 </Button>
               </div>
 
@@ -2041,7 +2077,7 @@ export default function BusinessOwnerForm({
                       <span className="shrink-0 font-medium text-gray-700">
                         {branchCoordinates
                           ? `${toCoordinateString(branchCoordinates.lat)}, ${toCoordinateString(branchCoordinates.lng)}`
-                          : "Coordinates not selected"}
+                          : businessOwners("coordinatesNotSelected")}
                       </span>
                     </div>
                   </>
@@ -2050,16 +2086,16 @@ export default function BusinessOwnerForm({
                     {mapsLoading ? (
                       <>
                         <Loader2 className="mb-3 animate-spin text-primary" size={28} />
-                        <p className="text-sm font-medium text-gray-700">Loading Google Map</p>
+                        <p className="text-sm font-medium text-gray-700">{businessOwners("loadingGoogleMap")}</p>
                       </>
                     ) : (
                       <>
                         <MapPin className="mb-3 text-gray-400" size={30} />
                         <p className="text-sm font-medium text-gray-700">
-                          Google Map preview unavailable
+                          {businessOwners("googleMapPreviewUnavailable")}
                         </p>
                         <p className="mt-1 text-xs text-gray-400">
-                          Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in env to enable address search and map selection.
+                          {businessOwners("enableAddressMapHint")}
                         </p>
                       </>
                     )}
@@ -2068,7 +2104,7 @@ export default function BusinessOwnerForm({
               </div>
 
               {selectedGoogleAddress ? (
-                <p className="text-xs text-gray-500">Selected: {selectedGoogleAddress}</p>
+                <p className="text-xs text-gray-500">{businessOwners("selected")}: {selectedGoogleAddress}</p>
               ) : null}
 
               {mapsError ? <p className="text-xs text-amber-600">{mapsError}</p> : null}
@@ -2076,14 +2112,14 @@ export default function BusinessOwnerForm({
 
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
               <FormGroup
-                label="Street"
-                placeholder="Street address"
+                label={businessOwners("street")}
+                placeholder={businessOwners("streetAddress")}
                 error={readError(errors, "branch.street")}
                 {...register("branch.street")}
               />
               <FormGroup
-                label="Area"
-                placeholder="Area"
+                label={businessOwners("area")}
+                placeholder={businessOwners("area")}
                 error={readError(errors, "branch.area")}
                 {...register("branch.area")}
               />
@@ -2091,13 +2127,13 @@ export default function BusinessOwnerForm({
 
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
               <FormGroup
-                label="City"
+                label={businessOwners("city")}
                 placeholder="Islamabad"
                 error={readError(errors, "branch.city")}
                 {...register("branch.city")}
               />
               <FormGroup
-                label="State"
+                label={businessOwners("state")}
                 placeholder="Punjab"
                 error={readError(errors, "branch.state")}
                 {...register("branch.state")}
@@ -2106,19 +2142,19 @@ export default function BusinessOwnerForm({
 
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-3">
               <FormGroup
-                label="Country"
+                label={businessOwners("country")}
                 placeholder="Pakistan"
                 error={readError(errors, "branch.country")}
                 {...register("branch.country")}
               />
               <FormGroup
-                label="Latitude"
+                label={businessOwners("latitude")}
                 placeholder="33.6844"
                 error={readError(errors, "branch.lat")}
                 {...register("branch.lat")}
               />
               <FormGroup
-                label="Longitude"
+                label={businessOwners("longitude")}
                 placeholder="73.0479"
                 error={readError(errors, "branch.lng")}
                 {...register("branch.lng")}
@@ -2126,23 +2162,23 @@ export default function BusinessOwnerForm({
             </div>
           </FormSection>
 
-          <FormSection label="Delivery Area Configuration">
+          <FormSection label={businessOwners("deliveryAreaConfiguration")}>
             <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
               <p className="text-sm font-semibold text-gray-900">
-                Hidden defaults included in payload
+                {businessOwners("hiddenDefaultsIncluded")}
               </p>
               <p className="mt-1 text-sm leading-6 text-gray-600">
-                Payment method, order type, taxation, automation, and contact are kept hidden here but still sent with safe backend defaults.
+                {businessOwners("hiddenDefaultsDescription")}
               </p>
             </div>
 
             <SelectGroup
-              label="Delivery Mode"
+              label={businessOwners("deliveryMode")}
               value={deliveryMode}
               options={[
-                { label: "Radius", value: "RADIUS" },
-                { label: "Polygon Zones", value: "ZONE" },
-                { label: "Postal Codes", value: "POSTAL_CODE" },
+                { label: businessOwners("radius"), value: "RADIUS" },
+                { label: businessOwners("polygonZones"), value: "ZONE" },
+                { label: businessOwners("postalCodes"), value: "POSTAL_CODE" },
               ]}
               onChange={(value) =>
                 setValue("branch.settings.deliveryConfig.mode", value, {
@@ -2153,7 +2189,7 @@ export default function BusinessOwnerForm({
 
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
               <FormGroup
-                label="Base Delivery Fee"
+                label={businessOwners("baseDeliveryFee")}
                 placeholder="100"
                 type="number"
                 step="0.01"
@@ -2163,7 +2199,7 @@ export default function BusinessOwnerForm({
                 })}
               />
               <FormGroup
-                label="Radius (km)"
+                label={businessOwners("radiusKm")}
                 placeholder="7.5"
                 type="number"
                 step="0.1"
@@ -2176,7 +2212,7 @@ export default function BusinessOwnerForm({
 
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
               <FormGroup
-                label="Minimum Order Amount"
+                label={businessOwners("minimumOrderAmount")}
                 placeholder="500"
                 type="number"
                 step="0.01"
@@ -2186,7 +2222,7 @@ export default function BusinessOwnerForm({
                 })}
               />
               <FormGroup
-                label="Free Delivery Threshold"
+                label={branches("freeDeliveryThreshold")}
                 placeholder="1500"
                 type="number"
                 step="0.01"
@@ -2199,11 +2235,11 @@ export default function BusinessOwnerForm({
             </div>
 
             <SelectGroup
-              label="Free Delivery"
+              label={businessOwners("freeDelivery")}
               value={watch("branch.settings.deliveryConfig.isFreeDelivery") ? "true" : "false"}
               options={[
-                { label: "Enabled", value: "true" },
-                { label: "Disabled", value: "false" },
+                { label: common("enabled"), value: "true" },
+                { label: common("disabled"), value: "false" },
               ]}
               onChange={(value) =>
                 setValue(
@@ -2216,11 +2252,11 @@ export default function BusinessOwnerForm({
 
             {deliveryMode === "RADIUS" ? (
               <DynamicSection
-                title="Radius Bands"
-                description="Optional pricing bands for distance-based delivery. Example: 0–3 km, 3–7.5 km."
-                actionLabel="Add Band"
+                title={businessOwners("radiusBands")}
+                description={businessOwners("radiusBandsDescription")}
+                actionLabel={businessOwners("addBand")}
                 onAdd={addZoneBand}
-                emptyText="No radius bands configured. The base radius and delivery fee will be used."
+                emptyText={businessOwners("noRadiusBands")}
               >
                 {zoneBands.map((_: any, index: number) => (
                   <div
@@ -2229,18 +2265,18 @@ export default function BusinessOwnerForm({
                   >
                     <div className="mb-4 flex items-center justify-between gap-3">
                       <p className="text-sm font-semibold text-gray-900">
-                        Band {index + 1}
+                        {businessOwners("band")} {index + 1}
                       </p>
                       <IconActionButton
                         tone="danger"
-                        label="Remove"
+                        label={common("delete")}
                         onClick={() => removeZoneBand(index)}
                       />
                     </div>
 
                     <div className="grid grid-cols-1 gap-[16px] md:grid-cols-2">
                       <FormGroup
-                        label="From KM"
+                        label={businessOwners("fromKm")}
                         type="number"
                         step="0.1"
                         placeholder="0"
@@ -2250,7 +2286,7 @@ export default function BusinessOwnerForm({
                         )}
                       />
                       <FormGroup
-                        label="To KM"
+                        label={businessOwners("toKm")}
                         type="number"
                         step="0.1"
                         placeholder="7.5"
@@ -2260,7 +2296,7 @@ export default function BusinessOwnerForm({
                         )}
                       />
                       <FormGroup
-                        label="Delivery Fee"
+                        label={branches("deliveryFee")}
                         type="number"
                         step="0.01"
                         placeholder="100"
@@ -2270,7 +2306,7 @@ export default function BusinessOwnerForm({
                         )}
                       />
                       <FormGroup
-                        label="Minimum Order"
+                        label={businessOwners("minimumOrder")}
                         type="number"
                         step="0.01"
                         placeholder="500"
@@ -2280,7 +2316,7 @@ export default function BusinessOwnerForm({
                         )}
                       />
                       <FormGroup
-                        label="Free Delivery Threshold"
+                        label={branches("freeDeliveryThreshold")}
                         type="number"
                         step="0.01"
                         placeholder="1500"
@@ -2302,10 +2338,10 @@ export default function BusinessOwnerForm({
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                       <div>
                         <p className="text-sm font-semibold text-gray-900">
-                          Polygon zone builder
+                          {businessOwners("polygonZoneBuilder")}
                         </p>
                         <p className="mt-1 text-sm leading-6 text-gray-600">
-                          Search an area, generate a starter zone, click the map to add points, then drag markers to fine-tune polygon boundaries.
+                          {businessOwners("polygonZoneBuilderDescription")}
                         </p>
                       </div>
 
@@ -2338,7 +2374,7 @@ export default function BusinessOwnerForm({
                             setZoneSearchLabel("");
                           }}
                           onKeyDown={handleZoneSearchKeyDown}
-                          placeholder="Search area, street, city, or landmark"
+                          placeholder={businessOwners("searchAreaPlaceholder")}
                           className="h-11 rounded-full border-gray-200 bg-white pl-11 pr-4 text-sm focus:border-primary"
                         />
                       </div>
@@ -2355,7 +2391,7 @@ export default function BusinessOwnerForm({
                         ) : (
                           <Search size={16} />
                         )}
-                        Search Map
+                        {businessOwners("searchMap")}
                       </Button>
                     </div>
 
@@ -2366,7 +2402,7 @@ export default function BusinessOwnerForm({
                         className="inline-flex h-9 items-center gap-2 rounded-full bg-primary px-3 text-xs font-semibold text-white hover:bg-primary/90"
                       >
                         <Crosshair size={14} />
-                        Generate Starter Zone
+                        {businessOwners("generateStarterZone")}
                       </button>
 
                       <button
@@ -2375,7 +2411,7 @@ export default function BusinessOwnerForm({
                         className="inline-flex h-9 items-center gap-2 rounded-full border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 hover:bg-gray-50"
                       >
                         <MapPin size={14} />
-                        Add Center Point
+                        {businessOwners("addCenterPoint")}
                       </button>
 
                       <button
@@ -2385,7 +2421,7 @@ export default function BusinessOwnerForm({
                         className="inline-flex h-9 items-center gap-2 rounded-full border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <Undo2 size={14} />
-                        Undo Last Point
+                        {businessOwners("undoLastPoint")}
                       </button>
 
                       <button
@@ -2394,13 +2430,13 @@ export default function BusinessOwnerForm({
                         className="inline-flex h-9 items-center gap-2 rounded-full border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 hover:bg-gray-50"
                       >
                         <Maximize2 size={14} />
-                        Fit Active Zone
+                        {businessOwners("fitActiveZone")}
                       </button>
                     </div>
 
                     {zoneSearchLabel ? (
                       <p className="mt-3 text-xs text-gray-500">
-                        Selected map area: {zoneSearchLabel}
+                        {businessOwners("selectedMapArea")}: {zoneSearchLabel}
                       </p>
                     ) : null}
                   </div>
@@ -2411,14 +2447,15 @@ export default function BusinessOwnerForm({
 
                       <div className="pointer-events-none absolute left-4 top-4 rounded-2xl bg-white/95 px-4 py-3 text-xs shadow-md ring-1 ring-gray-100">
                         <p className="font-semibold text-gray-900">
-                          {zones?.[activeZoneIndex]?.name || `Zone ${activeZoneIndex + 1}`}
+                          {zones?.[activeZoneIndex]?.name || `${businessOwners("zone")} ${activeZoneIndex + 1}`}
                         </p>
                         <p className="mt-1 text-gray-500">
-                          {normalizeArray(zones?.[activeZoneIndex]?.polygon).length} point
-                          {normalizeArray(zones?.[activeZoneIndex]?.polygon).length === 1 ? "" : "s"} selected
+                          {businessOwners("pointsSelected", {
+                            count: normalizeArray(zones?.[activeZoneIndex]?.polygon).length,
+                          })}
                         </p>
                         <p className="mt-1 text-gray-400">
-                          Click map to add · drag markers to adjust
+                          {businessOwners("clickMapToAdd")}
                         </p>
                       </div>
                     </div>
@@ -2427,16 +2464,16 @@ export default function BusinessOwnerForm({
                       {mapsLoading ? (
                         <>
                           <Loader2 className="mb-3 animate-spin text-primary" size={28} />
-                          <p className="text-sm font-medium text-gray-700">Loading Google Map</p>
+                          <p className="text-sm font-medium text-gray-700">{businessOwners("loadingGoogleMap")}</p>
                         </>
                       ) : (
                         <>
                           <MapPin className="mb-3 text-gray-400" size={30} />
                           <p className="text-sm font-medium text-gray-700">
-                            Google Map preview unavailable
+                            {businessOwners("googleMapPreviewUnavailable")}
                           </p>
                           <p className="mt-1 text-xs text-gray-400">
-                            Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in env to enable polygon selection.
+                            {businessOwners("enablePolygonMapHint")}
                           </p>
                         </>
                       )}
@@ -2445,11 +2482,11 @@ export default function BusinessOwnerForm({
                 </div>
 
                 <DynamicSection
-                title="Polygon Delivery Zones"
-                description="Each zone can have its own delivery fee, minimum order, free-delivery threshold, and polygon points."
-                actionLabel="Add Zone"
+                title={businessOwners("polygonDeliveryZones")}
+                description={businessOwners("polygonDeliveryZonesDescription")}
+                actionLabel={businessOwners("addZone")}
                 onAdd={addZone}
-                emptyText="No polygon zones configured yet."
+                emptyText={businessOwners("noPolygonZones")}
               >
                 {zones.map((zone: any, zoneIndex: number) => {
                   const polygon = normalizeArray(zone?.polygon);
@@ -2461,17 +2498,17 @@ export default function BusinessOwnerForm({
                     >
                       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                         <p className="text-sm font-semibold text-gray-900">
-                          Zone {zoneIndex + 1}
+                          {businessOwners("zone")} {zoneIndex + 1}
                         </p>
                         <div className="flex flex-wrap gap-2">
                           <IconActionButton
-                            label="Duplicate"
+                            label={businessOwners("duplicate")}
                             icon={<Copy size={13} />}
                             onClick={() => duplicateZone(zoneIndex)}
                           />
                           <IconActionButton
                             tone="danger"
-                            label="Remove"
+                            label={common("delete")}
                             onClick={() => removeZone(zoneIndex)}
                           />
                         </div>
@@ -2479,14 +2516,14 @@ export default function BusinessOwnerForm({
 
                       <div className="grid grid-cols-1 gap-[16px] md:grid-cols-2">
                         <FormGroup
-                          label="Zone Name"
-                          placeholder="Near Zone"
+                          label={businessOwners("zoneName")}
+                          placeholder={businessOwners("nearZonePlaceholder")}
                           {...register(
                             `branch.settings.deliveryConfig.zones.${zoneIndex}.name`
                           )}
                         />
                         <FormGroup
-                          label="Zone Delivery Fee"
+                          label={businessOwners("zoneDeliveryFee")}
                           type="number"
                           step="0.01"
                           placeholder="100"
@@ -2496,7 +2533,7 @@ export default function BusinessOwnerForm({
                           )}
                         />
                         <FormGroup
-                          label="Minimum Order Amount"
+                          label={businessOwners("minimumOrderAmount")}
                           type="number"
                           step="0.01"
                           placeholder="500"
@@ -2506,7 +2543,7 @@ export default function BusinessOwnerForm({
                           )}
                         />
                         <FormGroup
-                          label="Free Delivery Threshold"
+                          label={branches("freeDeliveryThreshold")}
                           type="number"
                           step="0.01"
                           placeholder="1500"
@@ -2521,10 +2558,10 @@ export default function BusinessOwnerForm({
                         <div className="mb-3 flex items-center justify-between gap-3">
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                              Polygon Points
+                              {businessOwners("polygonPoints")}
                             </p>
                             <p className="mt-1 text-xs text-gray-500">
-                              Add at least 3 points for a valid polygon.
+                              {businessOwners("polygonPointsHint")}
                             </p>
                           </div>
                           <Button
@@ -2534,14 +2571,14 @@ export default function BusinessOwnerForm({
                             className="h-9 rounded-full px-3 text-xs"
                           >
                             <Plus size={13} />
-                            Add Point
+                            {businessOwners("addPoint")}
                           </Button>
                         </div>
 
                         <div className="space-y-2">
                           {polygon.length === 0 ? (
                             <p className="rounded-xl border border-dashed border-gray-200 bg-white p-4 text-sm text-gray-500">
-                              No points added yet.
+                              {businessOwners("noPointsAdded")}
                             </p>
                           ) : (
                             polygon.map((_: any, pointIndex: number) => (
@@ -2550,12 +2587,12 @@ export default function BusinessOwnerForm({
                                 className="grid grid-cols-1 gap-2 rounded-xl bg-white p-3 md:grid-cols-[90px_1fr_1fr_auto]"
                               >
                                 <div className="flex items-center text-xs font-medium text-gray-500">
-                                  Point {pointIndex + 1}
+                                  {businessOwners("point")} {pointIndex + 1}
                                 </div>
                                 <Input
                                   type="number"
                                   step="0.000001"
-                                  placeholder="Latitude"
+                                  placeholder={businessOwners("latitude")}
                                   {...register(
                                     `branch.settings.deliveryConfig.zones.${zoneIndex}.polygon.${pointIndex}.lat`,
                                     { valueAsNumber: true }
@@ -2564,7 +2601,7 @@ export default function BusinessOwnerForm({
                                 <Input
                                   type="number"
                                   step="0.000001"
-                                  placeholder="Longitude"
+                                  placeholder={businessOwners("longitude")}
                                   {...register(
                                     `branch.settings.deliveryConfig.zones.${zoneIndex}.polygon.${pointIndex}.lng`,
                                     { valueAsNumber: true }
@@ -2592,11 +2629,11 @@ export default function BusinessOwnerForm({
 
             {deliveryMode === "POSTAL_CODE" ? (
               <DynamicSection
-                title="Postal Code Rules"
-                description="Add one or more postal-code based delivery rules."
-                actionLabel="Add Postal Code"
+                title={businessOwners("postalCodeRules")}
+                description={businessOwners("postalCodeRulesDescription")}
+                actionLabel={businessOwners("addPostalCode")}
                 onAdd={addPostalCodeRule}
-                emptyText="No postal code rules configured yet."
+                emptyText={businessOwners("noPostalCodeRules")}
               >
                 {postalCodeRules.map((_: any, index: number) => (
                   <div
@@ -2604,14 +2641,14 @@ export default function BusinessOwnerForm({
                     className="grid grid-cols-1 gap-[16px] rounded-2xl border border-gray-200 bg-white p-4 md:grid-cols-[1fr_1fr_auto]"
                   >
                     <FormGroup
-                      label="Postal Code"
+                      label={businessOwners("postalCode")}
                       placeholder="54000"
                       {...register(
                         `branch.settings.deliveryConfig.postalCodeRules.${index}.postalCode`
                       )}
                     />
                     <FormGroup
-                      label="Delivery Fee"
+                      label={branches("deliveryFee")}
                       type="number"
                       step="0.01"
                       placeholder="150"
@@ -2645,7 +2682,7 @@ export default function BusinessOwnerForm({
           className="h-[52px] rounded-[12px] px-8"
           onClick={() => router.back()}
         >
-          Cancel
+          {common("cancel")}
         </Button>
 
         <Button
@@ -2655,10 +2692,10 @@ export default function BusinessOwnerForm({
           className="h-[52px] px-8"
         >
           {isPending
-            ? "Saving..."
+            ? common("saving")
             : isEdit
-              ? "Update Business Owner"
-              : "Create Business Owner"}
+              ? businessOwners("updateBusinessOwner")
+              : businessOwners("createBusinessOwner")}
         </Button>
       </div>
     </form>
@@ -2820,10 +2857,18 @@ function UploadBox({
   preview,
   onRemove,
   disabled = false,
+  labels,
 }: {
   preview?: string;
   onRemove: () => void;
   disabled?: boolean;
+  labels: {
+    preview: string;
+    imageSelected: string;
+    clickToUpload: string;
+    orDragDrop: string;
+    uploadHint: string;
+  };
 }) {
   return (
     <div
@@ -2834,7 +2879,7 @@ function UploadBox({
       {preview ? (
         <div className="relative flex w-full flex-col items-center">
           <div>
-            <MyImage src={preview} alt="Preview" width={96} height={96} />
+            <MyImage src={preview} alt={labels.preview} width={96} height={96} />
           </div>
 
           {!disabled ? (
@@ -2850,15 +2895,15 @@ function UploadBox({
             </button>
           ) : null}
 
-          <p className="mt-4 text-sm text-gray-500">Image selected</p>
+          <p className="mt-4 text-sm text-gray-500">{labels.imageSelected}</p>
         </div>
       ) : (
         <>
           <ImageIcon size={40} className="mb-[21.5px] text-gray-300" />
           <p className="mb-[3px] text-lg font-semibold text-gray">
-            <span className="text-primary">Click to upload</span> or drag and drop
+            <span className="text-primary">{labels.clickToUpload}</span> {labels.orDragDrop}
           </p>
-          <p className="text-[16.5px] text-gray">JPG, JPEG, PNG less than 1MB</p>
+          <p className="text-[16.5px] text-gray">{labels.uploadHint}</p>
         </>
       )}
     </div>

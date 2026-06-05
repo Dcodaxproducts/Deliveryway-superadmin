@@ -14,8 +14,9 @@ import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
-import { registerTenantSchema, updateTenantSchema } from "@/validations/tenants";
+import { createRegisterTenantSchema, createUpdateTenantSchema } from "@/validations/tenants";
 import {
   useRegisterTenant,
   useUpdateTenant,
@@ -77,15 +78,15 @@ const getErrorMessage = (error: unknown) => {
   if (error instanceof AxiosError) {
     return (
       (error.response?.data as ApiErrorResponse | undefined)?.message ||
-      "Something went wrong"
+      ""
     );
   }
 
   if (error instanceof Error) {
-    return error.message || "Something went wrong";
+    return error.message || "";
   }
 
-  return "Something went wrong";
+  return "";
 };
 
 export function AddBusinessOwnerModal({
@@ -94,7 +95,13 @@ export function AddBusinessOwnerModal({
   initialData,
   onSuccess,
 }: Props) {
+  const auth = useTranslations("auth");
+  const businessOwners = useTranslations("businessOwners");
+  const validation = useTranslations("validation");
+  const toasts = useTranslations("toasts");
   const { uploadFile, uploading } = useFileUpload();
+  const registerTenantSchema = createRegisterTenantSchema(validation);
+  const updateTenantSchema = createUpdateTenantSchema(validation);
 
   const createMutation = useRegisterTenant();
   const updateMutation = useUpdateTenant();
@@ -311,7 +318,7 @@ export function AddBusinessOwnerModal({
       onOpenChange(false);
     } catch (err: unknown) {
       console.error("API Error:", err);
-      toast.error(getErrorMessage(err));
+      toast.error(getErrorMessage(err) || toasts("somethingWentWrong"));
     } finally {
       setLoading(false);
     }
@@ -322,18 +329,18 @@ export function AddBusinessOwnerModal({
       <DialogContent className="max-h-[100vh] max-w-[460px] overflow-auto rounded-[20px] p-6">
         <DialogHeader className="space-y-1 text-center">
           <DialogTitle className="text-xl font-semibold">
-            {isEdit ? "Edit Business Owner" : "Business Owner Invitation"}
+            {isEdit ? businessOwners("editBusinessOwner") : businessOwners("businessOwnerInvitation")}
           </DialogTitle>
           <DialogDescription className="text-left text-sm text-gray-500">
             {isEdit
-              ? "Update business owner details"
-              : "Create a new business owner account"}
+              ? businessOwners("updateBusinessOwnerDetails")
+              : businessOwners("createBusinessOwnerAccount")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="mt-6 space-y-4">
           <FormField
-            label="Email *"
+            label={`${auth("email")} *`}
             value={form.email}
             onChange={(v) => handleChange("email", v)}
             disabled={isEdit}
@@ -341,13 +348,13 @@ export function AddBusinessOwnerModal({
 
           <div className="grid grid-cols-2 gap-3">
             <FormField
-              label="First Name *"
+              label={`${businessOwners("firstName")} *`}
               value={form.firstName}
               onChange={(v) => handleChange("firstName", v)}
               disabled={isEdit}
             />
             <FormField
-              label="Last Name *"
+              label={`${businessOwners("lastName")} *`}
               value={form.lastName}
               onChange={(v) => handleChange("lastName", v)}
               disabled={isEdit}
@@ -356,26 +363,26 @@ export function AddBusinessOwnerModal({
 
           {!isEdit && (
             <FormField
-              label="Password *"
+              label={`${auth("password")} *`}
               value={form.password}
               onChange={(v) => handleChange("password", v)}
             />
           )}
 
           <FormField
-            label="Business Name *"
+            label={`${businessOwners("businessName")} *`}
             value={form.tenantName}
             onChange={(v) => handleChange("tenantName", v)}
           />
 
           <FormField
-            label="Business Slug *"
+            label={`${businessOwners("businessSlug")} *`}
             value={form.tenantSlug}
             onChange={(v) => handleChange("tenantSlug", v)}
           />
 
           <div>
-            <label className="text-sm font-medium">Owner Avatar</label>
+            <label className="text-sm font-medium">{businessOwners("ownerAvatar")}</label>
             <Input
               type="file"
               onChange={handleAvatarFile}
@@ -387,12 +394,12 @@ focus-visible:ring-2
 focus-visible:ring-red-500"
             />
             {uploading && (
-              <p className="mt-1 text-xs text-gray-400">Uploading...</p>
+              <p className="mt-1 text-xs text-gray-400">{businessOwners("uploading")}</p>
             )}
           </div>
 
           <div>
-            <label className="text-sm font-medium">Business Logo</label>
+            <label className="text-sm font-medium">{businessOwners("businessLogo")}</label>
             <Input
               type="file"
               onChange={handleTenantLogoFile}
@@ -403,20 +410,20 @@ focus-visible:ring-2
 focus-visible:ring-red-500"
             />
             {uploading && (
-              <p className="mt-1 text-xs text-gray-400">Uploading...</p>
+              <p className="mt-1 text-xs text-gray-400">{businessOwners("uploading")}</p>
             )}
           </div>
 
           {!isEdit && (
             <FormField
-              label="Owner Bio"
+              label={businessOwners("ownerBio")}
               value={form.bio}
               onChange={(v) => handleChange("bio", v)}
             />
           )}
 
           <FormField
-            label="Business Bio"
+            label={businessOwners("businessBio")}
             value={form.tenantBio}
             onChange={(v) => handleChange("tenantBio", v)}
           />
@@ -429,11 +436,11 @@ focus-visible:ring-red-500"
         >
           {loading
             ? isEdit
-              ? "Updating..."
-              : "Creating..."
+              ? businessOwners("updating")
+              : businessOwners("creating")
             : isEdit
-            ? "Update Business Owner"
-            : "Create Business Owner"}
+            ? businessOwners("updateBusinessOwner")
+            : businessOwners("createBusinessOwner")}
         </Button>
       </DialogContent>
     </Dialog>

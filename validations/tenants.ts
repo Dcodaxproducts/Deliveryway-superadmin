@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+type TranslationFunction = (key: string) => string;
+
 /**
  * ==============================
  * Common Schemas
@@ -88,40 +90,40 @@ const taxationSchema = z
  * ==============================
  */
 
-export const registerTenantSchema = z.object({
+export const createRegisterTenantSchema = (t: TranslationFunction) => z.object({
   user: z.object({
-    email: z.string().email("Invalid email"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
+    email: z.string().email(t("invalidEmail")),
+    password: z.string().min(8, t("passwordMin")),
+    firstName: z.string().min(1, t("firstNameRequired")),
+    lastName: z.string().min(1, t("lastNameRequired")),
     avatarUrl: optionalString.optional(),
-    bio: z.string().max(500, "Bio must be under 500 characters").optional(),
+    bio: z.string().max(500, t("bioMax")).optional(),
   }),
 
   branchAdmin: z.object({
-    email: z.string().email("Invalid branch admin email"),
-    password: z.string().min(8, "Branch admin password must be at least 8 characters"),
-    firstName: z.string().min(1, "Branch admin first name is required"),
-    lastName: z.string().min(1, "Branch admin last name is required"),
+    email: z.string().email(t("branchAdminEmailInvalid")),
+    password: z.string().min(8, t("branchAdminPasswordMin")),
+    firstName: z.string().min(1, t("branchAdminFirstNameRequired")),
+    lastName: z.string().min(1, t("branchAdminLastNameRequired")),
     phone: optionalString.optional(),
   }),
 
   tenant: z.object({
-    name: z.string().min(2, "Tenant name is required"),
-    slug: z.string().min(2, "Tenant slug is required"),
+    name: z.string().min(2, t("tenantNameRequired")),
+    slug: z.string().min(2, t("tenantSlugRequired")),
     logoUrl: optionalString.optional(),
-    bio: z.string().max(500, "Bio must be under 500 characters").optional(),
+    bio: z.string().max(500, t("bioMax")).optional(),
     socialLinks: recordSchema,
     settings: recordSchema,
   }),
 
   restaurant: z.object({
-    name: z.string().min(2, "Restaurant name is required"),
-    slug: z.string().min(2, "Restaurant slug is required"),
+    name: z.string().min(2, t("restaurantNameRequired")),
+    slug: z.string().min(2, t("restaurantSlugRequired")),
     logoUrl: optionalString.optional(),
     coverImage: optionalString.optional(),
     customDomain: optionalString.optional(),
-    bio: z.string().max(500, "Bio must be under 500 characters").optional(),
+    bio: z.string().max(500, t("bioMax")).optional(),
     tagline: optionalString.optional(),
     supportContact: supportContactSchema,
     branding: recordSchema,
@@ -129,12 +131,12 @@ export const registerTenantSchema = z.object({
   }),
 
   branch: z.object({
-    name: z.string().min(2, "Branch name is required"),
+    name: z.string().min(2, t("branchNameRequired")),
     logoUrl: optionalString.optional(),
     coverImage: optionalString.optional(),
     description: z
       .string()
-      .max(500, "Description must be under 500 characters")
+      .max(500, t("descriptionMax"))
       .optional(),
 
     settings: z
@@ -161,7 +163,7 @@ export const registerTenantSchema = z.object({
   }),
 });
 
-export type RegisterTenantValues = z.infer<typeof registerTenantSchema>;
+export type RegisterTenantValues = z.infer<ReturnType<typeof createRegisterTenantSchema>>;
 
 /**
  * ==============================
@@ -169,10 +171,10 @@ export type RegisterTenantValues = z.infer<typeof registerTenantSchema>;
  * ==============================
  */
 
-export const updateTenantSchema = z.object({
-  name: z.string().min(2, "Tenant name is required"),
-  slug: z.string().min(2, "Tenant slug is required"),
-  bio: z.string().max(500, "Bio must be under 500 characters").optional(),
+export const createUpdateTenantSchema = (t: TranslationFunction) => z.object({
+  name: z.string().min(2, t("tenantNameRequired")),
+  slug: z.string().min(2, t("tenantSlugRequired")),
+  bio: z.string().max(500, t("bioMax")).optional(),
   logoUrl: optionalString.optional(),
   socialLinks: recordSchema,
   brandingConfig: recordSchema,
@@ -180,7 +182,7 @@ export const updateTenantSchema = z.object({
   isActive: z.boolean(),
 });
 
-export type UpdateTenantValues = z.infer<typeof updateTenantSchema>;
+export type UpdateTenantValues = z.infer<ReturnType<typeof createUpdateTenantSchema>>;
 
 /**
  * ==============================

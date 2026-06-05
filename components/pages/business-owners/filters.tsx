@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Download } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface Props {
   onSearch: (value: string) => void;
@@ -11,6 +12,9 @@ interface Props {
 }
 
 const Filters = ({ onSearch, data = [] }: Props) => {
+  const common = useTranslations("common");
+  const filters = useTranslations("filters");
+  const businessOwners = useTranslations("businessOwners");
   const [search, setSearch] = useState("");
 
   // ✅ debounce
@@ -25,7 +29,14 @@ const handleExportCSV = () => {
   if (!data.length) return;
 
   // ✅ Define only required columns
-  const headers = ["First Name", "Last Name", "Email", "Phone", "Status", "Role"];
+  const headers = [
+    businessOwners("firstName"),
+    businessOwners("lastName"),
+    businessOwners("email"),
+    businessOwners("phone"),
+    common("status"),
+    businessOwners("role"),
+  ];
 
   const csvRows = [
     headers.join(","),
@@ -36,7 +47,7 @@ const handleExportCSV = () => {
         row.lastName ?? "",
         row.email ?? "",
         row.phone ?? "",
-        row.isActive ? "Active" : "Inactive",
+        row.isActive ? common("active") : common("inactive"),
         row.staffRole?.name ?? "",
       ]
         .map((val) => `"${String(val).replace(/"/g, '""')}"`)
@@ -49,7 +60,7 @@ const handleExportCSV = () => {
 
   const a = document.createElement("a");
   a.href = url;
-  a.download = "employees.csv";
+  a.download = "business-owners.csv";
   a.click();
 
   window.URL.revokeObjectURL(url);
@@ -68,12 +79,12 @@ const handleExportCSV = () => {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name"
+            placeholder={filters("searchBusinessOwnersPlaceholder")}
             className="border-0 focus-visible:ring-0 h-12 text-base"
           />
 
           <Button className="bg-[#D31E1E] hover:bg-[#b01818] h-14 px-10 text-base font-medium rounded-none">
-            Search
+            {common("search")}
           </Button>
         </div>
 
@@ -85,7 +96,7 @@ const handleExportCSV = () => {
             onClick={handleExportCSV}
           >
             <Download size={18} />
-            Export CSV
+            {businessOwners("exportCsv")}
           </Button>
         </div>
       </div>

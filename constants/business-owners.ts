@@ -1,9 +1,9 @@
 import { Users, UserCheck, UserX } from 'lucide-react';
 
 export const statsData = [
-    { title: "Total Business Owners", value: 2, icon: Users },
-    { title: "Active Business Owners", value: 2, icon: UserCheck },
-    { title: "Inactive Business Owners", value: 0, icon: UserX },
+    { titleKey: "businessOwners.totalBusinessOwners", value: 2, icon: Users },
+    { titleKey: "businessOwners.activeBusinessOwners", value: 2, icon: UserCheck },
+    { titleKey: "businessOwners.inactiveBusinessOwners", value: 0, icon: UserX },
 ];
 
 export const employeesData = [

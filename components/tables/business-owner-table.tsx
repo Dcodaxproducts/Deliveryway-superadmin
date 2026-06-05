@@ -32,6 +32,7 @@ import Pagination from "@/components/pagination";
 import DeleteDialog from "@/components/dialogs/delete-dialog";
 import AddBusinessOwnerModal from "../pages/business-owners/AddBusinessOwnerModal";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 type RequirementTone = "success" | "warning" | "danger" | "muted" | "primary";
 
@@ -84,8 +85,8 @@ const getOverallStatus = (item: any) => {
 
   if (isActive && isApproved && isVerified) {
     return {
-      label: "Access granted",
-      description: "2FA verified, approved, and active",
+      labelKey: "status.accessGranted",
+      descriptionKey: "status.accessGrantedDescription",
       className: "bg-green-50 text-green-700 ring-green-100",
       icon: <CheckCircle2 size={14} />,
     };
@@ -93,8 +94,8 @@ const getOverallStatus = (item: any) => {
 
   if (!isActive) {
     return {
-      label: "Access disabled",
-      description: "Super admin has disabled platform access",
+      labelKey: "status.accessDisabled",
+      descriptionKey: "status.accessDisabledDescription",
       className: "bg-gray-100 text-gray-600 ring-gray-200",
       icon: <UserX size={14} />,
     };
@@ -102,8 +103,8 @@ const getOverallStatus = (item: any) => {
 
   if (!isApproved && !isVerified) {
     return {
-      label: "Approval & 2FA pending",
-      description: "User must verify 2FA and be approved",
+      labelKey: "status.approvalTwoFactorPending",
+      descriptionKey: "status.approvalTwoFactorPendingDescription",
       className: "bg-amber-50 text-amber-700 ring-amber-100",
       icon: <Clock3 size={14} />,
     };
@@ -111,16 +112,16 @@ const getOverallStatus = (item: any) => {
 
   if (!isApproved) {
     return {
-      label: "Pending approval",
-      description: "Waiting for super admin approval",
+      labelKey: "status.pendingApproval",
+      descriptionKey: "status.pendingApprovalDescription",
       className: "bg-primary/5 text-primary ring-primary/10",
       icon: <ShieldCheck size={14} />,
     };
   }
 
   return {
-    label: "2FA pending",
-    description: "User has not completed registration verification",
+    labelKey: "status.twoFactorPending",
+    descriptionKey: "status.twoFactorPendingDescription",
     className: "bg-amber-50 text-amber-700 ring-amber-100",
     icon: <Clock3 size={14} />,
   };
@@ -135,6 +136,9 @@ export default function BusinessOwnerTable({
   search: string;
   setExportData?: (data: any[]) => void;
 }) {
+  const common = useTranslations("common");
+  const businessOwnersText = useTranslations("businessOwners");
+  const dialogs = useTranslations("dialogs");
   const router = useRouter();
 
   const [page, setPage] = useState(1);
@@ -161,7 +165,7 @@ export default function BusinessOwnerTable({
   const { mutate: updateTenant } = useUpdateTenant();
   const { mutate: approveBusinessAdmin } = useApproveBusinessAdmin();
 
-  const businessOwners = data?.data || [];
+  const businessOwners = useMemo(() => data?.data || [], [data?.data]);
   const meta = data?.meta;
 
   useEffect(() => {
@@ -271,12 +275,12 @@ export default function BusinessOwnerTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[70px]">SL</TableHead>
-            <TableHead>Business Owner</TableHead>
-            <TableHead>Details</TableHead>
-            <TableHead>Tenant</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="w-[90px] text-center">Actions</TableHead>
+            <TableHead className="w-[70px]">{businessOwnersText("serial")}</TableHead>
+            <TableHead>{businessOwnersText("businessOwner")}</TableHead>
+            <TableHead>{businessOwnersText("details")}</TableHead>
+            <TableHead>{businessOwnersText("tenant")}</TableHead>
+            <TableHead>{common("status")}</TableHead>
+            <TableHead className="w-[90px] text-center">{common("actions")}</TableHead>
           </TableRow>
         </TableHeader>
 
@@ -355,17 +359,17 @@ export default function BusinessOwnerTable({
                             className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ${status.className}`}
                           >
                             {status.icon}
-                            {status.label}
+                            {businessOwnersText(status.labelKey)}
                           </span>
                           <p className="mt-1 text-[11px] leading-5 text-gray-500">
-                            {status.description}
+                            {businessOwnersText(status.descriptionKey)}
                           </p>
                         </div>
 
                         <div className="flex flex-wrap gap-2">
                           <RequirementBadge
-                            label="2FA"
-                            value={item?.isVerified ? "Verified" : "Pending"}
+                            label={businessOwnersText("twoFactor")}
+                            value={item?.isVerified ? businessOwnersText("verified") : businessOwnersText("pending")}
                             tone={item?.isVerified ? "success" : "warning"}
                             icon={
                               item?.isVerified ? (
@@ -377,8 +381,8 @@ export default function BusinessOwnerTable({
                           />
 
                           <RequirementBadge
-                            label="Approval"
-                            value={item?.isApproved ? "Approved" : "Required"}
+                            label={businessOwnersText("approval")}
+                            value={item?.isApproved ? businessOwnersText("approved") : businessOwnersText("required")}
                             tone={item?.isApproved ? "success" : "primary"}
                             icon={
                               item?.isApproved ? (
@@ -390,8 +394,8 @@ export default function BusinessOwnerTable({
                           />
 
                           <RequirementBadge
-                            label="Access"
-                            value={item?.isActive ? "Active" : "Disabled"}
+                            label={businessOwnersText("access")}
+                            value={item?.isActive ? common("active") : common("disabled")}
                             tone={item?.isActive ? "success" : "danger"}
                             icon={
                               item?.isActive ? (
@@ -418,7 +422,7 @@ export default function BusinessOwnerTable({
                             )
                           }
                           className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 hover:text-gray-900"
-                          aria-label="Open business owner actions"
+                          aria-label={businessOwnersText("openActions")}
                         >
                           <MoreVertical size={17} />
                         </button>
@@ -431,7 +435,7 @@ export default function BusinessOwnerTable({
                               className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50"
                             >
                               <Pencil size={15} />
-                              Edit business owner
+                              {businessOwnersText("editBusinessOwner")}
                             </button>
 
                             <button
@@ -448,10 +452,10 @@ export default function BusinessOwnerTable({
                                 <ShieldCheck size={15} />
                               )}
                               {isApprovalUpdating
-                                ? "Approving..."
+                                ? businessOwnersText("approving")
                                 : item?.isApproved
-                                  ? "Already approved"
-                                  : "Approve"}
+                                  ? businessOwnersText("alreadyApproved")
+                                  : businessOwnersText("approve")}
                             </button>
 
                             <button
@@ -468,10 +472,10 @@ export default function BusinessOwnerTable({
                                 <UserCheck size={15} />
                               )}
                               {isActiveUpdating
-                                ? "Updating access..."
+                                ? businessOwnersText("updatingAccess")
                                 : item?.isActive
-                                  ? "Disable platform access"
-                                  : "Enable platform access"}
+                                  ? businessOwnersText("disablePlatformAccess")
+                                  : businessOwnersText("enablePlatformAccess")}
                             </button>
 
                             <div className="my-1 h-px bg-gray-100" />
@@ -482,7 +486,7 @@ export default function BusinessOwnerTable({
                               className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 transition hover:bg-red-50"
                             >
                               <Trash2 size={15} />
-                              Delete
+                              {common("delete")}
                             </button>
                           </div>
                         ) : null}
@@ -505,6 +509,8 @@ export default function BusinessOwnerTable({
         }}
         onConfirm={handleDelete}
         isLoading={isDeleting}
+        title={dialogs("deleteBusinessOwner")}
+        description={dialogs("deleteBusinessOwnerDescription")}
       />
 
       <AddBusinessOwnerModal

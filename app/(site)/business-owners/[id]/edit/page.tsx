@@ -5,11 +5,12 @@ import Header from "@/components/header"
 import { useGetTenant } from "@/hooks/useTenants"
 import { useParams } from "next/navigation"
 import BusinessOwnerForm from "@/components/forms/business-owner-form"
+import { useTranslations } from "next-intl"
 
 const EditTenant = () => {
+    const businessOwners = useTranslations("businessOwners");
     const params = useParams();
     const { data: tenant, isLoading } = useGetTenant(params.id as string); 
-    console.log("tenant data is", tenant);
     if (isLoading) return (
         <div className="flex items-center justify-center min-h-screen mx-auto">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
@@ -19,7 +20,7 @@ const EditTenant = () => {
     return (
         <Container>
             <Header
-                title="Edit Business Owner Details"
+                title={businessOwners("editDetailsTitle")}
             />
             <div className="w-full">
                 <BusinessOwnerForm 

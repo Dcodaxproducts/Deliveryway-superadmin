@@ -5,6 +5,7 @@ import Header from "../../header";
 import { useState } from "react";
 import AddBusinessOwnerModal from "./AddBusinessOwnerModal";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 type Props = {
   title: string;
@@ -17,6 +18,7 @@ export default function EmployeeSettingsHeader({
   description,
   onEmployeeSuccess
 }: Props) {
+  const businessOwners = useTranslations("businessOwners");
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
@@ -30,7 +32,7 @@ export default function EmployeeSettingsHeader({
           onClick={() => router.push('/business-owners/create')}
           className="h-[44px] rounded-[12px] px-5"
         >
-          Add New Business Owner
+          {businessOwners("addNewBusinessOwner")}
         </Button>
       </div>
 

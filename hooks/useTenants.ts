@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   getTenants,
   registerTenant,
@@ -19,15 +20,16 @@ import {
 
 export const useRegisterTenant = () => {
   const queryClient = useQueryClient();
+  const toasts = useTranslations("toasts");
 
   return useMutation({
     mutationFn: registerTenant,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
-      toast.success("Tenant registered successfully!");
+      toast.success(toasts("tenantRegistered"));
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || "Failed to register tenant");
+      toast.error(err?.response?.data?.message || toasts("tenantRegisterFailed"));
     },
   });
 };
@@ -55,6 +57,7 @@ export const useGetTenants = (params?: {
 };
 export const useUpdateTenant = () => {
   const queryClient = useQueryClient();
+  const toasts = useTranslations("toasts");
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) =>
@@ -67,22 +70,23 @@ export const useUpdateTenant = () => {
     },
 
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || "Failed to update tenant");
+      toast.error(err?.response?.data?.message || toasts("tenantUpdateFailed"));
     },
   });
 };
 
 export const useDeleteTenant = () => {
   const queryClient = useQueryClient();
+  const toasts = useTranslations("toasts");
 
   return useMutation({
     mutationFn: forceDeleteTenant,
     onSuccess: () => {
-      toast.success("Tenant deleted successfully");
+      toast.success(toasts("tenantDeleted"));
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || "Failed to delete tenant");
+      toast.error(err?.response?.data?.message || toasts("tenantDeleteFailed"));
     },
   });
 };
@@ -97,16 +101,17 @@ export const useGetTenantAnalytics = (id: string) => {
 
 export const useApproveBusinessAdmin = () => {
   const queryClient = useQueryClient();
+  const toasts = useTranslations("toasts");
 
   return useMutation({
     mutationFn: approveBusinessAdmin,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
-      toast.success("Business admin approved successfully!");
+      toast.success(toasts("businessAdminApproved"));
     },
     onError: (err: any) => {
       toast.error(
-        err?.response?.data?.message || "Failed to approve business admin"
+        err?.response?.data?.message || toasts("businessAdminApproveFailed")
       );
     },
   });

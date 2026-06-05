@@ -1,15 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import Container from "@/components/container";
 import StatsSection from "@/components/pages/business-owners/stats-section";
-import Filters from "@/components/pages/employee-settings/filters";
+import Filters from "@/components/pages/business-owners/filters";
 import Header from "@/components/pages/business-owners/header";
 import BusinessOwnerTable from "@/components/tables/business-owner-table";
 import { useGetBusinessOwnerStats } from "@/hooks/useTenants";
 
 const BusinessOwnerPage = () => {
+  const businessOwners = useTranslations("businessOwners");
   const [refreshKey, setRefreshKey] = useState(0);
   const [search, setSearch] = useState("");
   const [tableData, setTableData] = useState<any[]>([]);
@@ -31,8 +33,8 @@ const BusinessOwnerPage = () => {
   return (
     <Container>
       <Header
-        title="Business Owners"
-        description="View and manage all business owners from here"
+        title={businessOwners("title")}
+        description={businessOwners("description")}
         onEmployeeSuccess={handleSuccess}
       />
 
