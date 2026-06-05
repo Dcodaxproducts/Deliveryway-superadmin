@@ -56,11 +56,16 @@
     "login": "Login",
     "logout": "Logout",
     "email": "Email",
+    "emailAddress": "Email Address",
+    "emailPlaceholder": "Enter your email",
     "password": "Password",
+    "passwordPlaceholder": "Enter your password",
     "rememberMe": "Remember me",
     "forgotPassword": "Forgot password?",
     "signIn": "Sign in",
-    "signingIn": "Signing in..."
+    "signingIn": "Signing in...",
+    "signInToAccount": "Sign in to your account",
+    "welcomeBack": "Welcome Back"
   },
   "dashboard": {},
   "restaurants": {},
@@ -99,6 +104,12 @@
   "tables": {},
   "filters": {},
   "dialogs": {},
-  "validation": {},
-  "toasts": {}
+  "validation": {
+    "emailInvalid": "Please enter a valid email address",
+    "passwordMin": "Password must be at least 8 characters"
+  },
+  "toasts": {
+    "loginSuccessful": "Login Successful",
+    "somethingWentWrong": "Something went wrong"
+  }
 }

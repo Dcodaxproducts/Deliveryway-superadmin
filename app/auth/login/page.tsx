@@ -4,9 +4,10 @@ import { useState } from 'react'
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Eye, EyeOff } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { useLogin } from '@/hooks/useAuth'
-import { loginSchema, type LoginValues } from "@/validations/auth"
+import { createLoginSchema, type LoginValues } from "@/validations/auth"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,6 +15,9 @@ import { Label } from "@/components/ui/label"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
+  const auth = useTranslations("auth")
+  const validation = useTranslations("validation")
+  const loginSchema = createLoginSchema(validation)
   const { mutate, isPending } = useLogin()
 
   const {
@@ -34,27 +38,27 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="bg-card border border-border rounded-lg shadow-lg p-8">
           <div className="text-center mb-8 space-y-2">
-            <h1 className="text-3xl font-bold text-foreground">Welcome Back</h1>
-            <p className="text-muted-foreground">Sign in to your account</p>
+            <h1 className="text-3xl font-bold text-foreground">{auth("welcomeBack")}</h1>
+            <p className="text-muted-foreground">{auth("signInToAccount")}</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid gap-2">
-              <Label>Email Address</Label>
+              <Label>{auth("emailAddress")}</Label>
               <Input
                 type="email"
-                placeholder="Enter your email"
+                placeholder={auth("emailPlaceholder")}
                 error={errors.email?.message}
                 {...register("email")}
               />
             </div>
 
             <div className="grid gap-2">
-              <Label>Password</Label>
+              <Label>{auth("password")}</Label>
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
+                  placeholder={auth("passwordPlaceholder")}
                   error={errors.password?.message}
                   {...register("password")}
                 />
@@ -74,7 +78,7 @@ export default function LoginPage() {
               variant="primary"
               className="w-full"
             >
-              {isPending ? 'Signing in...' : 'Sign In'}
+              {isPending ? auth("signingIn") : auth("signIn")}
             </Button>
           </form>
         </div>
