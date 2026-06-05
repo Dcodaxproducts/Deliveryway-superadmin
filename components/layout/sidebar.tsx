@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ChevronRight, LogOut } from "lucide-react";
 import { menuItems, type SidebarMenuItem } from "@/constants/sidebarItems";
 import { Button } from "@/components/ui/button";
@@ -38,8 +39,10 @@ const SidebarItem = ({
   isActive = false,
   onLinkClick,
 }: SidebarItemProps) => {
+  const t = useTranslations();
   const Icon = item.icon;
   const hasChildren = Boolean(item.children?.length);
+  const title = t(item.titleKey);
 
   const [isOpen, setIsOpen] = useState(isActive);
 
@@ -77,7 +80,7 @@ const SidebarItem = ({
             <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
           </div>
 
-          <span className={textClasses}>{item.title}</span>
+          <span className={textClasses}>{title}</span>
 
           <ChevronRight
             size={18}
@@ -97,7 +100,7 @@ const SidebarItem = ({
 
                 return (
                   <Link
-                    key={child.title}
+                    key={child.href ?? child.titleKey}
                     href={child.href || "#"}
                     onClick={onLinkClick}
                     className="flex items-center gap-[14px] px-[22px] py-[8px] text-gray transition-colors hover:text-primary"
@@ -112,7 +115,7 @@ const SidebarItem = ({
                         ${childActive ? "text-primary" : "text-gray"}
                       `}
                     >
-                      {child.title}
+                      {t(child.titleKey)}
                     </span>
                   </Link>
                 );
@@ -130,7 +133,7 @@ const SidebarItem = ({
         <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
       </div>
 
-      <span className={textClasses}>{item.title}</span>
+      <span className={textClasses}>{title}</span>
     </Link>
   );
 };
@@ -142,6 +145,7 @@ interface SidebarProps {
 export default function Sidebar({ onLinkClick }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const t = useTranslations();
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -178,7 +182,7 @@ export default function Sidebar({ onLinkClick }: SidebarProps) {
 
             return (
               <SidebarItem
-                key={item.title}
+                key={item.href ?? item.titleKey}
                 item={item}
                 pathname={pathname}
                 isActive={isActive}
@@ -198,7 +202,7 @@ export default function Sidebar({ onLinkClick }: SidebarProps) {
           <div className="flex items-center justify-center size-10 bg-[#F9FAFB] rounded-xl text-primary">
             <LogOut size={20} />
           </div>
-          <span className="font-semibold text-sm">Logout</span>
+          <span className="font-semibold text-sm">{t("navigation.logout")}</span>
         </Button>
       </div>
     </aside>

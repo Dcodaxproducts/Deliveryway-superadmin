@@ -23,36 +23,37 @@ import {
 import { PiUsersThree } from "react-icons/pi";
 
 export type SidebarMenuItem = {
-  title: string;
+  titleKey: string;
+  title?: string;
   icon: ElementType;
   href?: string;
   children?: SidebarMenuItem[];
 };
 
 export const menuItems: SidebarMenuItem[] = [
-  { title: "Dashboard", icon: LayoutGrid, href: "/" },
-  { title: "Manage Restaurants", icon: Store, href: "/restaurants" },
-  { title: "Global Settings", icon: Globe, href: "/global-settings" },
-  { title: "Worldwide Customers", icon: Users, href: "/customers" },
-  { title: "Business Owners", icon: Users, href: "/business-owners" },
-  { title: "Orders & Revenue Performance", icon: BarChart3, href: "/orders" },
-  { title: "Employee Settings", icon: PiUsersThree, href: "/employee-settings" },
-  { title: "Product Overview", icon: Box, href: "/products" },
-  { title: "Roles & Access (RBAC)", icon: ShieldCheck, href: "/rbac" },
+  { titleKey: "navigation.dashboard", icon: LayoutGrid, href: "/" },
+  { titleKey: "navigation.manageRestaurants", icon: Store, href: "/restaurants" },
+  { titleKey: "navigation.globalSettings", icon: Globe, href: "/global-settings" },
+  { titleKey: "navigation.worldwideCustomers", icon: Users, href: "/customers" },
+  { titleKey: "navigation.businessOwners", icon: Users, href: "/business-owners" },
+  { titleKey: "navigation.ordersRevenuePerformance", icon: BarChart3, href: "/orders" },
+  { titleKey: "navigation.employeeSettings", icon: PiUsersThree, href: "/employee-settings" },
+  { titleKey: "navigation.productOverview", icon: Box, href: "/products" },
+  { titleKey: "navigation.rbac", icon: ShieldCheck, href: "/rbac" },
   // { title: "Business Models", icon: Gift, href: "/models" },
 
   {
-    title: "Pricing Model (Financials)",
+    titleKey: "navigation.pricingModelFinancials",
     icon: BarChart3,
     href: "/pricing-model",
     children: [
       {
-        title: "Create New Plan",
+        titleKey: "navigation.createNewPlan",
         icon: FilePlus2,
         href: "/pricing-model/create-new-plan",
       },
       {
-        title: "Plans Listing",
+        titleKey: "navigation.plansListing",
         icon: ListChecks,
         href: "/pricing-model/plans-listing",
       },
@@ -72,17 +73,17 @@ export const menuItems: SidebarMenuItem[] = [
       //   href: "/pricing-model/restaurant-billing",
       // },
       {
-        title: "Subscriptions",
+        titleKey: "navigation.subscriptions",
         icon: Repeat,
         href: "/pricing-model/subscriptions",
       },
     ],
   },
 
-  { title: "Invoicing & Financials", icon: Receipt, href: "/invoicing" },
-  { title: "Reports & Analytics", icon: LineChart, href: "/analytics" },
-  { title: "System Health & Monitoring", icon: ShieldAlert, href: "/monitoring" },
+  { titleKey: "navigation.invoicingFinancials", icon: Receipt, href: "/invoicing" },
+  { titleKey: "navigation.reportsAnalytics", icon: LineChart, href: "/analytics" },
+  { titleKey: "navigation.systemHealthMonitoring", icon: ShieldAlert, href: "/monitoring" },
   // { title: "Theme Setting", icon: Palette, href: "/theme-settings" },
-  { title: "Notification Setting", icon: Bell, href: "/notification-settings" },
+  { titleKey: "navigation.notificationSettings", icon: Bell, href: "/notification-settings" },
   // { title: "Backups & Maintenance", icon: Database, href: "/maintenance" },
 ];

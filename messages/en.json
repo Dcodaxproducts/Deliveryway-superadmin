@@ -32,7 +32,25 @@
     "noDataFound": "No data found."
   },
   "navigation": {
-    "changeLanguage": "Change language"
+    "changeLanguage": "Change language",
+    "dashboard": "Dashboard",
+    "manageRestaurants": "Manage Restaurants",
+    "globalSettings": "Global Settings",
+    "worldwideCustomers": "Worldwide Customers",
+    "businessOwners": "Business Owners",
+    "ordersRevenuePerformance": "Orders & Revenue Performance",
+    "employeeSettings": "Employee Settings",
+    "productOverview": "Product Overview",
+    "rbac": "Roles & Access (RBAC)",
+    "pricingModelFinancials": "Pricing Model (Financials)",
+    "createNewPlan": "Create New Plan",
+    "plansListing": "Plans Listing",
+    "subscriptions": "Subscriptions",
+    "invoicingFinancials": "Invoicing & Financials",
+    "reportsAnalytics": "Reports & Analytics",
+    "systemHealthMonitoring": "System Health & Monitoring",
+    "notificationSettings": "Notification Setting",
+    "logout": "Logout"
   },
   "auth": {
     "login": "Login",
@@ -57,9 +75,26 @@
   "invoicing": {},
   "analytics": {},
   "monitoring": {},
-  "notificationSettings": {},
+  "notificationSettings": {
+    "all": "All",
+    "pending": "Pending",
+    "loadingNotifications": "Loading notifications...",
+    "noNotificationsFound": "No notifications found",
+    "notification": "Notification",
+    "newReservation": "New Reservation",
+    "reservationDescription": "A user booked a table for 2.",
+    "payoutProcessed": "Payout Processed",
+    "payoutDescription": "Your weekly payout has been sent.",
+    "orderCompleted": "Order Completed",
+    "orderDescription": "Order #1234 has been delivered.",
+    "systemAlert": "System Alert",
+    "systemAlertDescription": "Your menu was updated successfully."
+  },
   "themeSettings": {},
-  "profile": {},
+  "profile": {
+    "hello": "Hello,",
+    "superAdmin": "Super Admin"
+  },
   "branches": {},
   "tables": {},
   "filters": {},

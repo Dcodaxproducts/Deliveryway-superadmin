@@ -7,6 +7,7 @@ import {
   DollarSign,
   Bell,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 
 /**
@@ -17,6 +18,8 @@ type NotificationItem = {
   type: "reservation" | "payout" | "order" | "other";
   title?: string;
   description?: string;
+  titleKey?: string;
+  descriptionKey?: string;
   status?: "PENDING" | "COMPLETED";
   createdAt?: string;
 };
@@ -35,32 +38,32 @@ const STATIC_NOTIFICATIONS: NotificationItem[] = [
   {
     id: "1",
     type: "reservation",
-    title: "New Reservation",
-    description: "A user booked a table for 2.",
+    titleKey: "newReservation",
+    descriptionKey: "reservationDescription",
     status: "PENDING",
     createdAt: new Date().toISOString(),
   },
   {
     id: "2",
     type: "payout",
-    title: "Payout Processed",
-    description: "Your weekly payout has been sent.",
+    titleKey: "payoutProcessed",
+    descriptionKey: "payoutDescription",
     status: "COMPLETED",
     createdAt: new Date().toISOString(),
   },
   {
     id: "3",
     type: "order",
-    title: "Order Completed",
-    description: "Order #1234 has been delivered.",
+    titleKey: "orderCompleted",
+    descriptionKey: "orderDescription",
     status: "COMPLETED",
     createdAt: new Date().toISOString(),
   },
   {
     id: "4",
     type: "other",
-    title: "System Alert",
-    description: "Your menu was updated successfully.",
+    titleKey: "systemAlert",
+    descriptionKey: "systemAlertDescription",
     status: "PENDING",
     createdAt: new Date().toISOString(),
   },
@@ -72,6 +75,8 @@ export default function Notifications({
   selectedTab,
   setSelectedTab,
 }: Props) {
+  const common = useTranslations("common");
+  const notificationSettings = useTranslations("notificationSettings");
   /**
    * ✅ Internal fallback state (if props not provided)
    */
@@ -118,7 +123,7 @@ export default function Notifications({
             }`}
             onClick={() => handleTabChange("all")}
           >
-            All
+            {notificationSettings("all")}
           </button>
 
           <button
@@ -129,7 +134,7 @@ export default function Notifications({
             }`}
             onClick={() => handleTabChange("pending")}
           >
-            Pending
+            {notificationSettings("pending")}
           </button>
         </div>
       </div>
@@ -137,7 +142,7 @@ export default function Notifications({
       {/* Loading */}
       {loading && (
         <p className="text-sm text-gray-400">
-          Loading notifications...
+          {notificationSettings("loadingNotifications")}
         </p>
       )}
 
@@ -146,7 +151,7 @@ export default function Notifications({
         <div className="flex flex-col items-center justify-center py-10 text-center">
           <Bell className="text-gray-300 mb-3" size={40} />
           <p className="text-gray-500 text-sm">
-            No notifications found
+            {notificationSettings("noNotificationsFound")}
           </p>
         </div>
       )}
@@ -166,12 +171,17 @@ export default function Notifications({
 
                 <div>
                   <CardTitle className="font-semibold text-gray-900 mb-1">
-                    {notification.title || "Notification"}
+                    {notification.title ||
+                      (notification.titleKey
+                        ? notificationSettings(notification.titleKey)
+                        : notificationSettings("notification"))}
                   </CardTitle>
 
                   <p className="text-sm text-gray-500">
                     {notification.description ||
-                      "No description"}
+                      (notification.descriptionKey
+                        ? notificationSettings(notification.descriptionKey)
+                        : common("noDataFound"))}
                   </p>
                 </div>
               </div>

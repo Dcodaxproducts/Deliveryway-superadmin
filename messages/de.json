@@ -32,7 +32,25 @@
     "noDataFound": "Keine Daten gefunden."
   },
   "navigation": {
-    "changeLanguage": "Sprache ändern"
+    "changeLanguage": "Sprache ändern",
+    "dashboard": "Dashboard",
+    "manageRestaurants": "Restaurants verwalten",
+    "globalSettings": "Globale Einstellungen",
+    "worldwideCustomers": "Weltweite Kunden",
+    "businessOwners": "Geschäftsinhaber",
+    "ordersRevenuePerformance": "Bestellungen & Umsatzleistung",
+    "employeeSettings": "Mitarbeitereinstellungen",
+    "productOverview": "Produktübersicht",
+    "rbac": "Rollen & Zugriff (RBAC)",
+    "pricingModelFinancials": "Preismodell (Finanzen)",
+    "createNewPlan": "Neuen Plan erstellen",
+    "plansListing": "Planübersicht",
+    "subscriptions": "Abonnements",
+    "invoicingFinancials": "Rechnungen & Finanzen",
+    "reportsAnalytics": "Berichte & Analysen",
+    "systemHealthMonitoring": "Systemzustand & Überwachung",
+    "notificationSettings": "Benachrichtigungseinstellungen",
+    "logout": "Abmelden"
   },
   "auth": {
     "login": "Anmelden",
@@ -57,9 +75,26 @@
   "invoicing": {},
   "analytics": {},
   "monitoring": {},
-  "notificationSettings": {},
+  "notificationSettings": {
+    "all": "Alle",
+    "pending": "Ausstehend",
+    "loadingNotifications": "Benachrichtigungen werden geladen...",
+    "noNotificationsFound": "Keine Benachrichtigungen gefunden",
+    "notification": "Benachrichtigung",
+    "newReservation": "Neue Reservierung",
+    "reservationDescription": "Ein Benutzer hat einen Tisch für 2 Personen gebucht.",
+    "payoutProcessed": "Auszahlung verarbeitet",
+    "payoutDescription": "Ihre wöchentliche Auszahlung wurde gesendet.",
+    "orderCompleted": "Bestellung abgeschlossen",
+    "orderDescription": "Bestellung #1234 wurde geliefert.",
+    "systemAlert": "Systemwarnung",
+    "systemAlertDescription": "Ihre Speisekarte wurde erfolgreich aktualisiert."
+  },
   "themeSettings": {},
-  "profile": {},
+  "profile": {
+    "hello": "Hallo,",
+    "superAdmin": "Super Admin"
+  },
   "branches": {},
   "tables": {},
   "filters": {},
