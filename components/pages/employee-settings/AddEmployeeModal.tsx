@@ -12,8 +12,9 @@ import { Input } from "@/components/ui/input";
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
-import { staffSchema } from "@/validations/employees";
+import { createStaffSchema } from "@/validations/employees";
 import {
   useCreateStaff,
   useUpdateStaff,
@@ -34,6 +35,10 @@ export default function EmployeeInvitationModal({
   initialData,
   onSuccess,
 }: Props) {
+  const common = useTranslations("common");
+  const employeeSettings = useTranslations("employeeSettings");
+  const validation = useTranslations("validation");
+  const toasts = useTranslations("toasts");
   const { uploadFile, uploading } = useFileUpload();
 
   const createMutation = useCreateStaff();
@@ -123,7 +128,7 @@ const handleSubmit = async () => {
     /**
      * ✅ Zod validation (IMPROVED)
      */
-    const parsed = staffSchema.safeParse(payload);
+    const parsed = createStaffSchema(validation).safeParse(payload);
 
     if (!parsed.success) {
       const errors = parsed.error.errors;
@@ -160,7 +165,7 @@ const handleSubmit = async () => {
     console.error("API Error:", err);
 
     toast.error(
-      err?.response?.data?.message || "Something went wrong"
+      err?.response?.data?.message || toasts("somethingWentWrong")
     );
   } finally {
     setLoading(false);
@@ -172,31 +177,33 @@ const handleSubmit = async () => {
         {/* Header */}
         <DialogHeader className="text-center space-y-1">
           <DialogTitle className="text-xl font-semibold">
-            {isEdit ? "Edit Employee" : "Employee Invitation"}
+            {isEdit
+              ? employeeSettings("editEmployee")
+              : employeeSettings("employeeInvitation")}
           </DialogTitle>
           <DialogDescription className="text-sm text-gray-500 text-left">
             {isEdit
-              ? "Update employee details"
-              : "Send invitation to employee"}
+              ? employeeSettings("updateEmployeeDetails")
+              : employeeSettings("sendInvitationDescription")}
           </DialogDescription>
         </DialogHeader>
 
         {/* Form */}
         <div className="mt-6 space-y-4">
           <FormField
-            label="Email *"
+            label={employeeSettings("emailRequired")}
             value={form.email}
             onChange={(v) => handleChange("email", v)}
           />
 
           <div className="grid grid-cols-2 gap-3">
             <FormField
-              label="First Name *"
+              label={employeeSettings("firstNameRequired")}
               value={form.firstName}
               onChange={(v) => handleChange("firstName", v)}
             />
             <FormField
-              label="Last Name *"
+              label={employeeSettings("lastNameRequired")}
               value={form.lastName}
               onChange={(v) => handleChange("lastName", v)}
             />
@@ -204,13 +211,13 @@ const handleSubmit = async () => {
 
           <div className="grid grid-cols-2 gap-3">
             <FormField
-              label="Phone"
+              label={employeeSettings("phone")}
               value={form.phone}
               onChange={(v) => handleChange("phone", v)}
             />
             {/* {!isEdit && ( */}
               <FormField
-                label="Password *"
+                label={employeeSettings("passwordRequired")}
                 value={form.password}
                 onChange={(v) => handleChange("password", v)}
               />
@@ -219,7 +226,7 @@ const handleSubmit = async () => {
 
           {/* Role Dropdown */}
           <div>
-            <label className="text-sm font-medium">Role *</label>
+            <label className="text-sm font-medium">{employeeSettings("roleRequired")}</label>
             <select
               value={form.staffRoleId}
               onChange={(e) =>
@@ -231,7 +238,7 @@ focus-visible:ring-red-500
 focus-visible:border-red-500 
 transition-all duration-200"
             >
-              <option value="">Select Role</option>
+              <option value="">{employeeSettings("selectRole")}</option>
               {roles.map((r: any) => (
                 <option key={r.id} value={r.id}>
                   {r.name}
@@ -242,7 +249,7 @@ transition-all duration-200"
 
           {/* Avatar Upload */}
           <div>
-            <label className="text-sm font-medium">Avatar</label>
+            <label className="text-sm font-medium">{employeeSettings("avatar")}</label>
             <Input
               type="file"
               onChange={handleFile}
@@ -255,13 +262,13 @@ transition-all duration-200"
             />
             {uploading && (
               <p className="text-xs text-gray-400 mt-1">
-                Uploading...
+                {employeeSettings("uploading")}
               </p>
             )}
           </div>
 
           <FormField
-            label="Bio"
+            label={employeeSettings("bio")}
             value={form.bio}
             onChange={(v) => handleChange("bio", v)}
           />
@@ -275,11 +282,11 @@ transition-all duration-200"
         >
           {loading
             ? isEdit
-              ? "Updating..."
-              : "Sending..."
+              ? employeeSettings("updating")
+              : employeeSettings("sending")
             : isEdit
-            ? "Update Employee"
-            : "Send Invitation"}
+            ? employeeSettings("updateEmployee")
+            : employeeSettings("sendInvitation")}
         </Button>
       </DialogContent>
     </Dialog>

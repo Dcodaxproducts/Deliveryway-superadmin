@@ -3,9 +3,11 @@
 import { useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import api from "@/lib/axios";
 
 export const useFileUpload = () => {
+  const toasts = useTranslations("toasts");
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
 
@@ -24,7 +26,7 @@ export const useFileUpload = () => {
       const presigned = presignedRes.data?.data;
 
       if (!presigned?.uploadUrl || !presigned?.fileUrl) {
-        throw new Error("Invalid presigned URL response");
+        throw new Error(toasts("invalidPresignedUrlResponse"));
       }
 
       const { uploadUrl, fileUrl, headers } = presigned;
@@ -42,11 +44,11 @@ export const useFileUpload = () => {
       });
 
       setProgress(100);
-      toast.success("File uploaded successfully");
+      toast.success(toasts("fileUploaded"));
       return fileUrl;
     } catch (err: any) {
       console.error(err);
-      toast.error(err?.response?.data?.message || err?.message || "Upload failed");
+      toast.error(err?.response?.data?.message || err?.message || toasts("uploadFailed"));
       return null;
     } finally {
       setUploading(false);

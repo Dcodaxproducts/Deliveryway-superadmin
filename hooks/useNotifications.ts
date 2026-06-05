@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   getNotificationSettings,
   updateNotificationSettings,
@@ -24,6 +25,7 @@ export const useGetNotificationSettings = () => {
  * ==============================
  */
 export const useUpdateNotificationSettings = () => {
+  const toasts = useTranslations("toasts");
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -35,13 +37,13 @@ export const useUpdateNotificationSettings = () => {
         queryKey: ["notification-settings"],
       });
 
-      toast.success("Notification settings updated successfully!");
+      toast.success(toasts("notificationSettingsUpdated"));
     },
 
     onError: (err: any) => {
       toast.error(
-        err?.response?.data?.message ||
-          "Failed to update notification settings"
+          err?.response?.data?.message ||
+          toasts("notificationSettingsUpdateFailed")
       );
     },
   });

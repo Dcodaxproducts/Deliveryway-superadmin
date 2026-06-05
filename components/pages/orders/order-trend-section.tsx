@@ -3,6 +3,7 @@
 import { Card } from "@/components/ui/card";
 import OrdersGraph from "../../graphs/orders-graph";
 import { useGetOrdersStats, useGetOrdersTrend } from "@/hooks/useDashboard";
+import { useTranslations } from "next-intl";
 
 type TrendRange = "daily" | "weekly" | "monthly";
 
@@ -11,6 +12,8 @@ export default function OrdersTrendSection({
 }: {
   type: string;
 }) {
+  const common = useTranslations("common");
+  const orders = useTranslations("orders");
   const range: TrendRange = "daily";
 
   const {
@@ -59,27 +62,31 @@ export default function OrdersTrendSection({
 
       <div className="flex flex-col gap-[24px] pr-2 lg:pr-0">
         <MetricCard
-          title="Paid Orders"
+          title={orders("paidOrders")}
           value={loading ? "..." : String(paidOrders)}
           subtitle={
-            loading ? "Loading..." : `${deliveredOrders} delivered orders`
+            loading
+              ? common("loading")
+              : orders("deliveredOrdersCount", { count: deliveredOrders })
           }
         />
 
         <MetricCard
-          title="Peak Day"
+          title={orders("peakDay")}
           value={loading ? "..." : peakPoint?.label || "-"}
           subtitle={
             loading
-              ? "Loading..."
-              : `${peakPoint?.value ?? 0} orders in selected range`
+              ? common("loading")
+              : orders("ordersInSelectedRange", {
+                  count: peakPoint?.value ?? 0,
+                })
           }
         />
 
         <MetricCard
-          title="Pending Orders"
+          title={orders("pendingOrders")}
           value={loading ? "..." : String(pendingOrders)}
-          subtitle="awaiting payment completion"
+          subtitle={orders("awaitingPaymentCompletion")}
         />
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 import { Card } from "@/components/ui/card";
 import RestaurantGraph from "@/components/graphs/restaurant-graph";
@@ -13,6 +14,9 @@ import {
 type RestaurantTrendRange = "daily" | "weekly";
 
 export default function AnalyticsGrid() {
+  const common = useTranslations("common");
+  const models = useTranslations("models");
+  const dashboard = useTranslations("dashboard");
   const [range, setRange] = useState<RestaurantTrendRange>("daily");
 
   const { data: trendResponse, isLoading } = useGetRestaurantTrend(range);
@@ -30,14 +34,14 @@ export default function AnalyticsGrid() {
       <Card className="p-4 lg:p-[24px] border-none shadow-sm rounded-[10px] bg-white">
         <div className="flex items-center justify-between lg:mb-6 mb-4">
           <h3 className="text-base text-dark font-medium">
-            Top Performing Restaurants
+            {models("topPerformingRestaurants")}
           </h3>
 
           <Link
             href="/restaurants"
             className="text-xs font-medium text-primary hover:underline"
           >
-            View all
+            {common("viewAll")}
           </Link>
         </div>
 
@@ -58,20 +62,20 @@ export default function AnalyticsGrid() {
                     {res.name}
                   </p>
                   <p className="text-xs text-[#6A7282]">
-                    {res.ordersCount} orders
+                    {dashboard("ordersCount", { count: res.ordersCount })}
                   </p>
                 </div>
               </div>
 
               <p className="text-sm font-semibold text-green">
-                {res.customersCount} customers
+                {models("customersCount", { count: res.customersCount })}
               </p>
             </Link>
           ))}
 
           {!topRestaurantsData?.items?.length && (
             <div className="py-8 text-center text-sm text-gray-400">
-              No restaurant data available.
+              {models("noRestaurantData")}
             </div>
           )}
         </div>

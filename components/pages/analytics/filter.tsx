@@ -499,10 +499,12 @@ const drawPdfHeader = ({
   doc,
   exportType,
   rowCount,
+  rowsExportedLabel,
 }: {
   doc: jsPDF;
   exportType: ExportType;
   rowCount: number;
+  rowsExportedLabel: string;
 }) => {
   const pageWidth = doc.internal.pageSize.getWidth();
   const title = REPORT_LABELS[exportType];
@@ -518,7 +520,7 @@ const drawPdfHeader = ({
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(107, 114, 128);
-  doc.text(`${rowCount} row(s) exported`, 32, 50);
+  doc.text(rowsExportedLabel, 32, 50);
 
   doc.text(new Date().toLocaleString(), pageWidth - 32, 50, {
     align: "right",
@@ -528,7 +530,7 @@ const drawPdfHeader = ({
   doc.line(32, 68, pageWidth - 32, 68);
 };
 
-const drawPdfFooter = (doc: jsPDF) => {
+const drawPdfFooter = (doc: jsPDF, generatedLabel: string, pageLabel: (page: number, pageCount: number) => string) => {
   const pageCount = doc.getNumberOfPages();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -542,19 +544,30 @@ const drawPdfFooter = (doc: jsPDF) => {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(107, 114, 128);
-    doc.text(REPORT_LABELS.orders.replace("Orders", "Generated"), 32, pageHeight - 12);
-    doc.text(`Page ${page} of ${pageCount}`, pageWidth - 32, pageHeight - 12, {
+    doc.text(generatedLabel, 32, pageHeight - 12);
+    doc.text(pageLabel(page, pageCount), pageWidth - 32, pageHeight - 12, {
       align: "right",
     });
   }
 };
 
-const downloadPdf = (response: CsvExportResponse, exportType: ExportType) => {
+const downloadPdf = (
+  response: CsvExportResponse,
+  exportType: ExportType,
+  labels: {
+    noExportData: string;
+    rowsExported: (rowCount: number) => string;
+    generated: string;
+    page: (page: number, pageCount: number) => string;
+    subject: string;
+    creator: string;
+  }
+) => {
   const content = response?.data?.content || "";
   const rows = parseCsvContent(content);
 
   if (rows.length <= 1) {
-    toast.error("No data available to export as PDF");
+    toast.error(labels.noExportData);
     return;
   }
 
@@ -571,14 +584,15 @@ const downloadPdf = (response: CsvExportResponse, exportType: ExportType) => {
 
   doc.setProperties({
     title: REPORT_LABELS[exportType],
-    subject: `${REPORT_LABELS[exportType]} PDF export`,
-    creator: "Reports & Analytics",
+    subject: labels.subject,
+    creator: labels.creator,
   });
 
   drawPdfHeader({
     doc,
     exportType,
     rowCount,
+    rowsExportedLabel: labels.rowsExported(rowCount),
   });
 
   autoTable(doc, {
@@ -626,11 +640,12 @@ const downloadPdf = (response: CsvExportResponse, exportType: ExportType) => {
         doc,
         exportType,
         rowCount,
+        rowsExportedLabel: labels.rowsExported(rowCount),
       });
     },
   });
 
-  drawPdfFooter(doc);
+  drawPdfFooter(doc, labels.generated, labels.page);
 
   doc.save(getPdfFileName(response, exportType));
 };
@@ -676,15 +691,26 @@ export function AnalyticsFilter({
       if (format === "csv") {
         downloadCsv(response, exportType);
       } else {
-        downloadPdf(response, exportType);
+        downloadPdf(response, exportType, {
+          noExportData: toasts("noExportData"),
+          rowsExported: (rowCount) => toasts("rowsExported", { count: rowCount }),
+          generated: analytics("generated"),
+          page: (page, pageCount) => analytics("pageOf", { page, pageCount }),
+          subject: analytics("pdfExportSubject", {
+            report: analytics(`${exportType}Report`),
+          }),
+          creator: analytics("title"),
+        });
       }
 
       const rowCount =
         typeof response?.data?.rowCount === "number"
-          ? ` (${response.data.rowCount} rows)`
+          ? ` (${toasts("rowsCount", { count: response.data.rowCount })})`
           : "";
 
-      toast.success(`${analytics(`${exportType}Report`)} exported successfully${rowCount}`);
+      toast.success(
+        `${analytics(`${exportType}Report`)} ${toasts("exportedSuccessfully")}${rowCount}`
+      );
     } catch (error: unknown) {
       const errorRecord =
         error && typeof error === "object"
@@ -696,7 +722,9 @@ export function AnalyticsFilter({
       toast.error(
         response?.data?.message ||
           (error instanceof Error ? error.message : "") ||
-          `Failed to export ${REPORT_LABELS[exportType].toLowerCase()}`
+          toasts("reportExportFailed", {
+            report: analytics(`${exportType}Report`).toLowerCase(),
+          })
       );
     } finally {
       setExportingFormat(null);

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   createPackagePlan,
   createPackageSubscription,
@@ -80,6 +81,7 @@ export const useGetPackagePlanDetail = (id?: string) => {
 };
 
 export const useCreatePackagePlan = () => {
+  const toasts = useTranslations("toasts");
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -93,15 +95,16 @@ export const useCreatePackagePlan = () => {
         queryKey: packagePlanKeys.featureCatalog(),
       });
 
-      toast.success("Package plan created successfully");
+      toast.success(toasts("packagePlanCreated"));
     },
     onError: (err: any) => {
-      toast.error(getErrorMessage(err, "Failed to create package plan"));
+      toast.error(getErrorMessage(err, toasts("packagePlanCreateFailed")));
     },
   });
 };
 
 export const useUpdatePackagePlan = () => {
+  const toasts = useTranslations("toasts");
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -121,15 +124,16 @@ export const useUpdatePackagePlan = () => {
         queryKey: packagePlanKeys.detail(variables.id),
       });
 
-      toast.success("Package plan updated successfully");
+      toast.success(toasts("packagePlanUpdated"));
     },
     onError: (err: any) => {
-      toast.error(getErrorMessage(err, "Failed to update package plan"));
+      toast.error(getErrorMessage(err, toasts("packagePlanUpdateFailed")));
     },
   });
 };
 
 export const useDeletePackagePlan = () => {
+  const toasts = useTranslations("toasts");
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -139,10 +143,10 @@ export const useDeletePackagePlan = () => {
         queryKey: packagePlanKeys.lists(),
       });
 
-      toast.success("Package plan deleted successfully");
+      toast.success(toasts("packagePlanDeleted"));
     },
     onError: (err: any) => {
-      toast.error(getErrorMessage(err, "Failed to delete package plan"));
+      toast.error(getErrorMessage(err, toasts("packagePlanDeleteFailed")));
     },
   });
 };
@@ -176,6 +180,7 @@ export const useGetPackageSubscriptions = (
 };
 
 export const useCreatePackageSubscription = () => {
+  const toasts = useTranslations("toasts");
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -187,15 +192,16 @@ export const useCreatePackageSubscription = () => {
         queryKey: packagePlanKeys.subscriptions(),
       });
 
-      toast.success("Subscription assigned successfully");
+      toast.success(toasts("subscriptionAssigned"));
     },
     onError: (err: any) => {
-      toast.error(getErrorMessage(err, "Failed to assign subscription"));
+      toast.error(getErrorMessage(err, toasts("subscriptionAssignFailed")));
     },
   });
 };
 
 export const useUpdatePackageSubscription = () => {
+  const toasts = useTranslations("toasts");
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -212,10 +218,10 @@ export const useUpdatePackageSubscription = () => {
         queryKey: packagePlanKeys.subscriptions(),
       });
 
-      toast.success("Subscription updated successfully");
+      toast.success(toasts("subscriptionUpdated"));
     },
     onError: (err: any) => {
-      toast.error(getErrorMessage(err, "Failed to update subscription"));
+      toast.error(getErrorMessage(err, toasts("subscriptionUpdateFailed")));
     },
   });
 };

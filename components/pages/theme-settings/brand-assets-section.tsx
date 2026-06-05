@@ -1,26 +1,31 @@
+"use client";
+
 import { Image as ImageIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import FileUploader from './file-uploader';
 
 const BrandAssetsSection = () => {
+    const themeSettings = useTranslations("themeSettings");
+
     return (
         <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm space-y-6">
             <div className="flex items-center gap-3">
                 <ImageIcon className="text-gray-500" />
-                <h3 className="text-[20px] font-semibold text-dark">Brand Assets</h3>
+                <h3 className="text-[20px] font-semibold text-dark">{themeSettings("brandAssets")}</h3>
             </div>
             <FileUploader 
-                title="Restaurant Logo"
-                recommendation="Recommended: 400x120px, PNG or SVG with transparent background"
+                title={themeSettings("restaurantLogo")}
+                recommendation={themeSettings("restaurantLogoRecommendation")}
                 fileTypes=".png, .svg, .jpg"
             />
             <FileUploader 
-                title="Favicon"
-                recommendation="Recommended: 32x32px or 64x64px, PNG or ICO"
+                title={themeSettings("favicon")}
+                recommendation={themeSettings("faviconRecommendation")}
                 fileTypes=".png, .ico"
             />
             <FileUploader 
-                title="Hero Banner"
-                recommendation="Recommended: 1920x600px, JPG or PNG"
+                title={themeSettings("heroBanner")}
+                recommendation={themeSettings("heroBannerRecommendation")}
                 fileTypes=".png, .jpg"
             />
         </div>

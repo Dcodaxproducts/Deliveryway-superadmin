@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   getGlobalSettings,
   updateGlobalSettings,
@@ -23,6 +24,7 @@ export const useGetGlobalSettings = () => {
  * ==============================
  */
 export const useUpdateGlobalSettings = () => {
+  const toasts = useTranslations("toasts");
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -30,12 +32,12 @@ export const useUpdateGlobalSettings = () => {
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["global-settings"] });
-      toast.success("Settings updated successfully!");
+      toast.success(toasts("settingsUpdated"));
     },
 
     onError: (err: any) => {
       toast.error(
-        err?.response?.data?.message || "Failed to update settings"
+        err?.response?.data?.message || toasts("settingsUpdateFailed")
       );
     },
   });

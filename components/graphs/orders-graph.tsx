@@ -13,6 +13,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { RefreshCw } from "lucide-react";
 import { useGetOrdersTrend } from "@/hooks/useDashboard";
+import { useTranslations } from "next-intl";
 
 type TrendRange = "daily" | "weekly" | "monthly";
 
@@ -26,6 +27,8 @@ const OrdersGraph = ({
   title = "Orders Trend",
   description,
 }: OrdersGraphProps) => {
+  const common = useTranslations("common");
+  const dashboard = useTranslations("dashboard");
   const [range, setRange] = useState<TrendRange>("daily");
 
   const {
@@ -61,13 +64,17 @@ const OrdersGraph = ({
             <h3 className="text-base font-medium text-dark">{title}</h3>
 
             <div className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              {loading ? "Loading..." : `${totalOrdersInRange} orders`}
+              {loading
+                ? common("loading")
+                : dashboard("ordersCount", { count: totalOrdersInRange })}
             </div>
           </div>
 
           <p className="mt-1 text-sm text-gray">
             {description ||
-              `Track orders across the selected ${currentRange} range`}
+              dashboard("trackOrdersRange", {
+                range: dashboard(`ranges.${currentRange}`),
+              })}
           </p>
         </div>
 
@@ -84,7 +91,7 @@ const OrdersGraph = ({
                 }`}
                 onClick={() => setRange(r)}
               >
-                {r}
+                {dashboard(`ranges.${r}`)}
               </button>
             ))}
           </div>
@@ -93,8 +100,8 @@ const OrdersGraph = ({
             type="button"
             onClick={() => refetch()}
             className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-gray-200 text-gray-500 transition hover:border-primary hover:bg-primary/5 hover:text-primary"
-            aria-label="Refresh order trend"
-            title="Refresh"
+            aria-label={dashboard("refreshOrderTrend")}
+            title={common("refresh")}
           >
             <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
           </button>
@@ -106,7 +113,7 @@ const OrdersGraph = ({
           <div className="h-full w-full animate-pulse rounded-[12px] bg-gray-100" />
         ) : chartData.length === 0 ? (
           <div className="flex h-full items-center justify-center rounded-[12px] border border-dashed border-gray-200 text-sm text-gray-400">
-            No order trend data available.
+            {dashboard("noOrderTrendData")}
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
@@ -141,7 +148,10 @@ const OrdersGraph = ({
                   border: "none",
                   boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                 }}
-                formatter={(value: number) => [`${value}`, "Orders"]}
+                formatter={(value: number) => [
+                  `${value}`,
+                  dashboard("orders"),
+                ]}
               />
 
               <Line

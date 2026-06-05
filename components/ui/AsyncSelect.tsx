@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown, Loader2, Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface Props {
   value: any;
@@ -18,12 +19,14 @@ interface Props {
 export default function AsyncSelect({
   value,
   onChange,
-  placeholder = "Select",
+  placeholder,
   fetchOptions,
   labelKey = "name",
   valueKey = "id",
 }: Props) {
+  const common = useTranslations("common");
   const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const resolvedPlaceholder = placeholder ?? common("select");
 
   const [open, setOpen] = useState(false);
   const [options, setOptions] = useState<any[]>([]);
@@ -108,7 +111,7 @@ export default function AsyncSelect({
         className="flex h-[44px] w-full items-center justify-between rounded-lg border border-[#BBBBBB] bg-white px-3 text-sm"
       >
         <span className={value ? "text-gray-900" : "text-gray-400"}>
-          {value ? value[labelKey] : placeholder}
+          {value ? value[labelKey] : resolvedPlaceholder}
         </span>
 
         <ChevronDown size={16} />
@@ -124,7 +127,7 @@ export default function AsyncSelect({
               <Search size={14} />
               <input
                 className="w-full outline-none text-sm"
-                placeholder="Search..."
+                placeholder={common("searchPlaceholder")}
                 value={search}
                 onChange={(e) => {
                   setPage(1);
@@ -169,7 +172,7 @@ export default function AsyncSelect({
 
             {!loading && options.length === 0 && (
               <div className="p-3 text-center text-gray-400 text-sm">
-                No results found
+                {common("noResultsFound")}
               </div>
             )}
           </div>

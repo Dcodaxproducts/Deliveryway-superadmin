@@ -11,6 +11,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import {
   useGetStaffList,
@@ -30,6 +31,8 @@ export default function EmployeeTable({
   search: string;
   setExportData?: (data: any[]) => void;
 }) {
+  const common = useTranslations("common");
+  const employeeSettings = useTranslations("employeeSettings");
   const [page, setPage] = useState(1);
   const [dropdownId, setDropdownId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -65,12 +68,12 @@ useEffect(() => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>SL</TableHead>
-            <TableHead>Employee</TableHead>
-            <TableHead>Details</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-center">Actions</TableHead>
+            <TableHead>{employeeSettings("serial")}</TableHead>
+            <TableHead>{employeeSettings("employee")}</TableHead>
+            <TableHead>{employeeSettings("details")}</TableHead>
+            <TableHead>{employeeSettings("role")}</TableHead>
+            <TableHead>{common("status")}</TableHead>
+            <TableHead className="text-center">{common("actions")}</TableHead>
           </TableRow>
         </TableHeader>
 

@@ -12,11 +12,12 @@ import { Card } from "@/components/ui/card";
 import { Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGetTopPerformingRestaurants } from "@/hooks/useDashboard";
+import { useTranslations } from "next-intl";
 
 const getPerformanceLabel = (rank: number) => {
-  if (rank === 1) return "Gold";
-  if (rank === 2) return "Silver";
-  if (rank === 3) return "Bronze";
+  if (rank === 1) return "gold";
+  if (rank === 2) return "silver";
+  if (rank === 3) return "bronze";
   return null;
 };
 
@@ -28,6 +29,7 @@ const getTrophyColor = (rank: number) => {
 };
 
 export default function TopPerformingRestaurants() {
+  const models = useTranslations("models");
   const {
     data: topRestaurantsResponse,
     isLoading,
@@ -41,10 +43,10 @@ export default function TopPerformingRestaurants() {
     <div className="space-y-[16px]">
       <div className="space-y-[6px]">
         <h3 className="text-lg font-semibold text-dark">
-          Top Performing Restaurants
+          {models("topPerformingRestaurants")}
         </h3>
         <p className="text-base text-gray">
-          Based on total orders and customer reach
+          {models("topPerformingRestaurantsDescription")}
         </p>
       </div>
 
@@ -54,19 +56,19 @@ export default function TopPerformingRestaurants() {
             <TableHeader>
               <TableRow className="border-none hover:bg-transparent">
                 <TableHead className="w-[80px] py-4 pl-6 pr-10 lg:pr-0">
-                  Rank
+                  {models("rank")}
                 </TableHead>
                 <TableHead className="w-[240px] min-w-[240px]">
-                  Restaurant Name
+                  {models("restaurantName")}
                 </TableHead>
                 <TableHead className="w-[140px] min-w-[140px] text-center">
-                  Total Orders
+                  {models("totalOrders")}
                 </TableHead>
                 <TableHead className="w-[140px] min-w-[140px] text-center">
-                  Total Customers
+                  {models("totalCustomers")}
                 </TableHead>
                 <TableHead className="w-[140px] min-w-[140px] text-center">
-                  Performance
+                  {models("performance")}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -138,15 +140,15 @@ export default function TopPerformingRestaurants() {
                           <span
                             className={cn(
                               "inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-1 text-xs font-semibold",
-                              perf === "Gold" &&
+                              perf === "gold" &&
                                 "border border-yellow-200 bg-yellow-50 text-yellow-600",
-                              perf === "Silver" &&
+                              perf === "silver" &&
                                 "border border-slate-200 bg-slate-50 text-slate-600",
-                              perf === "Bronze" &&
+                              perf === "bronze" &&
                                 "border border-orange-200 bg-orange-50 text-orange-600"
                             )}
                           >
-                            {perf}
+                            {models(`performanceLabels.${perf}`)}
                           </span>
                         )}
                       </TableCell>
@@ -159,7 +161,7 @@ export default function TopPerformingRestaurants() {
                     colSpan={5}
                     className="py-10 text-center text-sm text-gray-400"
                   >
-                    No top performing restaurants found.
+                    {models("noTopPerformingRestaurants")}
                   </TableCell>
                 </TableRow>
               )}

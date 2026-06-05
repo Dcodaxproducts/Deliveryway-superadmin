@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   Users,
   UserCheck,
@@ -26,6 +27,7 @@ interface StatsSectionProps {
 }
 
 const StatsSection = ({ stats, loading }: StatsSectionProps) => {
+  const employeeSettings = useTranslations("employeeSettings");
   const totalEmployees = stats?.totalEmployees ?? 0;
   const activeEmployees = stats?.activeEmployees ?? 0;
   const inactiveEmployees = stats?.inactiveEmployees ?? 0;
@@ -33,22 +35,22 @@ const StatsSection = ({ stats, loading }: StatsSectionProps) => {
 
   const cards = [
     {
-      title: "Total Employees",
+      title: employeeSettings("totalEmployees"),
       value: totalEmployees,
       icon: Users,
     },
     {
-      title: "Active Employees",
+      title: employeeSettings("activeEmployees"),
       value: activeEmployees,
       icon: UserCheck,
     },
     {
-      title: "Inactive Employees",
+      title: employeeSettings("inactiveEmployees"),
       value: inactiveEmployees,
       icon: UserX,
     },
     {
-      title: "Total Roles",
+      title: employeeSettings("totalRoles"),
       value: totalRoles,
       icon: BriefcaseBusiness,
     },

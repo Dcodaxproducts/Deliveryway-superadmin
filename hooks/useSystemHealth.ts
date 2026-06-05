@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import {
   getSystemHealthOverview,
@@ -19,6 +20,7 @@ import {
  * ==============================
  */
 export const useGetSystemHealthOverview = () => {
+  const toasts = useTranslations("toasts");
   const query = useQuery<SystemHealthOverview>({
     queryKey: ["system-health-overview"],
     queryFn: getSystemHealthOverview,
@@ -30,10 +32,10 @@ export const useGetSystemHealthOverview = () => {
       const err: any = query.error;
       toast.error(
         err?.response?.data?.message ||
-          "Failed to fetch system health overview"
+          toasts("systemHealthOverviewFetchFailed")
       );
     }
-  }, [query.error]);
+  }, [query.error, toasts]);
 
   return query;
 };
@@ -44,6 +46,7 @@ export const useGetSystemHealthOverview = () => {
  * ==============================
  */
 export const useGetRequestMetrics = (range: string = "hour") => {
+  const toasts = useTranslations("toasts");
   const query = useQuery<RequestMetrics>({
     queryKey: ["system-health-metrics", range],
     queryFn: () => getRequestMetrics(range),
@@ -55,10 +58,10 @@ export const useGetRequestMetrics = (range: string = "hour") => {
       const err: any = query.error;
       toast.error(
         err?.response?.data?.message ||
-          "Failed to fetch request metrics"
+          toasts("requestMetricsFetchFailed")
       );
     }
-  }, [query.error]);
+  }, [query.error, toasts]);
 
   return query;
 };
@@ -69,6 +72,7 @@ export const useGetRequestMetrics = (range: string = "hour") => {
  * ==============================
  */
 export const useGetRequestLogs = (limit: number = 20) => {
+  const toasts = useTranslations("toasts");
   const query = useQuery<RequestLog[]>({
     queryKey: ["system-health-logs", limit],
     queryFn: () => getRequestLogs(limit),
@@ -80,10 +84,10 @@ export const useGetRequestLogs = (limit: number = 20) => {
       const err: any = query.error;
       toast.error(
         err?.response?.data?.message ||
-          "Failed to fetch request logs"
+          toasts("requestLogsFetchFailed")
       );
     }
-  }, [query.error]);
+  }, [query.error, toasts]);
 
   return query;
 };
@@ -97,6 +101,7 @@ export const useGetIntegrationLogs = (
   type: string = "webhook",
   limit: number = 20
 ) => {
+  const toasts = useTranslations("toasts");
   const query = useQuery<IntegrationLog>({
     queryKey: ["system-health-integration-logs", type, limit],
     queryFn: () => getIntegrationLogs(type, limit),
@@ -108,10 +113,10 @@ export const useGetIntegrationLogs = (
       const err: any = query.error;
       toast.error(
         err?.response?.data?.message ||
-          "Failed to fetch integration logs"
+          toasts("integrationLogsFetchFailed")
       );
     }
-  }, [query.error]);
+  }, [query.error, toasts]);
 
   return query;
 };

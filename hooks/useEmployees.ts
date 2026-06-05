@@ -14,6 +14,7 @@ import {
   deleteStaffRole,
 } from "@/services/employees";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 /**
  * ==============================
@@ -22,6 +23,7 @@ import { useRouter } from "next/navigation";
  */
 
 export const useCreateStaff = () => {
+  const toasts = useTranslations("toasts");
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -29,10 +31,10 @@ export const useCreateStaff = () => {
     mutationFn: createStaff,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["staff"] });
-      toast.success("Staff created successfully!");
+      toast.success(toasts("staffCreated"));
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || "Failed to create staff");
+      toast.error(err?.response?.data?.message || toasts("staffCreateFailed"));
     },
   });
 };
@@ -64,6 +66,7 @@ export const useGetStaff = (id: string) => {
 };
 
 export const useUpdateStaff = () => {
+  const toasts = useTranslations("toasts");
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -73,26 +76,27 @@ export const useUpdateStaff = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["staff"] });
       queryClient.invalidateQueries({ queryKey: ["staff", variables.id] });
-      toast.success("Staff updated successfully!");
+      toast.success(toasts("staffUpdated"));
     },
 
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || "Failed to update staff");
+      toast.error(err?.response?.data?.message || toasts("staffUpdateFailed"));
     },
   });
 };
 
 export const useDeleteStaff = () => {
+  const toasts = useTranslations("toasts");
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: deleteStaff,
     onSuccess: () => {
-      toast.success("Staff deleted successfully");
+      toast.success(toasts("staffDeleted"));
       queryClient.invalidateQueries({ queryKey: ["staff"] });
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || "Failed to delete staff");
+      toast.error(err?.response?.data?.message || toasts("staffDeleteFailed"));
     },
   });
 };
@@ -101,6 +105,7 @@ export const useDeleteStaff = () => {
  * Toggle active/inactive
  */
 export const useUpdateStaffStatus = () => {
+  const toasts = useTranslations("toasts");
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -109,11 +114,11 @@ export const useUpdateStaffStatus = () => {
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["staff"] });
-      toast.success("Staff status updated");
+      toast.success(toasts("staffStatusUpdated"));
     },
 
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || "Failed to update status");
+      toast.error(err?.response?.data?.message || toasts("staffStatusUpdateFailed"));
     },
   });
 };
@@ -125,16 +130,17 @@ export const useUpdateStaffStatus = () => {
  */
 
 export const useCreateStaffRole = () => {
+  const toasts = useTranslations("toasts");
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: createStaffRole,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["staff-roles"] });
-      toast.success("Role created successfully!");
+      toast.success(toasts("roleCreated"));
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || "Failed to create role");
+      toast.error(err?.response?.data?.message || toasts("roleCreateFailed"));
     },
   });
 };
@@ -158,6 +164,7 @@ export const useGetStaffRole = (id: string) => {
 };
 
 export const useUpdateStaffRole = () => {
+  const toasts = useTranslations("toasts");
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -169,26 +176,27 @@ export const useUpdateStaffRole = () => {
       queryClient.invalidateQueries({
         queryKey: ["staff-role", variables.id],
       });
-      toast.success("Role updated successfully!");
+      toast.success(toasts("roleUpdated"));
     },
 
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || "Failed to update role");
+      toast.error(err?.response?.data?.message || toasts("roleUpdateFailed"));
     },
   });
 };
 
 export const useDeleteStaffRole = () => {
+  const toasts = useTranslations("toasts");
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: deleteStaffRole,
     onSuccess: () => {
-      toast.success("Role deleted successfully");
+      toast.success(toasts("roleDeleted"));
       queryClient.invalidateQueries({ queryKey: ["staff-roles"] });
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || "Failed to delete role");
+      toast.error(err?.response?.data?.message || toasts("roleDeleteFailed"));
     },
   });
 };

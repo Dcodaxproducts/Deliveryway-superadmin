@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import RevenueGraph from "../../graphs/revenue-graph";
 import { useGetDashboardSystemAlerts } from "@/hooks/useDashboard";
 import { AlertCircle, Info, ShieldAlert, TriangleAlert } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const getSeverityStyles = (severity?: string) => {
   switch ((severity || "").toLowerCase()) {
@@ -48,6 +49,8 @@ const getSeverityStyles = (severity?: string) => {
 };
 
 export default function RevenueAnalytics() {
+  const common = useTranslations("common");
+  const dashboard = useTranslations("dashboard");
   const {
     data: alertsResponse,
     isLoading,
@@ -65,14 +68,14 @@ export default function RevenueAnalytics() {
       {/* System Alerts Card */}
       <Card className="p-4 lg:p-[24px] border-none shadow-sm rounded-[10px] bg-white">
         <div className="mb-5 flex items-center justify-between">
-          <h3 className="text-base text-dark">System Alerts</h3>
+          <h3 className="text-base text-dark">{dashboard("systemAlerts")}</h3>
 
           <button
             type="button"
             onClick={() => refetch()}
             className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-gray-200 text-gray-500 transition hover:border-primary hover:bg-primary/5 hover:text-primary"
-            aria-label="Refresh system alerts"
-            title="Refresh"
+            aria-label={dashboard("refreshSystemAlerts")}
+            title={common("refresh")}
           >
             <svg
               className={loading ? "animate-spin" : ""}
@@ -128,7 +131,7 @@ export default function RevenueAnalytics() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <h4 className="text-sm font-semibold text-dark">
-                          {alert?.title || "System Alert"}
+                          {alert?.title || dashboard("systemAlert")}
                         </h4>
 
                         {typeof alert?.count === "number" && (
@@ -148,7 +151,7 @@ export default function RevenueAnalytics() {
             })
           ) : (
             <div className="flex min-h-[180px] items-center justify-center rounded-xl border border-dashed border-gray-200 text-sm text-gray-400">
-              No system alerts available.
+              {dashboard("noSystemAlerts")}
             </div>
           )}
         </div>

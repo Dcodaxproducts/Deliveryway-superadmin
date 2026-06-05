@@ -12,10 +12,13 @@ import {
 } from "recharts";
 import { Card } from "@/components/ui/card";
 import { useGetRevenueTrend } from "@/hooks/useDashboard";
+import { useTranslations } from "next-intl";
 
 type TrendRange = "daily" | "weekly" | "monthly";
 
 const RevenueGraph = ({ type = "home" }: { type?: string }) => {
+  const common = useTranslations("common");
+  const dashboard = useTranslations("dashboard");
   const [range, setRange] = useState<TrendRange>("daily");
 
   const {
@@ -71,15 +74,17 @@ const RevenueGraph = ({ type = "home" }: { type?: string }) => {
       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-3">
-            <h3 className="text-base font-medium text-dark">Revenue Trend</h3>
+            <h3 className="text-base font-medium text-dark">{dashboard("revenueTrend")}</h3>
 
             <div className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              {loading ? "Loading..." : formatCurrency(totalRevenueInRange)}
+              {loading ? common("loading") : formatCurrency(totalRevenueInRange)}
             </div>
           </div>
 
           <p className="mt-1 text-sm text-gray-400 capitalize">
-            Revenue for the selected {range} range
+            {dashboard("revenueSelectedRange", {
+              range: dashboard(`ranges.${range}`),
+            })}
           </p>
         </div>
 
@@ -99,7 +104,7 @@ const RevenueGraph = ({ type = "home" }: { type?: string }) => {
                       : "text-[#4A5565] hover:text-dark"
                   }`}
                 >
-                  {item}
+                  {dashboard(`ranges.${item}`)}
                 </button>
               );
             })}
@@ -109,8 +114,8 @@ const RevenueGraph = ({ type = "home" }: { type?: string }) => {
             type="button"
             onClick={() => refetch()}
             className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-gray-200 text-gray-500 transition hover:border-primary hover:bg-primary/5 hover:text-primary"
-            aria-label="Refresh revenue trend"
-            title="Refresh"
+            aria-label={dashboard("refreshRevenueTrend")}
+            title={common("refresh")}
           >
             <svg
               className={loading ? "animate-spin" : ""}
@@ -138,7 +143,7 @@ const RevenueGraph = ({ type = "home" }: { type?: string }) => {
           <div className="h-full w-full animate-pulse rounded-[12px] bg-gray-100" />
         ) : revenueData.length === 0 ? (
           <div className="flex h-full items-center justify-center rounded-[12px] border border-dashed border-gray-200 text-sm text-gray-400">
-            No revenue trend data available.
+            {dashboard("noRevenueTrendData")}
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
@@ -183,8 +188,13 @@ const RevenueGraph = ({ type = "home" }: { type?: string }) => {
                   boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                 }}
                 cursor={{ fill: "transparent" }}
-                formatter={(value: number) => [formatCurrency(value), "Revenue"]}
-                labelFormatter={(label) => `Period: ${label}`}
+                formatter={(value: number) => [
+                  formatCurrency(value),
+                  dashboard("revenue"),
+                ]}
+                labelFormatter={(label) =>
+                  dashboard("periodLabel", { label })
+                }
               />
 
               <Bar

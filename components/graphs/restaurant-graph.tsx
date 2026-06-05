@@ -11,6 +11,7 @@ import {
 } from "recharts";
 
 import { Card } from "@/components/ui/card";
+import { useTranslations } from "next-intl";
 
 type RestaurantTrendRange = "daily" | "weekly";
 
@@ -34,6 +35,8 @@ const RestaurantGraph = ({
   range = "daily",
   onRangeChange,
 }: RestaurantGraphProps) => {
+  const dashboard = useTranslations("dashboard");
+  const common = useTranslations("common");
   const chartData = data.map((item) => ({
     time: item.label || "",
     count: Number(item.value || 0),
@@ -42,7 +45,7 @@ const RestaurantGraph = ({
   return (
     <Card className="lg:col-span-2 p-4 lg:p-[25.5px] border-none shadow-sm rounded-[10px] bg-white">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-        <h3 className="text-base text-dark font-medium">Restaurant Trend</h3>
+        <h3 className="text-base text-dark font-medium">{dashboard("restaurantTrend")}</h3>
 
         <div className="flex rounded-lg gap-[8px]">
           {rangeOptions.map((option) => {
@@ -59,7 +62,7 @@ const RestaurantGraph = ({
                 }`}
                 onClick={() => onRangeChange?.(option)}
               >
-                {option.charAt(0).toUpperCase() + option.slice(1)}
+                {dashboard(`ranges.${option}`)}
               </button>
             );
           })}
@@ -69,11 +72,11 @@ const RestaurantGraph = ({
       <div className="h-[250px] w-full">
         {isLoading ? (
           <div className="h-full flex items-center justify-center text-gray-400">
-            Loading chart...
+            {dashboard("loadingChart")}
           </div>
         ) : chartData.length === 0 ? (
           <div className="h-full flex items-center justify-center text-gray-400">
-            No trend data available.
+            {dashboard("noTrendData")}
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">

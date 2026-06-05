@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   getGlobalPaymentMethods,
   updateGlobalPaymentMethods,
@@ -36,6 +37,7 @@ export const useGlobalPaymentMethodsQuery = () => {
 };
 
 export const useUpdateGlobalPaymentMethodsMutation = () => {
+  const toasts = useTranslations("toasts");
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -47,12 +49,12 @@ export const useUpdateGlobalPaymentMethodsMutation = () => {
         queryKey: GLOBAL_PAYMENT_METHODS_QUERY_KEY,
       });
 
-      toast.success(response.message || "Payment methods updated successfully!");
+      toast.success(response.message || toasts("paymentMethodsUpdated"));
     },
 
     onError: (error: unknown) => {
       toast.error(
-        getErrorMessage(error, "Failed to update payment methods")
+        getErrorMessage(error, toasts("paymentMethodsUpdateFailed"))
       );
     },
   });

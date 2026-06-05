@@ -16,8 +16,11 @@ import {
   Server,
   Database,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
-const formatTimeAgo = (dateString?: string) => {
+type DashboardTranslator = ReturnType<typeof useTranslations>;
+
+const formatTimeAgo = (dateString: string | undefined, dashboard: DashboardTranslator) => {
   if (!dateString) return "-";
 
   const date = new Date(dateString);
@@ -30,10 +33,10 @@ const formatTimeAgo = (dateString?: string) => {
   const hours = Math.floor(diffMs / (1000 * 60 * 60));
   const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (minutes < 1) return "Just now";
-  if (minutes < 60) return `${minutes} min ago`;
-  if (hours < 24) return `${hours} hr ago`;
-  return `${days} day${days > 1 ? "s" : ""} ago`;
+  if (minutes < 1) return dashboard("justNow");
+  if (minutes < 60) return dashboard("minutesAgo", { count: minutes });
+  if (hours < 24) return dashboard("hoursAgo", { count: hours });
+  return dashboard("daysAgo", { count: days });
 };
 
 const getActivityStyles = (type?: string) => {
@@ -82,6 +85,8 @@ const formatUptime = (seconds?: number) => {
 };
 
 export default function SystemStatus() {
+  const common = useTranslations("common");
+  const dashboard = useTranslations("dashboard");
   const router = useRouter();
 
   const {
@@ -106,19 +111,19 @@ export default function SystemStatus() {
 
   const systemHealth = [
     {
-      label: "System Status",
-      value: health?.status === "healthy" ? "Healthy" : health?.status || "-",
+      label: dashboard("systemStatus"),
+      value: health?.status === "healthy" ? dashboard("healthy") : health?.status || "-",
       status: health?.status === "healthy" ? "success" : "warning",
       icon: ShieldCheck,
     },
     {
-      label: "Database",
-      value: health?.database?.status === "up" ? "Connected" : "Issue",
+      label: dashboard("database"),
+      value: health?.database?.status === "up" ? dashboard("connected") : dashboard("issue"),
       status: health?.database?.status === "up" ? "success" : "warning",
       icon: Database,
     },
     {
-      label: "Memory Usage",
+      label: dashboard("memoryUsage"),
       value:
         typeof health?.server?.memory?.usedPercent === "number"
           ? `${health.server.memory.usedPercent.toFixed(1)}%`
@@ -128,7 +133,7 @@ export default function SystemStatus() {
       icon: Server,
     },
     {
-      label: "Disk Usage",
+      label: dashboard("diskUsage"),
       value:
         typeof health?.server?.disk?.usedPercent === "number"
           ? `${health.server.disk.usedPercent.toFixed(1)}%`
@@ -138,7 +143,7 @@ export default function SystemStatus() {
       icon: AlertTriangle,
     },
     {
-      label: "API Success Rate",
+      label: dashboard("apiSuccessRate"),
       value:
         typeof health?.api?.successRate === "number"
           ? `${health.api.successRate}%`
@@ -148,7 +153,7 @@ export default function SystemStatus() {
       icon: Activity,
     },
     {
-      label: "Server Uptime",
+      label: dashboard("serverUptime"),
       value: formatUptime(health?.server?.uptimeSeconds),
       status: "success",
       icon: Server,
@@ -163,7 +168,7 @@ export default function SystemStatus() {
         className="cursor-pointer p-4 lg:p-[24px] border-none shadow-sm rounded-[10px] bg-white transition hover:shadow-md"
       >
         <div className="mb-5 flex items-center justify-between">
-          <h3 className="text-base text-dark">System Health</h3>
+          <h3 className="text-base text-dark">{dashboard("systemHealth")}</h3>
 
           <button
             type="button"
@@ -172,8 +177,8 @@ export default function SystemStatus() {
               refetchHealth();
             }}
             className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-gray-200 text-gray-500 transition hover:border-primary hover:bg-primary/5 hover:text-primary"
-            aria-label="Refresh system health"
-            title="Refresh"
+            aria-label={dashboard("refreshSystemHealth")}
+            title={common("refresh")}
           >
             <svg
               className={loadingHealth ? "animate-spin" : ""}
@@ -246,14 +251,14 @@ export default function SystemStatus() {
       {/* Recent Activity Card */}
       <Card className="lg:col-span-2 p-4 lg:p-[24px] border-none shadow-sm rounded-[10px] bg-white">
         <div className="mb-[16px] flex items-center justify-between">
-          <h3 className="text-base text-dark">Recent Activity</h3>
+          <h3 className="text-base text-dark">{dashboard("recentActivity")}</h3>
 
           <button
             type="button"
             onClick={() => refetchActivity()}
             className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-gray-200 text-gray-500 transition hover:border-primary hover:bg-primary/5 hover:text-primary"
-            aria-label="Refresh recent activity"
-            title="Refresh"
+            aria-label={dashboard("refreshRecentActivity")}
+            title={common("refresh")}
           >
             <svg
               className={loadingActivity ? "animate-spin" : ""}
@@ -300,13 +305,13 @@ export default function SystemStatus() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-base text-dark">
-                      {activity.title || "Activity"}
+                      {activity.title || dashboard("activity")}
                     </p>
                     <p className="text-sm text-gray line-clamp-1">
                       {activity.description || "-"}
                     </p>
                     <p className="text-sm text-gray mt-1">
-                      {formatTimeAgo(activity.occurredAt)}
+                      {formatTimeAgo(activity.occurredAt, dashboard)}
                     </p>
                   </div>
                 </div>
@@ -314,7 +319,7 @@ export default function SystemStatus() {
             })
           ) : (
             <div className="flex min-h-[220px] items-center justify-center rounded-xl border border-dashed border-gray-200 text-sm text-gray-400">
-              No recent activity available.
+              {dashboard("noRecentActivity")}
             </div>
           )}
         </div>

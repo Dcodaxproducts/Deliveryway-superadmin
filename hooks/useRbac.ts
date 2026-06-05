@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { getStaffRoles, getStaffRoleById, createStaffRole, updateStaffRole, deleteStaffRole } from "@/services/rbac";
 
 export const useStaffRoles = () => {
@@ -18,45 +19,48 @@ export const useStaffRole = (id: string) => {
 };
 
 export const useCreateStaffRole = () => {
+  const toasts = useTranslations("toasts");
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createStaffRole,
     onSuccess: () => {
-      toast.success("Role created successfully");
+      toast.success(toasts("roleCreated"));
       queryClient.invalidateQueries({ queryKey: ["staff-roles"] });
     },
     onError: (err: any) => {
-      const message = err?.response?.data?.message || "Failed to create role";
+      const message = err?.response?.data?.message || toasts("roleCreateFailed");
       toast.error(message);
     },
   });
 };
 
 export const useUpdateStaffRole = () => {
+  const toasts = useTranslations("toasts");
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => updateStaffRole(id, data),
     onSuccess: () => {
-      toast.success("Role updated successfully");
+      toast.success(toasts("roleUpdated"));
       queryClient.invalidateQueries({ queryKey: ["staff-roles"] });
     },
     onError: (err: any) => {
-      const message = err?.response?.data?.message || "Failed to update role";
+      const message = err?.response?.data?.message || toasts("roleUpdateFailed");
       toast.error(message);
     },
   });
 };
 
 export const useDeleteStaffRole = () => {
+  const toasts = useTranslations("toasts");
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteStaffRole,
     onSuccess: () => {
-      toast.success("Role deleted successfully");
+      toast.success(toasts("roleDeleted"));
       queryClient.invalidateQueries({ queryKey: ["staff-roles"] });
     },
     onError: (err: any) => {
-      const message = err?.response?.data?.message || "Failed to delete role";
+      const message = err?.response?.data?.message || toasts("roleDeleteFailed");
       toast.error(message);
     },
   });

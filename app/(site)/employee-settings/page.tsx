@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import Container from "@/components/container";
 import StatsSection from "@/components/pages/employee-settings/stats-section";
 import Filters from "@/components/pages/employee-settings/filters";
@@ -9,6 +10,7 @@ import Header from "@/components/pages/employee-settings/header";
 import { useGetEmployeesStats } from "@/hooks/useDashboard";
 
 const EmployeeSettingsPage = () => {
+  const employeeSettings = useTranslations("employeeSettings");
   const [refreshKey, setRefreshKey] = useState(0);
   const [search, setSearch] = useState("");
 
@@ -29,8 +31,8 @@ const EmployeeSettingsPage = () => {
   return (
     <Container>
       <Header
-        title="Employee List"
-        description="View and manage all employees from here"
+        title={employeeSettings("employeeList")}
+        description={employeeSettings("employeeListDescription")}
         onEmployeeSuccess={handleSuccess}
       />
 

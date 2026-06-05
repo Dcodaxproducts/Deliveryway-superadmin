@@ -1,27 +1,29 @@
 import { z } from "zod";
 
+type TranslationFunction = (key: string) => string;
+
 /**
  * ==============================
  * Staff Role Schema
  * ==============================
  */
 
-const permissionSchema = z.object({
-  access: z.string().min(1, "Access is required"),
-  operations: z
-    .array(z.string().min(1))
-    .min(1, "At least one operation is required"),
-});
+const createPermissionSchema = (t: TranslationFunction) =>
+  z.object({
+    access: z.string().min(1, t("accessRequired")),
+    operations: z.array(z.string().min(1)).min(1, t("operationRequired")),
+  });
 
-export const staffRoleSchema = z.object({
-  name: z.string().min(2, "Role name is required"),
-  permissions: z
-    .array(permissionSchema)
-    .min(1, "At least one permission is required"),
-  description: z.string().max(300).optional(),
-});
+export const createStaffRoleSchema = (t: TranslationFunction) =>
+  z.object({
+    name: z.string().min(2, t("roleNameRequired")),
+    permissions: z
+      .array(createPermissionSchema(t))
+      .min(1, t("permissionRequired")),
+    description: z.string().max(300).optional(),
+  });
 
-export type StaffRoleValues = z.infer<typeof staffRoleSchema>;
+export type StaffRoleValues = z.infer<ReturnType<typeof createStaffRoleSchema>>;
 
 /**
  * ==============================
@@ -29,34 +31,27 @@ export type StaffRoleValues = z.infer<typeof staffRoleSchema>;
  * ==============================
  */
 
-export const staffSchema = z.object({
-  email: z.string().email("Invalid email"),
+export const createStaffSchema = (t: TranslationFunction) =>
+  z.object({
+    email: z.string().email(t("invalidEmail")),
 
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters"),
+    password: z.string().min(8, t("passwordMin")),
 
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
+    firstName: z.string().min(1, t("firstNameRequired")),
+    lastName: z.string().min(1, t("lastNameRequired")),
 
-  staffRoleId: z.string().min(1, "Staff role is required"),
+    staffRoleId: z.string().min(1, t("staffRoleRequired")),
 
-  phone: z
-    .string()
-    .min(10, "Invalid phone number")
-    .optional(),
+    phone: z.string().min(10, t("invalidPhone")).optional(),
 
-  // avatarUrl: z
-  //   .string()
-  //   .url("Invalid avatar URL")
-  //   .optional(),
+    // avatarUrl: z
+    //   .string()
+    //   .url(t("invalidAvatarUrl"))
+    //   .optional(),
 
-  bio: z
-    .string()
-    .max(500, "Bio must be under 500 characters")
-    .optional(),
+    bio: z.string().max(500, t("bioMax")).optional(),
 
-  isActive: z.boolean().default(true),
-});
+    isActive: z.boolean().default(true),
+  });
 
-export type StaffValues = z.infer<typeof staffSchema>;
+export type StaffValues = z.infer<ReturnType<typeof createStaffSchema>>;

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Header from "../../header";
 import { useState } from "react";
 import EmployeeInvitationModal from "./AddEmployeeModal";
+import { useTranslations } from "next-intl";
 
 type Props = {
   title: string;
@@ -16,6 +17,7 @@ export default function EmployeeSettingsHeader({
   description,
   onEmployeeSuccess
 }: Props) {
+  const employeeSettings = useTranslations("employeeSettings");
   const [open, setOpen] = useState(false);
 
   return (
@@ -28,15 +30,14 @@ export default function EmployeeSettingsHeader({
           onClick={() => setOpen(true)}
           className="h-[44px] rounded-[12px] px-5"
         >
-          Add New Employee
+          {employeeSettings("addNewEmployee")}
         </Button>
       </div>
 
-      {/* Employee Modal */}
       <EmployeeInvitationModal
         open={open}
         onOpenChange={setOpen}
-        onSuccess={onEmployeeSuccess}   // ✅ CONNECTED
+        onSuccess={onEmployeeSuccess}
       />
 
     </div>

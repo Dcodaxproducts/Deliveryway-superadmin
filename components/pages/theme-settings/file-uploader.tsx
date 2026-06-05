@@ -1,4 +1,7 @@
+"use client";
+
 import { Upload } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface FileUploaderProps {
     title: string;
@@ -7,6 +10,8 @@ interface FileUploaderProps {
 }
 
 const FileUploader: React.FC<FileUploaderProps> = ({ title, recommendation, fileTypes }) => {
+    const themeSettings = useTranslations("themeSettings");
+
     return (
         <div className="space-y-[4px]">
             <h4 className="text-base text-dark">{title}</h4>
@@ -16,7 +21,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ title, recommendation, file
                     <div className="w-[54px] h-[54px] rounded-full bg-primary/10 flex items-center justify-center mb-4">
                         <Upload className="text-primary" />
                     </div>
-                    <p className="text-base text-dark font-semibold">Click to upload or drag and drop</p>
+                    <p className="text-base text-dark font-semibold">{themeSettings("clickToUpload")}</p>
                     <p className="text-sm text-gray">{fileTypes}</p>
                 </div>
             </div>
