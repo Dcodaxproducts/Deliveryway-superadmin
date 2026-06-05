@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 type PricingModelOption = "HYBRID" | "PLAN" | "COMMISSION";
 type BillingInterval = "MONTHLY" | "YEARLY" | "WEEKLY" | "DAILY";
 type PayoutCycle = "DAILY" | "WEEKLY" | "MONTHLY" | "MANUAL";
@@ -34,10 +36,11 @@ type StepConfigurePlanProps = {
 const labelClass =
   "text-xs font-semibold uppercase tracking-[0.06em] text-slate-500";
 
-export default function StepConfigurePlan({
+export function StepConfigurePlan({
   form,
   onChange,
 }: StepConfigurePlanProps) {
+  const pricingModel = useTranslations("pricingModel");
   const showCommissionFields = form.pricingModel !== "PLAN";
   const isFixedCommission = form.commissionChargeType === "FIXED";
 
@@ -51,31 +54,35 @@ export default function StepConfigurePlan({
 
   return (
     <div className="w-full rounded-2xl bg-white px-7 py-9 shadow-sm lg:px-10">
-      <h2 className="text-2xl font-bold text-[#1F2328]">Configure Plan</h2>
+      <h2 className="text-2xl font-bold text-[#1F2328]">
+        {pricingModel("create.configurePlan")}
+      </h2>
 
       <div className="mt-8">
-        <h3 className="text-base font-bold text-[#1F2328]">Plan identity</h3>
+        <h3 className="text-base font-bold text-[#1F2328]">
+          {pricingModel("create.planIdentity")}
+        </h3>
         <p className="mt-1 text-sm text-[#684848]">
-          Define the naming conventions for this subscription tier.
+          {pricingModel("create.planIdentityDescription")}
         </p>
 
         <div className="mt-6 grid grid-cols-1 gap-5">
           <div>
-            <label className={labelClass}>Plan name</label>
+            <label className={labelClass}>{pricingModel("fields.planName")}</label>
             <input
               value={form.name}
               onChange={(event) => onChange("name", event.target.value)}
-              placeholder="e.g. Enterprise Plus"
+              placeholder={pricingModel("placeholders.planName")}
               className="mt-2 h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm outline-none transition focus:border-primary"
             />
           </div>
 
           <div>
-            <label className={labelClass}>Description</label>
+            <label className={labelClass}>{pricingModel("fields.description")}</label>
             <textarea
               value={form.description}
               onChange={(event) => onChange("description", event.target.value)}
-              placeholder="Short description for this package plan"
+              placeholder={pricingModel("placeholders.description")}
               rows={3}
               className="mt-2 w-full resize-none rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-primary"
             />
@@ -84,14 +91,16 @@ export default function StepConfigurePlan({
       </div>
 
       <div className="mt-10">
-        <h3 className="text-base font-bold text-[#1F2328]">Subscription</h3>
+        <h3 className="text-base font-bold text-[#1F2328]">
+          {pricingModel("fields.subscription")}
+        </h3>
         <p className="mt-1 text-sm text-[#684848]">
-          Configure plan price, currency, and billing interval.
+          {pricingModel("create.subscriptionDescription")}
         </p>
 
         <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-3">
           <div>
-            <label className={labelClass}>Plan price</label>
+            <label className={labelClass}>{pricingModel("fields.planPrice")}</label>
             <input
               type="number"
               min="0"
@@ -103,7 +112,7 @@ export default function StepConfigurePlan({
           </div>
 
           <div>
-            <label className={labelClass}>Currency</label>
+            <label className={labelClass}>{pricingModel("fields.currency")}</label>
             <select
               value={form.currency}
               onChange={(event) => onChange("currency", event.target.value)}
@@ -118,7 +127,7 @@ export default function StepConfigurePlan({
           </div>
 
           <div>
-            <label className={labelClass}>Billing cycle</label>
+            <label className={labelClass}>{pricingModel("fields.billingCycle")}</label>
             <select
               value={form.billingInterval}
               onChange={(event) =>
@@ -129,10 +138,10 @@ export default function StepConfigurePlan({
               }
               className="mt-2 h-12 w-full cursor-pointer rounded-lg border border-slate-200 bg-white px-4 text-sm outline-none transition focus:border-primary"
             >
-              <option value="MONTHLY">Monthly</option>
-              <option value="YEARLY">Yearly</option>
-              <option value="WEEKLY">Weekly</option>
-              <option value="DAILY">Daily</option>
+              <option value="MONTHLY">{pricingModel("display.billingIntervals.monthly")}</option>
+              <option value="YEARLY">{pricingModel("display.billingIntervals.yearly")}</option>
+              <option value="WEEKLY">{pricingModel("display.billingIntervals.weekly")}</option>
+              <option value="DAILY">{pricingModel("display.billingIntervals.daily")}</option>
             </select>
           </div>
         </div>
@@ -143,10 +152,10 @@ export default function StepConfigurePlan({
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h3 className="text-base font-bold text-[#1F2328]">
-                Commission & Limits
+                {pricingModel("create.commissionLimits")}
               </h3>
               <p className="mt-1 text-sm text-[#684848]">
-                Configure flat fee or percentage-based transactional charges.
+                {pricingModel("create.commissionLimitsDescription")}
               </p>
             </div>
 
@@ -163,7 +172,7 @@ export default function StepConfigurePlan({
               }`}
             >
               <span className="text-xs font-semibold uppercase tracking-[0.06em] text-slate-500">
-                Apply cap
+                {pricingModel("fields.applyCap")}
               </span>
 
               <span
@@ -192,7 +201,9 @@ export default function StepConfigurePlan({
 
           <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
             <div>
-              <label className={labelClass}>Fixed Fee / % Per Order</label>
+              <label className={labelClass}>
+                {pricingModel("fields.fixedFeePerOrder")}
+              </label>
 
               <div className="mt-2 flex h-12 overflow-hidden rounded-lg border border-slate-200 bg-white transition focus-within:border-primary">
                 <select
@@ -204,8 +215,12 @@ export default function StepConfigurePlan({
                   }
                   className="h-full w-[140px] cursor-pointer border-r border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700 outline-none transition hover:bg-slate-100"
                 >
-                  <option value="PERCENTAGE">Percentage</option>
-                  <option value="FIXED">Fixed Fee</option>
+                  <option value="PERCENTAGE">
+                    {pricingModel("display.commissionTypes.percentage")}
+                  </option>
+                  <option value="FIXED">
+                    {pricingModel("display.commissionTypes.fixedFee")}
+                  </option>
                 </select>
 
                 <input
@@ -226,7 +241,9 @@ export default function StepConfigurePlan({
                     onChange("commissionPercentage", event.target.value);
                   }}
                   placeholder={
-                    isFixedCommission ? "Add fixed fee" : "Add percentage"
+                    isFixedCommission
+                      ? pricingModel("placeholders.addFixedFee")
+                      : pricingModel("placeholders.addPercentage")
                   }
                   className="h-full min-w-0 flex-1 px-4 text-sm outline-none"
                 />
@@ -238,13 +255,13 @@ export default function StepConfigurePlan({
 
               <p className="mt-2 text-xs leading-5 text-slate-400">
                 {isFixedCommission
-                  ? "A fixed amount will be charged on each order."
-                  : "A percentage commission will be charged on each order."}
+                  ? pricingModel("create.fixedCommissionHelp")
+                  : pricingModel("create.percentageCommissionHelp")}
               </p>
             </div>
 
             <div>
-              <label className={labelClass}>Max cap amount</label>
+              <label className={labelClass}>{pricingModel("fields.maxCapAmount")}</label>
               <input
                 type="number"
                 min="0"
@@ -259,8 +276,8 @@ export default function StepConfigurePlan({
 
               <p className="mt-2 text-xs leading-5 text-slate-400">
                 {isFixedCommission
-                  ? "Cap is not applicable for fixed fee per order."
-                  : "Optional maximum commission cap for percentage-based orders."}
+                  ? pricingModel("create.fixedCommissionCapHelp")
+                  : pricingModel("create.percentageCommissionCapHelp")}
               </p>
             </div>
           </div>
@@ -269,7 +286,7 @@ export default function StepConfigurePlan({
 
       <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2">
         <div>
-          <label className={labelClass}>Payout cycle</label>
+          <label className={labelClass}>{pricingModel("fields.payoutCycle")}</label>
           <select
             value={form.payoutCycle}
             onChange={(event) =>
@@ -277,15 +294,15 @@ export default function StepConfigurePlan({
             }
             className="mt-2 h-12 w-full cursor-pointer rounded-lg border border-slate-200 bg-white px-4 text-sm outline-none transition focus:border-primary"
           >
-            <option value="DAILY">Daily</option>
-            <option value="WEEKLY">Weekly</option>
-            <option value="MONTHLY">Monthly</option>
-            <option value="MANUAL">Manual</option>
+            <option value="DAILY">{pricingModel("display.payoutCycles.daily")}</option>
+            <option value="WEEKLY">{pricingModel("display.payoutCycles.weekly")}</option>
+            <option value="MONTHLY">{pricingModel("display.payoutCycles.monthly")}</option>
+            <option value="MANUAL">{pricingModel("display.payoutCycles.manual")}</option>
           </select>
         </div>
 
         <div>
-          <label className={labelClass}>Trial days</label>
+          <label className={labelClass}>{pricingModel("fields.trialDays")}</label>
           <input
             type="number"
             min="0"

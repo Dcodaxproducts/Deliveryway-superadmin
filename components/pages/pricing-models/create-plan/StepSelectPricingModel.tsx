@@ -6,6 +6,7 @@ import {
   Percent,
   type LucideIcon,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type PricingModelOption = "HYBRID" | "PLAN" | "COMMISSION";
 
@@ -16,36 +17,38 @@ type StepSelectPricingModelProps = {
 
 const pricingModels: Array<{
   value: PricingModelOption;
-  title: string;
-  description: string;
+  titleKey: string;
+  descriptionKey: string;
   icon: LucideIcon;
   recommended?: boolean;
 }> = [
   {
     value: "HYBRID",
-    title: "Hybrid",
-    description: "Minimum monthly fee and revenue share with optional max cap.",
+    titleKey: "display.pricingModels.hybrid",
+    descriptionKey: "create.pricingModels.hybridDescription",
     icon: Percent,
   },
   {
     value: "PLAN",
-    title: "Monthly Flat Fee subscription",
-    description: "Fixed monthly amount with optional bundles and features.",
+    titleKey: "display.pricingModels.planSubscription",
+    descriptionKey: "create.pricingModels.planDescription",
     icon: CalendarDays,
     recommended: true,
   },
   {
     value: "COMMISSION",
-    title: "Fixed Fee/% Per Order",
-    description: "Flat amount or percentage charged per order placed.",
+    titleKey: "display.pricingModels.commissionPerOrder",
+    descriptionKey: "create.pricingModels.commissionDescription",
     icon: Layers3,
   },
 ];
 
-export default function StepSelectPricingModel({
+export function StepSelectPricingModel({
   value,
   onChange,
 }: StepSelectPricingModelProps) {
+  const pricingModel = useTranslations("pricingModel");
+
   return (
     <div className="grid w-full max-w-[920px] grid-cols-1 gap-6 md:grid-cols-2">
       {pricingModels.map((model) => {
@@ -68,7 +71,7 @@ export default function StepSelectPricingModel({
           >
             {model.recommended && (
               <div className="absolute left-1/2 top-0 -translate-x-1/2 rounded-b-md bg-primary px-10 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
-                Recommended
+                {pricingModel("create.recommended")}
               </div>
             )}
 
@@ -99,11 +102,11 @@ export default function StepSelectPricingModel({
             </div>
 
             <h3 className="mt-8 text-lg font-bold text-[#1F2328]">
-              {model.title}
+              {pricingModel(model.titleKey)}
             </h3>
 
             <p className="mt-2 text-sm leading-5 text-[#684848]">
-              {model.description}
+              {pricingModel(model.descriptionKey)}
             </p>
           </button>
         );

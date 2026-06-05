@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import Container from "@/components/container";
-import StepSelectPricingModel from "@/components/pages/pricing-models/create-plan/StepSelectPricingModel";
-import StepConfigurePlan from "@/components/pages/pricing-models/create-plan/StepConfigurePlan";
-import StepFeaturesVat from "@/components/pages/pricing-models/create-plan/StepFeaturesVat";
-import StepReviewCreatePlan from "@/components/pages/pricing-models/create-plan/StepReviewCreatePlan";
+import { StepSelectPricingModel } from "@/components/pages/pricing-models/create-plan/StepSelectPricingModel";
+import { StepConfigurePlan } from "@/components/pages/pricing-models/create-plan/StepConfigurePlan";
+import { StepFeaturesVat } from "@/components/pages/pricing-models/create-plan/StepFeaturesVat";
+import { StepReviewCreatePlan } from "@/components/pages/pricing-models/create-plan/StepReviewCreatePlan";
 
 import {
   useCreatePackagePlan,
@@ -116,10 +117,10 @@ type ExtendedPackagePlanPayload = (
 };
 
 const steps = [
-  { value: 1, label: "Select type" },
-  { value: 2, label: "Configure" },
-  { value: 3, label: "Features & VAT" },
-  { value: 4, label: "Review" },
+  { value: 1, labelKey: "steps.selectType" },
+  { value: 2, labelKey: "steps.configure" },
+  { value: 3, labelKey: "steps.featuresVat" },
+  { value: 4, labelKey: "steps.review" },
 ] as const;
 
 const defaultFeatures: Record<string, boolean> = {
@@ -230,7 +231,7 @@ const unwrapPackagePlanDetail = (
 ): PackagePlanDetail | null => {
   if (!response || typeof response !== "object") return null;
 
-  const record = response as Record<string, any>;
+  const record = response as Record<string, unknown>;
 
   if (
     record.data &&
@@ -281,7 +282,10 @@ const mapPackagePlanToForm = (plan: PackagePlanDetail): PlanFormState => {
   };
 };
 
-export default function CreatePackagePlanPage() {
+function CreatePackagePlanContent() {
+  const pricingModel = useTranslations("pricingModel");
+  const validation = useTranslations("validation");
+  const common = useTranslations("common");
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -397,7 +401,7 @@ export default function CreatePackagePlanPage() {
 
   const validateStep = () => {
     if (step === 2 && !form.name.trim()) {
-      toast.error("Plan name is required");
+      toast.error(validation("planNameRequired"));
       return false;
     }
 
@@ -407,7 +411,7 @@ export default function CreatePackagePlanPage() {
       form.commissionChargeType === "FIXED" &&
       toNumber(form.commissionFixedFee) <= 0
     ) {
-      toast.error("Fixed fee must be greater than 0");
+      toast.error(validation("fixedFeeGreaterThanZero"));
       return false;
     }
 
@@ -417,12 +421,12 @@ export default function CreatePackagePlanPage() {
       form.commissionChargeType === "PERCENTAGE" &&
       toNumber(form.commissionPercentage) < 0
     ) {
-      toast.error("Commission percentage cannot be negative");
+      toast.error(validation("commissionPercentageNonNegative"));
       return false;
     }
 
     if (step === 3 && selectedFeaturesCount === 0) {
-      toast.error("Select at least one feature");
+      toast.error(validation("selectAtLeastOneFeature"));
       return false;
     }
 
@@ -448,7 +452,7 @@ export default function CreatePackagePlanPage() {
 
   const handleSubmitPlan = async (isDraft: boolean) => {
     if (!form.name.trim()) {
-      toast.error("Plan name is required");
+      toast.error(validation("planNameRequired"));
       goToStep(2);
       return;
     }
@@ -458,13 +462,13 @@ export default function CreatePackagePlanPage() {
       form.commissionChargeType === "FIXED" &&
       toNumber(form.commissionFixedFee) <= 0
     ) {
-      toast.error("Fixed fee must be greater than 0");
+      toast.error(validation("fixedFeeGreaterThanZero"));
       goToStep(2);
       return;
     }
 
     if (selectedFeaturesCount === 0) {
-      toast.error("Select at least one feature");
+      toast.error(validation("selectAtLeastOneFeature"));
       goToStep(3);
       return;
     }
@@ -491,32 +495,32 @@ export default function CreatePackagePlanPage() {
 
   const title =
     step === 1
-      ? "Select pricing model"
+      ? pricingModel("create.steps.selectPricingModelTitle")
       : step === 2
       ? isEditMode
-        ? "Update Plan"
-        : "Configure Plan"
+        ? pricingModel("actions.updatePlan")
+        : pricingModel("create.configurePlan")
       : step === 3
-      ? "Features & VAT"
+      ? pricingModel("steps.featuresVat")
       : isEditMode
-      ? "Review & update"
-      : "Review & confirm";
+      ? pricingModel("create.steps.reviewUpdateTitle")
+      : pricingModel("create.steps.reviewConfirmTitle");
 
   const description =
     step === 1
-      ? "Choose the billing structure for this subscription plan. New tier plans support configurable features. Legacy models support existing customers."
+      ? pricingModel("create.steps.selectPricingModelDescription")
       : step === 2
-      ? "Define pricing, billing cycle, commission rate, and transactional limits."
+      ? pricingModel("create.steps.configureDescription")
       : step === 3
-      ? "Define the core capabilities, VAT structure, payout cycle, and terms document for this plan."
+      ? pricingModel("create.steps.featuresVatDescription")
       : "";
 
   const stepModeLabel =
     step === 1
-      ? "Step 01 of 04"
+      ? pricingModel("create.steps.stepOneOfFour")
       : isEditMode
-      ? "Edit mode"
-      : "Configuration mode";
+      ? pricingModel("create.steps.editMode")
+      : pricingModel("create.steps.configurationMode");
 
   if (isEditMode && packagePlanDetailQuery.isLoading) {
     return (
@@ -540,11 +544,11 @@ export default function CreatePackagePlanPage() {
         <section className="mx-auto w-full max-w-[1120px]">
           <div className="rounded-2xl bg-white p-8 shadow-sm">
             <h1 className="text-2xl font-bold text-[#1F2328]">
-              Failed to load package plan
+              {pricingModel("create.failedToLoadPackagePlan")}
             </h1>
 
             <p className="mt-2 text-sm text-[#684848]">
-              Please go back to listing and try again.
+              {pricingModel("create.failedToLoadPackagePlanDescription")}
             </p>
 
             <button
@@ -552,7 +556,7 @@ export default function CreatePackagePlanPage() {
               onClick={() => router.push("/pricing-model/plans-listing")}
               className="mt-6 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white"
             >
-              Back to Plans Listing
+              {pricingModel("actions.backToPlansListing")}
             </button>
           </div>
         </section>
@@ -603,7 +607,7 @@ export default function CreatePackagePlanPage() {
                     <span>{item.value}.</span>
                   )}
 
-                  <span>{item.label}</span>
+                  <span>{pricingModel(item.labelKey)}</span>
                 </div>
               );
             })}
@@ -637,7 +641,9 @@ export default function CreatePackagePlanPage() {
             onClick={handleBack}
             className="text-sm font-semibold text-[#7A4B4B] transition-colors hover:text-primary"
           >
-            ← {step === 1 ? "Cancel Setup" : "Back to Configuration"}
+            {step === 1
+              ? pricingModel("actions.cancelSetup")
+              : pricingModel("actions.backToConfiguration")}
           </button>
 
           <div className="flex items-center gap-4">
@@ -647,7 +653,9 @@ export default function CreatePackagePlanPage() {
                 onClick={handleNext}
                 className="min-w-[160px] rounded-xl bg-primary px-8 py-4 text-sm font-bold text-white shadow-lg shadow-red-900/10 transition hover:opacity-90"
               >
-                {step === 3 ? "Continue to Review" : "Continue"}
+                {step === 3
+                  ? pricingModel("actions.continueToReview")
+                  : common("next")}
               </button>
             ) : (
               <>
@@ -657,7 +665,7 @@ export default function CreatePackagePlanPage() {
                   onClick={() => handleSubmitPlan(true)}
                   className="min-w-[150px] rounded-xl border border-primary bg-white px-6 py-4 text-sm font-bold text-primary transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Save as Draft
+                  {pricingModel("actions.saveAsDraft")}
                 </button>
 
                 <button
@@ -668,11 +676,11 @@ export default function CreatePackagePlanPage() {
                 >
                   {isSubmitting
                     ? isEditMode
-                      ? "Updating..."
-                      : "Creating..."
+                      ? pricingModel("actions.updating")
+                      : pricingModel("actions.creating")
                     : isEditMode
-                    ? "Update Plan"
-                    : "Create Plan"}
+                    ? pricingModel("actions.updatePlan")
+                    : pricingModel("actions.createPlan")}
                 </button>
               </>
             )}
@@ -680,5 +688,26 @@ export default function CreatePackagePlanPage() {
         </div>
       </section>
     </Container>
+  );
+}
+
+export default function CreatePackagePlanPage() {
+  return (
+    <Suspense
+      fallback={
+        <Container>
+          <section className="mx-auto w-full">
+            <div className="mb-8">
+              <div className="h-4 w-28 animate-pulse rounded bg-slate-200" />
+              <div className="mt-3 h-9 w-64 animate-pulse rounded bg-slate-200" />
+              <div className="mt-3 h-5 w-[420px] max-w-full animate-pulse rounded bg-slate-200" />
+            </div>
+            <div className="h-[420px] w-full max-w-[980px] animate-pulse rounded-2xl bg-white" />
+          </section>
+        </Container>
+      }
+    >
+      <CreatePackagePlanContent />
+    </Suspense>
   );
 }

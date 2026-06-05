@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 type PricingModelOption = "HYBRID" | "PLAN" | "COMMISSION";
 type BillingInterval = "MONTHLY" | "YEARLY" | "WEEKLY" | "DAILY";
 type PayoutCycle = "DAILY" | "WEEKLY" | "MONTHLY" | "MANUAL";
@@ -30,19 +32,38 @@ type StepReviewCreatePlanProps = {
   form: ReviewPlanForm;
 };
 
-const pricingModelLabels: Record<PricingModelOption, string> = {
-  HYBRID: "Hybrid",
-  PLAN: "Monthly flat fee",
-  COMMISSION: "Commission + cap",
+const pricingModelLabelKeys: Record<PricingModelOption, string> = {
+  HYBRID: "display.pricingModels.hybrid",
+  PLAN: "display.pricingModels.monthlyFlatFee",
+  COMMISSION: "display.pricingModels.commissionCap",
 };
 
-const formatLabel = (value: string) => {
-  return value
-    .replace(/([A-Z])/g, " $1")
-    .replace(/[_-]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .replace(/^./, (char) => char.toUpperCase());
+const billingIntervalLabelKeys: Record<BillingInterval, string> = {
+  MONTHLY: "display.billingIntervals.monthly",
+  YEARLY: "display.billingIntervals.yearly",
+  WEEKLY: "display.billingIntervals.weekly",
+  DAILY: "display.billingIntervals.daily",
+};
+
+const payoutCycleLabelKeys: Record<PayoutCycle, string> = {
+  DAILY: "display.payoutCycles.daily",
+  WEEKLY: "display.payoutCycles.weekly",
+  MONTHLY: "display.payoutCycles.monthly",
+  MANUAL: "display.payoutCycles.manual",
+};
+
+const featureLabelKeys: Record<string, string> = {
+  orderManagement: "features.orderManagement",
+  customerAnalytics: "features.customerAnalytics",
+  posCashRegister: "features.posCashRegister",
+  multiBranches: "features.multiBranches",
+  tableBooking: "features.tableBooking",
+  mobileApp: "features.mobileApp",
+  prioritySupport: "features.prioritySupport",
+  selfDelivery: "features.selfDelivery",
+  chat: "features.chat",
+  takeAway: "features.takeAway",
+  adminDelivery: "features.adminDelivery",
 };
 
 const formatMoney = (value: string, currency: string) => {
@@ -55,9 +76,10 @@ const formatMoney = (value: string, currency: string) => {
   }).format(Number.isFinite(amount) ? amount : 0);
 };
 
-export default function StepReviewCreatePlan({
+export function StepReviewCreatePlan({
   form,
 }: StepReviewCreatePlanProps) {
+  const pricingModel = useTranslations("pricingModel");
   const selectedFeatures = Object.entries(form.features)
     .filter(([, enabled]) => enabled)
     .map(([key]) => key);
@@ -68,66 +90,87 @@ export default function StepReviewCreatePlan({
     <div className="w-full rounded-2xl bg-white px-7 py-9 shadow-sm lg:px-10">
       <div className="grid grid-cols-1 gap-y-8">
         <ReviewRow
-          label="Pricing model"
-          value={pricingModelLabels[form.pricingModel]}
-        />
-
-        <ReviewRow label="Plan name" value={form.name || "Not provided"} />
-
-        <ReviewRow
-          label="Billing interval"
-          value={formatLabel(form.billingInterval)}
+          label={pricingModel("review.pricingModel")}
+          value={pricingModel(pricingModelLabelKeys[form.pricingModel])}
         />
 
         <ReviewRow
-          label="Plan price"
+          label={pricingModel("fields.planName")}
+          value={form.name || pricingModel("review.notProvided")}
+        />
+
+        <ReviewRow
+          label={pricingModel("review.billingInterval")}
+          value={pricingModel(billingIntervalLabelKeys[form.billingInterval])}
+        />
+
+        <ReviewRow
+          label={pricingModel("fields.planPrice")}
           value={formatMoney(form.planPrice, form.currency)}
         />
 
         {form.pricingModel !== "PLAN" && (
           <>
             <ReviewRow
-              label="Commission rate"
-              value={`${form.commissionPercentage || 0}% per txn`}
+              label={pricingModel("review.commissionRate")}
+              value={pricingModel("review.percentPerTransaction", {
+                percent: form.commissionPercentage || 0,
+              })}
               badge="danger"
             />
 
             <ReviewRow
-              label="Cap"
+              label={pricingModel("review.cap")}
               value={
                 form.applyCommissionCap
-                  ? `${formatMoney(
-                      form.commissionCapAmount,
-                      form.currency
-                    )} / ${form.billingInterval.toLowerCase()}`
-                  : "No cap"
+                  ? pricingModel("review.amountPerInterval", {
+                      amount: formatMoney(
+                        form.commissionCapAmount,
+                        form.currency
+                      ),
+                      interval: pricingModel(
+                        billingIntervalLabelKeys[form.billingInterval]
+                      ),
+                    })
+                  : pricingModel("review.noCap")
               }
             />
           </>
         )}
 
         <ReviewRow
-          label="VAT rate"
+          label={pricingModel("fields.vatRate")}
           value={
             form.vatEnabled
-              ? `${form.vatPercentage || 0}% ${form.vatLabel || "Standard"}`
-              : "Disabled"
+              ? pricingModel("review.vatRateValue", {
+                  percent: form.vatPercentage || 0,
+                  label: form.vatLabel || pricingModel("review.standard"),
+                })
+              : pricingModel("display.status.disabled")
           }
           badge={form.vatEnabled ? "neutral" : undefined}
         />
 
-        <ReviewRow label="Payout cycle" value={formatLabel(form.payoutCycle)} />
-
         <ReviewRow
-          label="Trial days"
-          value={`${Number(form.trialDays || 0)} days`}
+          label={pricingModel("fields.payoutCycle")}
+          value={pricingModel(payoutCycleLabelKeys[form.payoutCycle])}
         />
 
-        <ReviewRow label="Status" value="Active after creation" />
+        <ReviewRow
+          label={pricingModel("fields.trialDays")}
+          value={pricingModel("review.days", {
+            count: Number(form.trialDays || 0),
+          })}
+        />
+
+        <ReviewRow
+          label={pricingModel("review.status")}
+          value={pricingModel("review.activeAfterCreation")}
+        />
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-[220px_1fr]">
           <p className="text-base font-medium text-[#684848]">
-            Included features
+            {pricingModel("fields.includedFeatures")}
           </p>
 
           <div className="flex flex-wrap justify-start gap-3 md:justify-end">
@@ -137,12 +180,14 @@ export default function StepReviewCreatePlan({
                   key={feature}
                   className="rounded-full bg-slate-200 px-5 py-2 text-xs font-bold text-[#1F2328]"
                 >
-                  {formatLabel(feature)}
+                  {featureLabelKeys[feature]
+                    ? pricingModel(featureLabelKeys[feature])
+                    : feature}
                 </span>
               ))
             ) : (
               <span className="text-sm font-semibold text-slate-400">
-                No features selected
+                {pricingModel("review.noFeaturesSelected")}
               </span>
             )}
           </div>
@@ -150,7 +195,7 @@ export default function StepReviewCreatePlan({
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-[220px_1fr]">
           <p className="text-base font-medium text-[#684848]">
-            Terms document
+            {pricingModel("review.termsDocument")}
           </p>
 
           <div className="text-left md:text-right">
@@ -161,11 +206,11 @@ export default function StepReviewCreatePlan({
                 rel="noreferrer"
                 className="text-sm font-bold text-primary underline"
               >
-                Preview uploaded PDF
+                {pricingModel("actions.previewUploadedPdf")}
               </a>
             ) : (
               <span className="text-sm font-semibold text-slate-400">
-                Not uploaded
+                {pricingModel("review.notUploaded")}
               </span>
             )}
           </div>

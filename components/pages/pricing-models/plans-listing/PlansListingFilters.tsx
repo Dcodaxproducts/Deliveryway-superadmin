@@ -1,6 +1,7 @@
 "use client";
 
 import { Search, SlidersHorizontal } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type BillingModelFilter = "ALL" | "COMMISSION" | "PLAN" | "HYBRID";
 type StatusFilter = "ACTIVE" | "ARCHIVED";
@@ -14,7 +15,7 @@ type PlansListingFiltersProps = {
   onBillingModelChange: (value: BillingModelFilter) => void;
 };
 
-export default function PlansListingFilters({
+export function PlansListingFilters({
   search,
   status,
   billingModel,
@@ -22,6 +23,9 @@ export default function PlansListingFilters({
   onStatusChange,
   onBillingModelChange,
 }: PlansListingFiltersProps) {
+  const pricingModel = useTranslations("pricingModel");
+  const filters = useTranslations("filters");
+
   return (
     <div className="mb-6 rounded-2xl bg-white p-5 shadow-sm">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -38,7 +42,7 @@ export default function PlansListingFilters({
               }
             `}
           >
-            Active
+            {pricingModel("display.status.active")}
           </button>
 
           <button
@@ -53,7 +57,7 @@ export default function PlansListingFilters({
               }
             `}
           >
-            Archived
+            {pricingModel("display.status.archived")}
           </button>
         </div>
 
@@ -67,7 +71,7 @@ export default function PlansListingFilters({
             <input
               value={search}
               onChange={(event) => onSearchChange(event.target.value)}
-              placeholder="Search plans..."
+              placeholder={filters("searchPlansPlaceholder")}
               className="
                 h-10 w-full rounded-lg border border-transparent bg-gray-100
                 pl-9 pr-3 text-sm text-dark outline-none transition
@@ -88,10 +92,16 @@ export default function PlansListingFilters({
               focus:border-primary focus:bg-white
             "
           >
-            <option value="ALL">Pricing Type: All</option>
-            <option value="HYBRID">Hybrid</option>
-            <option value="PLAN">Plan</option>
-            <option value="COMMISSION">Commission</option>
+            <option value="ALL">{filters("pricingTypeAll")}</option>
+            <option value="HYBRID">
+              {pricingModel("display.pricingModels.hybrid")}
+            </option>
+            <option value="PLAN">
+              {pricingModel("display.pricingModels.plan")}
+            </option>
+            <option value="COMMISSION">
+              {pricingModel("display.pricingModels.commission")}
+            </option>
           </select>
 
           <button

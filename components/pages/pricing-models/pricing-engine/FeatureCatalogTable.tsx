@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useTranslations } from "next-intl";
 import { useGetPackagePlanFeatureCatalog } from "@/hooks/usePackagePlans";
 
 type SupportFilter = "ALL" | "WITH_LIMIT" | "WITHOUT_LIMIT";
@@ -74,11 +75,12 @@ const getFeatureInitials = (name: string) => {
     .toUpperCase();
 };
 
-export default function FeatureCatalogTable({
+export function FeatureCatalogTable({
   search = "",
   supportFilter = "ALL",
   setExportData,
 }: FeatureCatalogTableProps) {
+  const pricingModel = useTranslations("pricingModel");
   const { data, isLoading, isFetching } = useGetPackagePlanFeatureCatalog();
 
   const features = useMemo(() => {
@@ -118,20 +120,20 @@ export default function FeatureCatalogTable({
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-base font-semibold text-dark">
-              Feature Modules
+              {pricingModel("featureCatalog.featureModules")}
             </h2>
             <p className="text-sm text-gray">
               {loading
-                ? "Loading available modules..."
-                : `${filteredFeatures.length} module${
-                    filteredFeatures.length === 1 ? "" : "s"
-                  } found`}
+                ? pricingModel("featureCatalog.loadingModules")
+                : pricingModel("featureCatalog.modulesFound", {
+                    count: filteredFeatures.length,
+                  })}
             </p>
           </div>
 
           <div className="mt-3 inline-flex w-fit items-center gap-2 rounded-full bg-red-50 px-4 py-2 text-xs font-semibold text-primary sm:mt-0">
             <ShieldCheck size={15} />
-            Read-only catalog
+            {pricingModel("featureCatalog.readOnlyCatalog")}
           </div>
         </div>
       </div>
@@ -141,23 +143,23 @@ export default function FeatureCatalogTable({
           <TableHeader>
             <TableRow className="bg-gray-100 hover:bg-gray-100">
               <TableHead className="w-[70px] text-xs font-semibold uppercase text-gray">
-                SL
+                {pricingModel("tables.sl")}
               </TableHead>
 
               <TableHead className="text-xs font-semibold uppercase text-gray">
-                Feature Module
+                {pricingModel("tables.featureModule")}
               </TableHead>
 
               <TableHead className="text-xs font-semibold uppercase text-gray">
-                Code
+                {pricingModel("tables.code")}
               </TableHead>
 
               <TableHead className="text-xs font-semibold uppercase text-gray">
-                Description
+                {pricingModel("tables.description")}
               </TableHead>
 
               <TableHead className="text-center text-xs font-semibold uppercase text-gray">
-                Limit Support
+                {pricingModel("tables.limitSupport")}
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -177,11 +179,13 @@ export default function FeatureCatalogTable({
                     </div>
 
                     <p className="mt-4 text-base font-semibold text-dark">
-                      No feature modules found
+                      {pricingModel("featureCatalog.noFeatureModulesFound")}
                     </p>
 
                     <p className="mt-1 text-sm text-gray">
-                      Try changing your search keyword or selected filter.
+                      {pricingModel(
+                        "featureCatalog.noFeatureModulesFoundDescription"
+                      )}
                     </p>
                   </div>
                 </TableCell>
@@ -211,7 +215,9 @@ export default function FeatureCatalogTable({
 
                         <div className="mt-1 flex items-center gap-1.5 text-xs text-gray">
                           <Layers3 size={13} />
-                          <span>Package plan module</span>
+                          <span>
+                            {pricingModel("featureCatalog.packagePlanModule")}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -225,7 +231,8 @@ export default function FeatureCatalogTable({
 
                   <TableCell>
                     <p className="max-w-[420px] text-sm leading-5 text-gray">
-                      {feature.description || "No description provided"}
+                      {feature.description ||
+                        pricingModel("display.noDescriptionProvided")}
                     </p>
                   </TableCell>
 
@@ -233,11 +240,11 @@ export default function FeatureCatalogTable({
                     {feature.supportsLimit ? (
                       <span className="inline-flex items-center justify-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-primary">
                         <CheckCircle2 size={14} />
-                        Supported
+                        {pricingModel("featureCatalog.supported")}
                       </span>
                     ) : (
                       <span className="inline-flex items-center justify-center rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray">
-                        Standard
+                        {pricingModel("featureCatalog.standard")}
                       </span>
                     )}
                   </TableCell>

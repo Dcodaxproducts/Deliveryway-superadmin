@@ -387,7 +387,248 @@
   "globalSettings": {},
   "employeeSettings": {},
   "rbac": {},
-  "pricingModel": {},
+  "pricingModel": {
+    "steps": {
+      "selectType": "Select type",
+      "configure": "Configure",
+      "featuresVat": "Features & VAT",
+      "review": "Review"
+    },
+    "actions": {
+      "createNewPlan": "Create New Plan",
+      "backToPlansListing": "Back to Plans Listing",
+      "cancelSetup": "Cancel Setup",
+      "backToConfiguration": "Back to Configuration",
+      "continueToReview": "Continue to Review",
+      "saveAsDraft": "Save as Draft",
+      "creating": "Creating...",
+      "updating": "Updating...",
+      "assigning": "Assigning...",
+      "createPlan": "Create Plan",
+      "updatePlan": "Update Plan",
+      "editPlan": "Edit plan",
+      "deletePlan": "Delete plan",
+      "selectFile": "Select File",
+      "previewUploadedPdf": "Preview uploaded PDF",
+      "assignSubscription": "Assign Subscription",
+      "updateSubscription": "Update Subscription",
+      "clearSelection": "Clear selection"
+    },
+    "fields": {
+      "planName": "Plan name",
+      "description": "Description",
+      "subscription": "Subscription",
+      "planPrice": "Plan price",
+      "currency": "Currency",
+      "billingCycle": "Billing cycle",
+      "applyCap": "Apply cap",
+      "fixedFeePerOrder": "Fixed Fee / % Per Order",
+      "maxCapAmount": "Max cap amount",
+      "payoutCycle": "Payout cycle",
+      "trialDays": "Trial days",
+      "includedFeatures": "Included Features",
+      "applyVat": "Apply VAT",
+      "vatRate": "VAT rate (%)",
+      "vatLabelOnInvoice": "VAT label on invoice",
+      "uploadPdf": "Upload PDF",
+      "tenant": "Tenant",
+      "restaurant": "Restaurant",
+      "packagePlan": "Package Plan",
+      "paymentStatus": "Payment Status",
+      "subscriptionStatus": "Subscription Status",
+      "startsAt": "Starts At",
+      "endsAt": "Ends At",
+      "nextBillingAt": "Next Billing At",
+      "note": "Note"
+    },
+    "placeholders": {
+      "planName": "e.g. Enterprise Plus",
+      "description": "Short description for this package plan",
+      "addFixedFee": "Add fixed fee",
+      "addPercentage": "Add percentage",
+      "standardRate": "Standard Rate",
+      "selectTenant": "Select tenant",
+      "selectRestaurant": "Select restaurant",
+      "selectPackagePlan": "Select package plan",
+      "internalNote": "Internal note"
+    },
+    "create": {
+      "configurePlan": "Configure Plan",
+      "planIdentity": "Plan identity",
+      "planIdentityDescription": "Define the naming conventions for this subscription tier.",
+      "subscriptionDescription": "Configure plan price, currency, and billing interval.",
+      "commissionLimits": "Commission & Limits",
+      "commissionLimitsDescription": "Configure flat fee or percentage-based transactional charges.",
+      "fixedCommissionHelp": "A fixed amount will be charged on each order.",
+      "percentageCommissionHelp": "A percentage commission will be charged on each order.",
+      "fixedCommissionCapHelp": "Cap is not applicable for fixed fee per order.",
+      "percentageCommissionCapHelp": "Optional maximum commission cap for percentage-based orders.",
+      "includedFeaturesDescription": "Select the tools and modules accessible to subscribers in this tier.",
+      "vatConfiguration": "VAT Configuration",
+      "vatConfigurationDescription": "VAT is applied by the Super Admin to invoices issued to restaurant owners.",
+      "payoutAdjustments": "Payout & Adjustments",
+      "payoutAdjustmentsDescription": "Allow manual invoice adjustments and define payout cycle.",
+      "termsConditions": "Terms & Conditions",
+      "termsConditionsDescription": "Upload plan terms document.",
+      "uploadingProgress": "Uploading {progress}%",
+      "storageUrlSaved": "Storage URL saved successfully",
+      "recommended": "Recommended",
+      "failedToLoadPackagePlan": "Failed to load package plan",
+      "failedToLoadPackagePlanDescription": "Please go back to listing and try again.",
+      "steps": {
+        "selectPricingModelTitle": "Select pricing model",
+        "selectPricingModelDescription": "Choose the billing structure for this subscription plan. New tier plans support configurable features. Legacy models support existing customers.",
+        "configureDescription": "Define pricing, billing cycle, commission rate, and transactional limits.",
+        "featuresVatDescription": "Define the core capabilities, VAT structure, payout cycle, and terms document for this plan.",
+        "reviewUpdateTitle": "Review & update",
+        "reviewConfirmTitle": "Review & confirm",
+        "stepOneOfFour": "Step 01 of 04",
+        "editMode": "Edit mode",
+        "configurationMode": "Configuration mode"
+      },
+      "pricingModels": {
+        "hybridDescription": "Minimum monthly fee and revenue share with optional max cap.",
+        "planDescription": "Fixed monthly amount with optional bundles and features.",
+        "commissionDescription": "Flat amount or percentage charged per order placed."
+      }
+    },
+    "display": {
+      "pricingModels": {
+        "hybrid": "Hybrid",
+        "plan": "Plan",
+        "commission": "Commission",
+        "planSubscription": "Monthly Flat Fee subscription",
+        "commissionPerOrder": "Fixed Fee/% Per Order",
+        "monthlyFlatFee": "Monthly flat fee",
+        "commissionCap": "Commission + cap"
+      },
+      "billingIntervals": {
+        "monthly": "Monthly",
+        "yearly": "Yearly",
+        "weekly": "Weekly",
+        "daily": "Daily"
+      },
+      "payoutCycles": {
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "monthly": "Monthly",
+        "manual": "Manual"
+      },
+      "commissionTypes": {
+        "percentage": "Percentage",
+        "fixedFee": "Fixed Fee"
+      },
+      "paymentStatus": {
+        "pending": "Pending",
+        "paid": "Paid",
+        "failed": "Failed",
+        "cancelled": "Cancelled"
+      },
+      "status": {
+        "all": "All",
+        "active": "Active",
+        "archived": "Archived",
+        "cancelled": "Cancelled",
+        "default": "Default",
+        "disabled": "Disabled",
+        "expired": "Expired",
+        "pastDue": "Past Due",
+        "trialing": "Trialing"
+      },
+      "noCommission": "No commission",
+      "flatSubscription": "Flat subscription",
+      "custom": "Custom",
+      "noDescriptionProvided": "No description provided"
+    },
+    "plansListing": {
+      "title": "Plans Listing",
+      "description": "Configure and manage subscription tiers for your restaurant partners.",
+      "commissionPlusCap": "{commission}% + cap",
+      "capAmount": "Cap {amount}",
+      "flatRate": "{commission}% Flat Rate",
+      "perOrderFee": "Per order fee",
+      "noPlansFound": "No plans found",
+      "noPlansFoundDescription": "Create a new package plan or adjust your filters."
+    },
+    "subscriptions": {
+      "title": "Subscriptions",
+      "description": "Assign package plans to tenants or restaurants and manage billing lifecycle.",
+      "noSubscriptionsFound": "No subscriptions found",
+      "noSubscriptionsFoundDescription": "Assign a package plan or adjust your filters.",
+      "unknownOwner": "Unknown owner",
+      "packagePlanFallback": "Package plan",
+      "intervalNotSet": "Interval not set",
+      "notSet": "Not set",
+      "start": "Start:",
+      "next": "Next:",
+      "updateSubscriptionDescription": "Update lifecycle, billing status, or package assignment.",
+      "assignSubscriptionDescription": "Select a tenant or restaurant, then assign a package plan.",
+      "selectAtLeastOneOwner": "Select at least one owner",
+      "selectAtLeastOneOwnerDescription": "You can assign the subscription to a tenant, a restaurant, or both depending on your backend ownership flow.",
+      "loadingPackagePlans": "Loading package plans...",
+      "selectedValue": "Selected: {value}",
+      "idValue": "ID: {value}"
+    },
+    "review": {
+      "pricingModel": "Pricing model",
+      "notProvided": "Not provided",
+      "billingInterval": "Billing interval",
+      "commissionRate": "Commission rate",
+      "percentPerTransaction": "{percent}% per txn",
+      "cap": "Cap",
+      "amountPerInterval": "{amount} / {interval}",
+      "noCap": "No cap",
+      "vatRateValue": "{percent}% {label}",
+      "standard": "Standard",
+      "days": "{count} days",
+      "status": "Status",
+      "activeAfterCreation": "Active after creation",
+      "noFeaturesSelected": "No features selected",
+      "termsDocument": "Terms document",
+      "notUploaded": "Not uploaded"
+    },
+    "features": {
+      "orderManagement": "Order management",
+      "customerAnalytics": "Customer Analytics",
+      "posCashRegister": "POS/Cash register",
+      "multiBranches": "Multi-Branches",
+      "tableBooking": "Table booking",
+      "mobileApp": "Mobile app",
+      "prioritySupport": "Priority Support",
+      "selfDelivery": "Self Delivery",
+      "chat": "Chat",
+      "takeAway": "Take Away",
+      "adminDelivery": "Admin delivery"
+    },
+    "tables": {
+      "planName": "Plan Name",
+      "pricingType": "Pricing Type",
+      "price": "Price",
+      "commissionRule": "Commission Rule",
+      "features": "Features",
+      "owner": "Owner",
+      "packagePlan": "Package Plan",
+      "billing": "Billing",
+      "subscriptionDates": "Subscription Dates",
+      "payment": "Payment",
+      "sl": "SL",
+      "featureModule": "Feature Module",
+      "code": "Code",
+      "description": "Description",
+      "limitSupport": "Limit Support"
+    },
+    "featureCatalog": {
+      "featureModules": "Feature Modules",
+      "loadingModules": "Loading available modules...",
+      "modulesFound": "{count} modules found",
+      "readOnlyCatalog": "Read-only catalog",
+      "noFeatureModulesFound": "No feature modules found",
+      "noFeatureModulesFoundDescription": "Try changing your search keyword or selected filter.",
+      "packagePlanModule": "Package plan module",
+      "supported": "Supported",
+      "standard": "Standard"
+    }
+  },
   "invoicing": {},
   "analytics": {},
   "monitoring": {},
@@ -458,7 +699,9 @@
     "tryAgain": "Try Again"
   },
   "tables": {
-    "showingData": "Showing {showing} from {total} data"
+    "showingData": "Showing {showing} from {total} data",
+    "showingPlans": "Showing {from}-{to} of {total} plans",
+    "showingSubscriptions": "Showing {from}-{to} of {total} subscriptions"
   },
   "filters": {
     "allKinds": "All Kinds",
@@ -502,7 +745,12 @@
     "selectRestaurant": "Select restaurant",
     "selectStatus": "Select Status",
     "toDate": "To Date",
-    "filter": "Filter"
+    "filter": "Filter",
+    "searchPlansPlaceholder": "Search plans...",
+    "pricingTypeAll": "Pricing Type: All",
+    "searchSubscriptionsPlaceholder": "Search subscriptions...",
+    "searchTenantsPlaceholder": "Search tenants...",
+    "searchRestaurantsPlaceholder": "Search restaurants..."
   },
   "dialogs": {
     "confirmDeletion": "Confirm Deletion",
@@ -536,7 +784,11 @@
     "slugRequired": "Slug is required",
     "tenantNameRequired": "Tenant name is required",
     "tenantSlugRequired": "Tenant slug is required",
-    "tenantIdRequired": "Tenant ID is required"
+    "tenantIdRequired": "Tenant ID is required",
+    "planNameRequired": "Plan name is required",
+    "fixedFeeGreaterThanZero": "Fixed fee must be greater than 0",
+    "commissionPercentageNonNegative": "Commission percentage cannot be negative",
+    "selectAtLeastOneFeature": "Select at least one feature"
   },
   "toasts": {
     "businessAdminApproveFailed": "Failed to approve business admin",
@@ -556,6 +808,16 @@
     "tenantDeleted": "Tenant deleted successfully",
     "tenantRegisterFailed": "Failed to register tenant",
     "tenantRegistered": "Tenant registered successfully!",
-    "tenantUpdateFailed": "Failed to update tenant"
+    "tenantUpdateFailed": "Failed to update tenant",
+    "packagePlanCreated": "Package plan created successfully",
+    "packagePlanCreateFailed": "Failed to create package plan",
+    "packagePlanUpdated": "Package plan updated successfully",
+    "packagePlanUpdateFailed": "Failed to update package plan",
+    "packagePlanDeleted": "Package plan deleted successfully",
+    "packagePlanDeleteFailed": "Failed to delete package plan",
+    "subscriptionAssigned": "Subscription assigned successfully",
+    "subscriptionAssignFailed": "Failed to assign subscription",
+    "subscriptionUpdated": "Subscription updated successfully",
+    "subscriptionUpdateFailed": "Failed to update subscription"
   }
 }

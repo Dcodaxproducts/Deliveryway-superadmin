@@ -1,6 +1,7 @@
 "use client";
 
 import { Search, SlidersHorizontal, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type SubscriptionStatusFilter =
   | "ALL"
@@ -18,23 +19,26 @@ type SubscriptionsFiltersProps = {
 };
 
 const statusOptions: Array<{
-  label: string;
+  labelKey: string;
   value: SubscriptionStatusFilter;
 }> = [
-  { label: "All", value: "ALL" },
-  { label: "Trialing", value: "TRIALING" },
-  { label: "Active", value: "ACTIVE" },
-  { label: "Past Due", value: "PAST_DUE" },
-  { label: "Cancelled", value: "CANCELLED" },
-  { label: "Expired", value: "EXPIRED" },
+  { labelKey: "display.status.all", value: "ALL" },
+  { labelKey: "display.status.trialing", value: "TRIALING" },
+  { labelKey: "display.status.active", value: "ACTIVE" },
+  { labelKey: "display.status.pastDue", value: "PAST_DUE" },
+  { labelKey: "display.status.cancelled", value: "CANCELLED" },
+  { labelKey: "display.status.expired", value: "EXPIRED" },
 ];
 
-export default function SubscriptionsFilters({
+export function SubscriptionsFilters({
   search,
   status,
   onSearchChange,
   onStatusChange,
 }: SubscriptionsFiltersProps) {
+  const pricingModel = useTranslations("pricingModel");
+  const filters = useTranslations("filters");
+  const common = useTranslations("common");
   const hasActiveFilters = search.trim() || status !== "ALL";
 
   const handleReset = () => {
@@ -63,7 +67,7 @@ export default function SubscriptionsFilters({
                   }
                 `}
               >
-                {option.label}
+                {pricingModel(option.labelKey)}
               </button>
             );
           })}
@@ -79,7 +83,7 @@ export default function SubscriptionsFilters({
             <input
               value={search}
               onChange={(event) => onSearchChange(event.target.value)}
-              placeholder="Search subscriptions..."
+              placeholder={filters("searchSubscriptionsPlaceholder")}
               className="
                 h-10 w-full rounded-lg border border-transparent bg-gray-100
                 pl-9 pr-3 text-sm text-dark outline-none transition
@@ -95,7 +99,7 @@ export default function SubscriptionsFilters({
               inline-flex h-10 w-10 items-center justify-center rounded-lg
               bg-gray-100 text-gray transition hover:bg-red-50 hover:text-primary
             "
-            title="Filters"
+            title={filters("filter")}
           >
             <SlidersHorizontal size={18} />
           </button>
@@ -111,7 +115,7 @@ export default function SubscriptionsFilters({
               "
             >
               <X size={15} />
-              Reset
+              {common("reset")}
             </button>
           )}
         </div>

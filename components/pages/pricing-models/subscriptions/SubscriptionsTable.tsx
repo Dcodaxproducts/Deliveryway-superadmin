@@ -8,6 +8,7 @@ import {
   CreditCard,
   Pencil,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type PackageSubscriptionRow = {
   id: string;
@@ -54,10 +55,10 @@ type SubscriptionsTableProps = {
 };
 
 const formatDate = (value?: string | null) => {
-  if (!value) return "Not set";
+  if (!value) return null;
 
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Invalid date";
+  if (Number.isNaN(date.getTime())) return null;
 
   return new Intl.DateTimeFormat("en-US", {
     day: "2-digit",
@@ -69,7 +70,7 @@ const formatDate = (value?: string | null) => {
 const formatMoney = (value?: string | number, currency?: string | null) => {
   const amount = Number(value || 0);
 
-  if (!Number.isFinite(amount)) return "Custom";
+  if (!Number.isFinite(amount)) return null;
 
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -78,13 +79,28 @@ const formatMoney = (value?: string | number, currency?: string | null) => {
   }).format(amount);
 };
 
-const formatStatusLabel = (value?: string | null) => {
-  if (!value) return "N/A";
+const statusLabelKeys: Record<string, string> = {
+  TRIALING: "display.status.trialing",
+  ACTIVE: "display.status.active",
+  PAST_DUE: "display.status.pastDue",
+  CANCELLED: "display.status.cancelled",
+  EXPIRED: "display.status.expired",
+  PENDING: "display.paymentStatus.pending",
+  PAID: "display.paymentStatus.paid",
+  FAILED: "display.paymentStatus.failed",
+};
 
-  return value
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+const billingModelLabelKeys: Record<string, string> = {
+  HYBRID: "display.pricingModels.hybrid",
+  PLAN: "display.pricingModels.plan",
+  COMMISSION: "display.pricingModels.commission",
+};
+
+const billingIntervalLabelKeys: Record<string, string> = {
+  MONTHLY: "display.billingIntervals.monthly",
+  YEARLY: "display.billingIntervals.yearly",
+  WEEKLY: "display.billingIntervals.weekly",
+  DAILY: "display.billingIntervals.daily",
 };
 
 const getVisiblePages = (currentPage: number, totalPages: number) => {
@@ -126,7 +142,7 @@ const getOwnerName = (item: PackageSubscriptionRow) => {
     item.tenant?.name ||
     item.restaurantId ||
     item.tenantId ||
-    "Unknown owner"
+    null
   );
 };
 
@@ -140,7 +156,7 @@ const getOwnerMeta = (item: PackageSubscriptionRow) => {
   );
 };
 
-export default function SubscriptionsTable({
+export function SubscriptionsTable({
   subscriptions,
   loading,
   currentPage,
@@ -150,6 +166,9 @@ export default function SubscriptionsTable({
   onPageChange,
   onEdit,
 }: SubscriptionsTableProps) {
+  const pricingModel = useTranslations("pricingModel");
+  const common = useTranslations("common");
+  const tables = useTranslations("tables");
   const safeTotalPages = Math.max(totalPages, 1);
   const from = total === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const to = Math.min(currentPage * pageSize, total);
@@ -160,13 +179,13 @@ export default function SubscriptionsTable({
         <table className="w-full min-w-[1050px] border-collapse">
           <thead>
             <tr className="bg-gray-100 text-left">
-              <TableHead>Owner</TableHead>
-              <TableHead>Package Plan</TableHead>
-              <TableHead>Billing</TableHead>
-              <TableHead>Subscription Dates</TableHead>
-              <TableHead>Payment</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead align="right">Actions</TableHead>
+              <TableHead>{pricingModel("tables.owner")}</TableHead>
+              <TableHead>{pricingModel("tables.packagePlan")}</TableHead>
+              <TableHead>{pricingModel("tables.billing")}</TableHead>
+              <TableHead>{pricingModel("tables.subscriptionDates")}</TableHead>
+              <TableHead>{pricingModel("tables.payment")}</TableHead>
+              <TableHead>{common("status")}</TableHead>
+              <TableHead align="right">{common("actions")}</TableHead>
             </tr>
           </thead>
 
@@ -180,10 +199,12 @@ export default function SubscriptionsTable({
               <tr>
                 <td colSpan={7} className="px-6 py-14 text-center">
                   <p className="text-base font-semibold text-dark">
-                    No subscriptions found
+                    {pricingModel("subscriptions.noSubscriptionsFound")}
                   </p>
                   <p className="mt-1 text-sm text-gray">
-                    Assign a package plan or adjust your filters.
+                    {pricingModel(
+                      "subscriptions.noSubscriptionsFoundDescription"
+                    )}
                   </p>
                 </td>
               </tr>
@@ -203,7 +224,8 @@ export default function SubscriptionsTable({
                     <td className="px-6 py-5">
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-dark">
-                          {getOwnerName(item)}
+                          {getOwnerName(item) ||
+                            pricingModel("subscriptions.unknownOwner")}
                         </p>
                         <p className="mt-1 max-w-[220px] truncate text-xs text-gray">
                           {getOwnerMeta(item)}
@@ -216,7 +238,12 @@ export default function SubscriptionsTable({
                         {plan?.name || item.packagePlanId}
                       </p>
                       <p className="mt-1 text-xs text-gray">
-                        {plan?.billingModel || "Package plan"}
+                        {plan?.billingModel &&
+                        billingModelLabelKeys[plan.billingModel]
+                          ? pricingModel(
+                              billingModelLabelKeys[plan.billingModel]
+                            )
+                          : pricingModel("subscriptions.packagePlanFallback")}
                       </p>
                     </td>
 
@@ -228,10 +255,18 @@ export default function SubscriptionsTable({
 
                         <div>
                           <p className="text-sm font-semibold text-dark">
-                            {formatMoney(plan?.planPrice, plan?.currency)}
+                            {formatMoney(plan?.planPrice, plan?.currency) ||
+                              pricingModel("display.custom")}
                           </p>
                           <p className="text-xs text-gray">
-                            {plan?.billingInterval || "Interval not set"}
+                            {plan?.billingInterval &&
+                            billingIntervalLabelKeys[plan.billingInterval]
+                              ? pricingModel(
+                                  billingIntervalLabelKeys[
+                                    plan.billingInterval
+                                  ]
+                                )
+                              : pricingModel("subscriptions.intervalNotSet")}
                           </p>
                         </div>
                       </div>
@@ -245,15 +280,17 @@ export default function SubscriptionsTable({
 
                         <div>
                           <p className="text-xs text-gray">
-                            Start:{" "}
+                            {pricingModel("subscriptions.start")}{" "}
                             <span className="font-semibold text-dark">
-                              {formatDate(item.startsAt)}
+                              {formatDate(item.startsAt) ||
+                                pricingModel("subscriptions.notSet")}
                             </span>
                           </p>
                           <p className="mt-1 text-xs text-gray">
-                            Next:{" "}
+                            {pricingModel("subscriptions.next")}{" "}
                             <span className="font-semibold text-dark">
-                              {formatDate(item.nextBillingAt)}
+                              {formatDate(item.nextBillingAt) ||
+                                pricingModel("subscriptions.notSet")}
                             </span>
                           </p>
                         </div>
@@ -267,7 +304,9 @@ export default function SubscriptionsTable({
                           ${getPaymentClass(paymentStatus)}
                         `}
                       >
-                        {formatStatusLabel(paymentStatus)}
+                        {statusLabelKeys[paymentStatus]
+                          ? pricingModel(statusLabelKeys[paymentStatus])
+                          : common("notAvailable")}
                       </span>
                     </td>
 
@@ -278,7 +317,9 @@ export default function SubscriptionsTable({
                           ${getStatusClass(subscriptionStatus)}
                         `}
                       >
-                        {formatStatusLabel(subscriptionStatus)}
+                        {statusLabelKeys[subscriptionStatus]
+                          ? pricingModel(statusLabelKeys[subscriptionStatus])
+                          : common("notAvailable")}
                       </span>
                     </td>
 
@@ -288,7 +329,7 @@ export default function SubscriptionsTable({
                           type="button"
                           onClick={() => onEdit(item)}
                           className="inline-flex size-8 items-center justify-center rounded-lg text-gray transition hover:bg-red-50 hover:text-primary"
-                          title="Update subscription"
+                          title={pricingModel("actions.updateSubscription")}
                         >
                           <Pencil size={16} />
                         </button>
@@ -303,7 +344,7 @@ export default function SubscriptionsTable({
 
       <div className="flex flex-col gap-4 border-t border-gray-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm font-medium text-gray">
-          Showing {from}-{to} of {total} subscriptions
+          {tables("showingSubscriptions", { from, to, total })}
         </p>
 
         <div className="flex items-center gap-2">

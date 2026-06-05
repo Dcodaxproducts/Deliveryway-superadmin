@@ -3,13 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Header from "@/components/header";
 import {
   useDeletePackagePlan,
   useGetPackagePlans,
 } from "@/hooks/usePackagePlans";
-import PlansListingFilters from "@/components/pages/pricing-models/plans-listing/PlansListingFilters";
-import PlansTable from "@/components/pages/pricing-models/plans-listing/PlansTable";
+import { PlansListingFilters } from "@/components/pages/pricing-models/plans-listing/PlansListingFilters";
+import { PlansTable } from "@/components/pages/pricing-models/plans-listing/PlansTable";
 import Container from "@/components/container";
 
 type BillingModelFilter = "ALL" | "COMMISSION" | "PLAN" | "HYBRID";
@@ -66,6 +67,7 @@ const useDebouncedValue = <T,>(value: T, delay = SEARCH_DEBOUNCE_MS) => {
 };
 
 export default function PlansListingPage() {
+  const pricingModel = useTranslations("pricingModel");
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [billingModel, setBillingModel] = useState<BillingModelFilter>("ALL");
@@ -90,7 +92,7 @@ export default function PlansListingPage() {
   const deletePackagePlan = useDeletePackagePlan();
 
   const response = packagePlansQuery.data as PackagePlansResponse | undefined;
-  const serverPlans = response?.data ?? [];
+  const serverPlans = useMemo(() => response?.data ?? [], [response?.data]);
 
   const visiblePlans = useMemo(() => {
     if (status === "ACTIVE") {
@@ -143,8 +145,8 @@ export default function PlansListingPage() {
       <section className="mx-auto w-full ">
         <div className="mb-7 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <Header
-            title="Plans Listing"
-            description="Configure and manage subscription tiers for your restaurant partners."
+            title={pricingModel("plansListing.title")}
+            description={pricingModel("plansListing.description")}
           />
 
           <Link
@@ -152,7 +154,7 @@ export default function PlansListingPage() {
             className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-sm font-bold text-white shadow-lg shadow-red-900/10 transition hover:opacity-90"
           >
             <Plus size={18} />
-            Create New Plan
+            {pricingModel("actions.createNewPlan")}
           </Link>
         </div>
 

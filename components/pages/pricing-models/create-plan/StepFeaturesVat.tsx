@@ -2,6 +2,7 @@
 
 import { useMemo, useRef } from "react";
 import { UploadCloud } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useFileUpload } from "@/hooks/useFileUpload";
 
 type PayoutCycle = "DAILY" | "WEEKLY" | "MONTHLY" | "MANUAL";
@@ -111,11 +112,12 @@ const normalizeFeatureCatalog = (data: unknown): FeatureItem[] => {
   return normalized.length > 0 ? normalized : fallbackFeatures;
 };
 
-export default function StepFeaturesVat({
+export function StepFeaturesVat({
   form,
   featureCatalogData,
   onChange,
 }: StepFeaturesVatProps) {
+  const pricingModel = useTranslations("pricingModel");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { uploadFile, uploading, progress } = useFileUpload();
 
@@ -153,9 +155,11 @@ export default function StepFeaturesVat({
   return (
     <div className="w-full space-y-6">
       <section className="rounded-xl bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-bold text-[#1F2328]">Included Features</h2>
+        <h2 className="text-lg font-bold text-[#1F2328]">
+          {pricingModel("fields.includedFeatures")}
+        </h2>
         <p className="mt-1 text-sm text-[#684848]">
-          Select the tools and modules accessible to subscribers in this tier.
+          {pricingModel("create.includedFeaturesDescription")}
         </p>
 
         <div className="mt-6 flex flex-wrap gap-3">
@@ -194,11 +198,10 @@ export default function StepFeaturesVat({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-bold text-[#1F2328]">
-              VAT Configuration
+              {pricingModel("create.vatConfiguration")}
             </h2>
             <p className="mt-1 text-sm text-[#684848]">
-              VAT is applied by the Super Admin to invoices issued to restaurant
-              owners.
+              {pricingModel("create.vatConfigurationDescription")}
             </p>
           </div>
 
@@ -208,7 +211,7 @@ export default function StepFeaturesVat({
             className="flex items-center gap-3"
           >
             <span className="text-xs font-semibold uppercase tracking-[0.06em] text-[#1F2328]">
-              Apply VAT
+              {pricingModel("fields.applyVat")}
             </span>
 
             <span
@@ -229,7 +232,7 @@ export default function StepFeaturesVat({
 
         <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
           <div>
-            <label className={labelClass}>VAT rate (%)</label>
+            <label className={labelClass}>{pricingModel("fields.vatRate")}</label>
 
             <div className="mt-2 flex h-12 overflow-hidden rounded-lg border border-slate-200">
               <input
@@ -249,13 +252,15 @@ export default function StepFeaturesVat({
           </div>
 
           <div>
-            <label className={labelClass}>VAT label on invoice</label>
+            <label className={labelClass}>
+              {pricingModel("fields.vatLabelOnInvoice")}
+            </label>
 
             <input
               value={form.vatLabel}
               disabled={!form.vatEnabled}
               onChange={(event) => onChange("vatLabel", event.target.value)}
-              placeholder="Standard Rate"
+              placeholder={pricingModel("placeholders.standardRate")}
               className="mt-2 h-12 w-full rounded-lg border border-slate-200 px-4 text-sm outline-none transition focus:border-primary disabled:bg-slate-100"
             />
           </div>
@@ -264,14 +269,14 @@ export default function StepFeaturesVat({
 
       <section className="rounded-xl bg-white p-6 shadow-sm">
         <h2 className="text-lg font-bold text-[#1F2328]">
-          Payout & Adjustments
+          {pricingModel("create.payoutAdjustments")}
         </h2>
         <p className="mt-1 text-sm text-[#684848]">
-          Allow manual invoice adjustments and define payout cycle.
+          {pricingModel("create.payoutAdjustmentsDescription")}
         </p>
 
         <div className="mt-6 max-w-xs">
-          <label className={labelClass}>Payout cycle</label>
+          <label className={labelClass}>{pricingModel("fields.payoutCycle")}</label>
 
           <select
             value={form.payoutCycle}
@@ -280,20 +285,20 @@ export default function StepFeaturesVat({
             }
             className="mt-2 h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm outline-none transition focus:border-primary"
           >
-            <option value="DAILY">Daily</option>
-            <option value="WEEKLY">Weekly</option>
-            <option value="MONTHLY">Monthly</option>
-            <option value="MANUAL">Manual</option>
+            <option value="DAILY">{pricingModel("display.payoutCycles.daily")}</option>
+            <option value="WEEKLY">{pricingModel("display.payoutCycles.weekly")}</option>
+            <option value="MONTHLY">{pricingModel("display.payoutCycles.monthly")}</option>
+            <option value="MANUAL">{pricingModel("display.payoutCycles.manual")}</option>
           </select>
         </div>
       </section>
 
       <section className="rounded-xl bg-white p-6 shadow-sm">
         <h2 className="text-lg font-bold text-[#1F2328]">
-          Terms & Conditions
+          {pricingModel("create.termsConditions")}
         </h2>
         <p className="mt-1 text-sm text-[#684848]">
-          Upload plan terms document.
+          {pricingModel("create.termsConditionsDescription")}
         </p>
 
         <div className="mt-8 flex justify-center">
@@ -309,7 +314,9 @@ export default function StepFeaturesVat({
             <UploadCloud size={28} className="text-primary" />
 
             <p className="mt-4 text-sm font-bold text-[#684848]">
-              {uploading ? `Uploading ${progress}%` : "Upload PDF"}
+              {uploading
+                ? pricingModel("create.uploadingProgress", { progress })
+                : pricingModel("fields.uploadPdf")}
             </p>
 
             <button
@@ -318,7 +325,7 @@ export default function StepFeaturesVat({
               onClick={() => fileInputRef.current?.click()}
               className="mt-5 rounded-md border border-primary px-4 py-2 text-xs font-bold uppercase tracking-[0.04em] text-primary transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Select File
+              {pricingModel("actions.selectFile")}
             </button>
 
             {previewUrl && (
@@ -328,13 +335,13 @@ export default function StepFeaturesVat({
                 rel="noreferrer"
                 className="mt-4 max-w-full truncate text-xs font-semibold text-primary underline"
               >
-                Preview uploaded PDF
+                {pricingModel("actions.previewUploadedPdf")}
               </a>
             )}
 
             {form.termsDocumentUrl && (
               <p className="mt-2 text-xs font-medium text-emerald-600">
-                Storage URL saved successfully
+                {pricingModel("create.storageUrlSaved")}
               </p>
             )}
           </div>

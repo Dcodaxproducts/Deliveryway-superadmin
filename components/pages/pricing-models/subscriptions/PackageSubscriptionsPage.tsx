@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Container from "@/components/container";
 import Header from "@/components/header";
 import { useGetPackageSubscriptions } from "@/hooks/usePackagePlans";
-import SubscriptionsFilters from "./SubscriptionsFilters";
-import SubscriptionsTable from "./SubscriptionsTable";
-import SubscriptionModal from "./SubscriptionModal";
+import { SubscriptionModal } from "./SubscriptionModal";
+import { SubscriptionsFilters } from "./SubscriptionsFilters";
+import { SubscriptionsTable } from "./SubscriptionsTable";
 
 type SubscriptionStatusFilter =
   | "ALL"
@@ -82,7 +83,8 @@ const useDebouncedValue = <T,>(value: T, delay = SEARCH_DEBOUNCE_MS) => {
   return debouncedValue;
 };
 
-export default function PackageSubscriptionsPage() {
+export function PackageSubscriptionsPage() {
+  const pricingModel = useTranslations("pricingModel");
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<SubscriptionStatusFilter>("ALL");
@@ -148,8 +150,8 @@ export default function PackageSubscriptionsPage() {
       <div className="w-full">
         <div className="mb-7 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <Header
-            title="Subscriptions"
-            description="Assign package plans to tenants or restaurants and manage billing lifecycle."
+            title={pricingModel("subscriptions.title")}
+            description={pricingModel("subscriptions.description")}
           />
 
           <button
@@ -158,7 +160,7 @@ export default function PackageSubscriptionsPage() {
             className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-sm font-bold text-white shadow-lg shadow-red-900/10 transition hover:opacity-90"
           >
             <Plus size={18} />
-            Assign Subscription
+            {pricingModel("actions.assignSubscription")}
           </button>
         </div>
 

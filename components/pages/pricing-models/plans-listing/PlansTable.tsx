@@ -8,6 +8,7 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type PackagePlanRow = {
   id: string;
@@ -39,23 +40,23 @@ type PlansTableProps = {
   onDelete: (id: string) => void;
 };
 
-const billingModelLabels: Record<string, string> = {
-  HYBRID: "Hybrid",
-  PLAN: "Plan",
-  COMMISSION: "Commission",
+const billingModelLabelKeys: Record<string, string> = {
+  HYBRID: "display.pricingModels.hybrid",
+  PLAN: "display.pricingModels.plan",
+  COMMISSION: "display.pricingModels.commission",
 };
 
-const billingIntervalLabels: Record<string, string> = {
-  MONTHLY: "Monthly",
-  YEARLY: "Yearly",
-  WEEKLY: "Weekly",
-  DAILY: "Daily",
+const billingIntervalLabelKeys: Record<string, string> = {
+  MONTHLY: "display.billingIntervals.monthly",
+  YEARLY: "display.billingIntervals.yearly",
+  WEEKLY: "display.billingIntervals.weekly",
+  DAILY: "display.billingIntervals.daily",
 };
 
 const formatMoney = (value: string | number, currency?: string | null) => {
   const amount = Number(value || 0);
 
-  if (!Number.isFinite(amount)) return "Custom";
+  if (!Number.isFinite(amount)) return null;
 
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -85,11 +86,14 @@ const getPlanAvatarClass = (index: number) => {
   return classes[index % classes.length];
 };
 
-const getCommissionRule = (plan: PackagePlanRow) => {
+const getCommissionRule = (
+  plan: PackagePlanRow,
+  pricingModel: ReturnType<typeof useTranslations<"pricingModel">>
+) => {
   if (plan.billingModel === "PLAN") {
     return {
-      title: "No commission",
-      subtitle: "Flat subscription",
+      title: pricingModel("display.noCommission"),
+      subtitle: pricingModel("display.flatSubscription"),
     };
   }
 
@@ -98,14 +102,21 @@ const getCommissionRule = (plan: PackagePlanRow) => {
 
   if (plan.billingModel === "HYBRID") {
     return {
-      title: `${commission}% + cap`,
-      subtitle: cap > 0 ? `Cap ${formatMoney(cap, plan.currency)}` : "No cap",
+      title: pricingModel("plansListing.commissionPlusCap", { commission }),
+      subtitle:
+        cap > 0
+          ? pricingModel("plansListing.capAmount", {
+              amount:
+                formatMoney(cap, plan.currency) ||
+                pricingModel("display.custom"),
+            })
+          : pricingModel("review.noCap"),
     };
   }
 
   return {
-    title: `${commission}% Flat Rate`,
-    subtitle: "Per order fee",
+    title: pricingModel("plansListing.flatRate", { commission }),
+    subtitle: pricingModel("plansListing.perOrderFee"),
   };
 };
 
@@ -123,7 +134,7 @@ const getVisiblePages = (currentPage: number, totalPages: number) => {
   return pages;
 };
 
-export default function PlansTable({
+export function PlansTable({
   plans,
   loading,
   currentPage,
@@ -134,6 +145,9 @@ export default function PlansTable({
   onPageChange,
   onDelete,
 }: PlansTableProps) {
+  const pricingModel = useTranslations("pricingModel");
+  const tables = useTranslations("tables");
+  const common = useTranslations("common");
   const safeTotalPages = Math.max(totalPages, 1);
   const from = total === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const to = Math.min(currentPage * pageSize, total);
@@ -144,13 +158,13 @@ export default function PlansTable({
         <table className="w-full min-w-[900px] border-collapse">
           <thead>
             <tr className="bg-gray-100 text-left">
-              <TableHead>Plan Name</TableHead>
-              <TableHead>Pricing Type</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Commission Rule</TableHead>
-              <TableHead>Features</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead align="right">Actions</TableHead>
+              <TableHead>{pricingModel("tables.planName")}</TableHead>
+              <TableHead>{pricingModel("tables.pricingType")}</TableHead>
+              <TableHead>{pricingModel("tables.price")}</TableHead>
+              <TableHead>{pricingModel("tables.commissionRule")}</TableHead>
+              <TableHead>{pricingModel("tables.features")}</TableHead>
+              <TableHead>{common("status")}</TableHead>
+              <TableHead align="right">{common("actions")}</TableHead>
             </tr>
           </thead>
 
@@ -164,10 +178,10 @@ export default function PlansTable({
               <tr>
                 <td colSpan={7} className="px-6 py-14 text-center">
                   <p className="text-base font-semibold text-dark">
-                    No plans found
+                    {pricingModel("plansListing.noPlansFound")}
                   </p>
                   <p className="mt-1 text-sm text-gray">
-                    Create a new package plan or adjust your filters.
+                    {pricingModel("plansListing.noPlansFoundDescription")}
                   </p>
                 </td>
               </tr>
@@ -175,7 +189,7 @@ export default function PlansTable({
 
             {!loading &&
               plans.map((plan, index) => {
-                const commissionRule = getCommissionRule(plan);
+                const commissionRule = getCommissionRule(plan, pricingModel);
                 const enabledFeaturesCount = countEnabledFeatures(plan.features);
                 const isArchived = !plan.isActive || Boolean(plan.deletedAt);
 
@@ -203,13 +217,14 @@ export default function PlansTable({
 
                             {plan.isDefault && (
                               <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-primary">
-                                Default
+                                {pricingModel("display.status.default")}
                               </span>
                             )}
                           </div>
 
                           <p className="mt-1 line-clamp-2 max-w-[230px] text-xs leading-4 text-gray">
-                            {plan.description || "No description provided"}
+                            {plan.description ||
+                              pricingModel("display.noDescriptionProvided")}
                           </p>
                         </div>
                       </div>
@@ -218,20 +233,27 @@ export default function PlansTable({
                     <td className="px-6 py-5">
                       <div className="flex flex-col gap-2">
                         <span className="w-fit rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-dark">
-                          {billingModelLabels[plan.billingModel] ||
-                            plan.billingModel}
+                          {billingModelLabelKeys[plan.billingModel]
+                            ? pricingModel(
+                                billingModelLabelKeys[plan.billingModel]
+                              )
+                            : plan.billingModel}
                         </span>
 
                         <span className="w-fit rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray">
-                          {billingIntervalLabels[plan.billingInterval] ||
-                            plan.billingInterval}
+                          {billingIntervalLabelKeys[plan.billingInterval]
+                            ? pricingModel(
+                                billingIntervalLabelKeys[plan.billingInterval]
+                              )
+                            : plan.billingInterval}
                         </span>
                       </div>
                     </td>
 
                     <td className="px-6 py-5">
                       <p className="text-base font-bold text-dark">
-                        {formatMoney(plan.planPrice, plan.currency)}
+                        {formatMoney(plan.planPrice, plan.currency) ||
+                          pricingModel("display.custom")}
                       </p>
                     </td>
 
@@ -263,7 +285,9 @@ export default function PlansTable({
                             ${isArchived ? "bg-gray-300" : "bg-primary"}
                           `}
                         />
-                        {isArchived ? "Archived" : "Active"}
+                        {isArchived
+                          ? pricingModel("display.status.archived")
+                          : pricingModel("display.status.active")}
                       </span>
                     </td>
 
@@ -272,7 +296,7 @@ export default function PlansTable({
                         <Link
                           href={`/pricing-model/create-new-plan?id=${plan.id}`}
                           className="inline-flex size-8 items-center justify-center rounded-lg text-gray transition hover:bg-red-50 hover:text-primary"
-                          title="Edit plan"
+                          title={pricingModel("actions.editPlan")}
                         >
                           <Pencil size={16} />
                         </Link>
@@ -282,7 +306,7 @@ export default function PlansTable({
                           disabled={deletingId === plan.id}
                           onClick={() => onDelete(plan.id)}
                           className="inline-flex size-8 items-center justify-center rounded-lg text-gray transition hover:bg-red-50 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
-                          title="Delete plan"
+                          title={pricingModel("actions.deletePlan")}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -299,7 +323,7 @@ export default function PlansTable({
 
       <div className="flex flex-col gap-4 border-t border-gray-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm font-medium text-gray">
-          Showing {from}-{to} of {total} plans
+          {tables("showingPlans", { from, to, total })}
         </p>
 
         <div className="flex items-center gap-2">

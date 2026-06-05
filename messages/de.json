@@ -387,7 +387,248 @@
   "globalSettings": {},
   "employeeSettings": {},
   "rbac": {},
-  "pricingModel": {},
+  "pricingModel": {
+    "steps": {
+      "selectType": "Typ auswählen",
+      "configure": "Konfigurieren",
+      "featuresVat": "Funktionen & MwSt.",
+      "review": "Prüfen"
+    },
+    "actions": {
+      "createNewPlan": "Neuen Plan erstellen",
+      "backToPlansListing": "Zur Planliste zurück",
+      "cancelSetup": "Einrichtung abbrechen",
+      "backToConfiguration": "Zur Konfiguration zurück",
+      "continueToReview": "Weiter zur Prüfung",
+      "saveAsDraft": "Als Entwurf speichern",
+      "creating": "Wird erstellt...",
+      "updating": "Wird aktualisiert...",
+      "assigning": "Wird zugewiesen...",
+      "createPlan": "Plan erstellen",
+      "updatePlan": "Plan aktualisieren",
+      "editPlan": "Plan bearbeiten",
+      "deletePlan": "Plan löschen",
+      "selectFile": "Datei auswählen",
+      "previewUploadedPdf": "Hochgeladene PDF anzeigen",
+      "assignSubscription": "Abonnement zuweisen",
+      "updateSubscription": "Abonnement aktualisieren",
+      "clearSelection": "Auswahl löschen"
+    },
+    "fields": {
+      "planName": "Planname",
+      "description": "Beschreibung",
+      "subscription": "Abonnement",
+      "planPrice": "Planpreis",
+      "currency": "Währung",
+      "billingCycle": "Abrechnungszyklus",
+      "applyCap": "Limit anwenden",
+      "fixedFeePerOrder": "Feste Gebühr / % pro Bestellung",
+      "maxCapAmount": "Maximaler Limitbetrag",
+      "payoutCycle": "Auszahlungszyklus",
+      "trialDays": "Testtage",
+      "includedFeatures": "Enthaltene Funktionen",
+      "applyVat": "MwSt. anwenden",
+      "vatRate": "MwSt.-Satz (%)",
+      "vatLabelOnInvoice": "MwSt.-Label auf Rechnung",
+      "uploadPdf": "PDF hochladen",
+      "tenant": "Mandant",
+      "restaurant": "Restaurant",
+      "packagePlan": "Paketplan",
+      "paymentStatus": "Zahlungsstatus",
+      "subscriptionStatus": "Abonnementstatus",
+      "startsAt": "Beginnt am",
+      "endsAt": "Endet am",
+      "nextBillingAt": "Nächste Abrechnung am",
+      "note": "Notiz"
+    },
+    "placeholders": {
+      "planName": "z. B. Enterprise Plus",
+      "description": "Kurze Beschreibung für diesen Paketplan",
+      "addFixedFee": "Feste Gebühr hinzufügen",
+      "addPercentage": "Prozentsatz hinzufügen",
+      "standardRate": "Standardsatz",
+      "selectTenant": "Mandanten auswählen",
+      "selectRestaurant": "Restaurant auswählen",
+      "selectPackagePlan": "Paketplan auswählen",
+      "internalNote": "Interne Notiz"
+    },
+    "create": {
+      "configurePlan": "Plan konfigurieren",
+      "planIdentity": "Planidentität",
+      "planIdentityDescription": "Definiere die Namenskonventionen für diese Abonnementstufe.",
+      "subscriptionDescription": "Konfiguriere Planpreis, Währung und Abrechnungsintervall.",
+      "commissionLimits": "Provision & Limits",
+      "commissionLimitsDescription": "Konfiguriere feste Gebühren oder prozentbasierte Transaktionsgebühren.",
+      "fixedCommissionHelp": "Pro Bestellung wird ein fester Betrag berechnet.",
+      "percentageCommissionHelp": "Pro Bestellung wird eine prozentuale Provision berechnet.",
+      "fixedCommissionCapHelp": "Für feste Gebühren pro Bestellung gilt kein Limit.",
+      "percentageCommissionCapHelp": "Optionales maximales Provisionslimit für prozentbasierte Bestellungen.",
+      "includedFeaturesDescription": "Wähle die Tools und Module aus, die Abonnenten dieser Stufe nutzen können.",
+      "vatConfiguration": "MwSt.-Konfiguration",
+      "vatConfigurationDescription": "Die MwSt. wird vom Super Admin auf Rechnungen an Restaurantbesitzer angewendet.",
+      "payoutAdjustments": "Auszahlung & Anpassungen",
+      "payoutAdjustmentsDescription": "Erlaube manuelle Rechnungsanpassungen und definiere den Auszahlungszyklus.",
+      "termsConditions": "Geschäftsbedingungen",
+      "termsConditionsDescription": "Lade das Dokument mit den Planbedingungen hoch.",
+      "uploadingProgress": "Wird hochgeladen {progress}%",
+      "storageUrlSaved": "Speicher-URL erfolgreich gespeichert",
+      "recommended": "Empfohlen",
+      "failedToLoadPackagePlan": "Paketplan konnte nicht geladen werden",
+      "failedToLoadPackagePlanDescription": "Bitte gehe zur Liste zurück und versuche es erneut.",
+      "steps": {
+        "selectPricingModelTitle": "Preismodell auswählen",
+        "selectPricingModelDescription": "Wähle die Abrechnungsstruktur für diesen Abonnementplan. Neue Stufen unterstützen konfigurierbare Funktionen. Legacy-Modelle unterstützen bestehende Kunden.",
+        "configureDescription": "Definiere Preise, Abrechnungszyklus, Provisionssatz und Transaktionslimits.",
+        "featuresVatDescription": "Definiere Kernfunktionen, MwSt.-Struktur, Auszahlungszyklus und das Bedingungsdokument für diesen Plan.",
+        "reviewUpdateTitle": "Prüfen & aktualisieren",
+        "reviewConfirmTitle": "Prüfen & bestätigen",
+        "stepOneOfFour": "Schritt 01 von 04",
+        "editMode": "Bearbeitungsmodus",
+        "configurationMode": "Konfigurationsmodus"
+      },
+      "pricingModels": {
+        "hybridDescription": "Mindestmonatsgebühr und Umsatzbeteiligung mit optionalem Maximalbetrag.",
+        "planDescription": "Fester Monatsbetrag mit optionalen Paketen und Funktionen.",
+        "commissionDescription": "Fester Betrag oder Prozentsatz pro aufgegebener Bestellung."
+      }
+    },
+    "display": {
+      "pricingModels": {
+        "hybrid": "Hybrid",
+        "plan": "Plan",
+        "commission": "Provision",
+        "planSubscription": "Monatliches Pauschalabonnement",
+        "commissionPerOrder": "Feste Gebühr/% pro Bestellung",
+        "monthlyFlatFee": "Monatliche Pauschalgebühr",
+        "commissionCap": "Provision + Limit"
+      },
+      "billingIntervals": {
+        "monthly": "Monatlich",
+        "yearly": "Jährlich",
+        "weekly": "Wöchentlich",
+        "daily": "Täglich"
+      },
+      "payoutCycles": {
+        "daily": "Täglich",
+        "weekly": "Wöchentlich",
+        "monthly": "Monatlich",
+        "manual": "Manuell"
+      },
+      "commissionTypes": {
+        "percentage": "Prozentsatz",
+        "fixedFee": "Feste Gebühr"
+      },
+      "paymentStatus": {
+        "pending": "Ausstehend",
+        "paid": "Bezahlt",
+        "failed": "Fehlgeschlagen",
+        "cancelled": "Storniert"
+      },
+      "status": {
+        "all": "Alle",
+        "active": "Aktiv",
+        "archived": "Archiviert",
+        "cancelled": "Storniert",
+        "default": "Standard",
+        "disabled": "Deaktiviert",
+        "expired": "Abgelaufen",
+        "pastDue": "Überfällig",
+        "trialing": "In Testphase"
+      },
+      "noCommission": "Keine Provision",
+      "flatSubscription": "Pauschalabonnement",
+      "custom": "Benutzerdefiniert",
+      "noDescriptionProvided": "Keine Beschreibung vorhanden"
+    },
+    "plansListing": {
+      "title": "Planliste",
+      "description": "Konfiguriere und verwalte Abonnementstufen für deine Restaurantpartner.",
+      "commissionPlusCap": "{commission}% + Limit",
+      "capAmount": "Limit {amount}",
+      "flatRate": "{commission}% Pauschalsatz",
+      "perOrderFee": "Gebühr pro Bestellung",
+      "noPlansFound": "Keine Pläne gefunden",
+      "noPlansFoundDescription": "Erstelle einen neuen Paketplan oder passe deine Filter an."
+    },
+    "subscriptions": {
+      "title": "Abonnements",
+      "description": "Weise Paketpläne Mandanten oder Restaurants zu und verwalte den Abrechnungslebenszyklus.",
+      "noSubscriptionsFound": "Keine Abonnements gefunden",
+      "noSubscriptionsFoundDescription": "Weise einen Paketplan zu oder passe deine Filter an.",
+      "unknownOwner": "Unbekannter Besitzer",
+      "packagePlanFallback": "Paketplan",
+      "intervalNotSet": "Intervall nicht gesetzt",
+      "notSet": "Nicht gesetzt",
+      "start": "Start:",
+      "next": "Nächste:",
+      "updateSubscriptionDescription": "Aktualisiere Lebenszyklus, Zahlungsstatus oder Paketzuteilung.",
+      "assignSubscriptionDescription": "Wähle einen Mandanten oder ein Restaurant aus und weise dann einen Paketplan zu.",
+      "selectAtLeastOneOwner": "Wähle mindestens einen Besitzer aus",
+      "selectAtLeastOneOwnerDescription": "Du kannst das Abonnement einem Mandanten, einem Restaurant oder beiden zuweisen, abhängig vom Backend-Eigentümerfluss.",
+      "loadingPackagePlans": "Paketpläne werden geladen...",
+      "selectedValue": "Ausgewählt: {value}",
+      "idValue": "ID: {value}"
+    },
+    "review": {
+      "pricingModel": "Preismodell",
+      "notProvided": "Nicht angegeben",
+      "billingInterval": "Abrechnungsintervall",
+      "commissionRate": "Provisionssatz",
+      "percentPerTransaction": "{percent}% pro Transaktion",
+      "cap": "Limit",
+      "amountPerInterval": "{amount} / {interval}",
+      "noCap": "Kein Limit",
+      "vatRateValue": "{percent}% {label}",
+      "standard": "Standard",
+      "days": "{count} Tage",
+      "status": "Status",
+      "activeAfterCreation": "Nach Erstellung aktiv",
+      "noFeaturesSelected": "Keine Funktionen ausgewählt",
+      "termsDocument": "Bedingungsdokument",
+      "notUploaded": "Nicht hochgeladen"
+    },
+    "features": {
+      "orderManagement": "Bestellverwaltung",
+      "customerAnalytics": "Kundenanalysen",
+      "posCashRegister": "POS/Kasse",
+      "multiBranches": "Mehrere Filialen",
+      "tableBooking": "Tischbuchung",
+      "mobileApp": "Mobile App",
+      "prioritySupport": "Priorisierter Support",
+      "selfDelivery": "Eigene Lieferung",
+      "chat": "Chat",
+      "takeAway": "Mitnahme",
+      "adminDelivery": "Admin-Lieferung"
+    },
+    "tables": {
+      "planName": "Planname",
+      "pricingType": "Preistyp",
+      "price": "Preis",
+      "commissionRule": "Provisionsregel",
+      "features": "Funktionen",
+      "owner": "Besitzer",
+      "packagePlan": "Paketplan",
+      "billing": "Abrechnung",
+      "subscriptionDates": "Abonnementdaten",
+      "payment": "Zahlung",
+      "sl": "Nr.",
+      "featureModule": "Funktionsmodul",
+      "code": "Code",
+      "description": "Beschreibung",
+      "limitSupport": "Limit-Unterstützung"
+    },
+    "featureCatalog": {
+      "featureModules": "Funktionsmodule",
+      "loadingModules": "Verfügbare Module werden geladen...",
+      "modulesFound": "{count} Module gefunden",
+      "readOnlyCatalog": "Schreibgeschützter Katalog",
+      "noFeatureModulesFound": "Keine Funktionsmodule gefunden",
+      "noFeatureModulesFoundDescription": "Ändere dein Suchwort oder den ausgewählten Filter.",
+      "packagePlanModule": "Paketplanmodul",
+      "supported": "Unterstützt",
+      "standard": "Standard"
+    }
+  },
   "invoicing": {},
   "analytics": {},
   "monitoring": {},
@@ -458,7 +699,9 @@
     "tryAgain": "Erneut versuchen"
   },
   "tables": {
-    "showingData": "{showing} von {total} Datensätzen werden angezeigt"
+    "showingData": "{showing} von {total} Datensätzen werden angezeigt",
+    "showingPlans": "{from}-{to} von {total} Plänen werden angezeigt",
+    "showingSubscriptions": "{from}-{to} von {total} Abonnements werden angezeigt"
   },
   "filters": {
     "allKinds": "Alle Arten",
@@ -502,7 +745,12 @@
     "selectRestaurant": "Restaurant auswählen",
     "selectStatus": "Status auswählen",
     "toDate": "Bis Datum",
-    "filter": "Filter"
+    "filter": "Filter",
+    "searchPlansPlaceholder": "Pläne suchen...",
+    "pricingTypeAll": "Preistyp: Alle",
+    "searchSubscriptionsPlaceholder": "Abonnements suchen...",
+    "searchTenantsPlaceholder": "Mandanten suchen...",
+    "searchRestaurantsPlaceholder": "Restaurants suchen..."
   },
   "dialogs": {
     "confirmDeletion": "Löschen bestätigen",
@@ -536,7 +784,11 @@
     "slugRequired": "Slug ist erforderlich",
     "tenantNameRequired": "Mandantenname ist erforderlich",
     "tenantSlugRequired": "Mandanten-Slug ist erforderlich",
-    "tenantIdRequired": "Mandanten-ID ist erforderlich"
+    "tenantIdRequired": "Mandanten-ID ist erforderlich",
+    "planNameRequired": "Planname ist erforderlich",
+    "fixedFeeGreaterThanZero": "Die feste Gebühr muss größer als 0 sein",
+    "commissionPercentageNonNegative": "Der Provisionsprozentsatz darf nicht negativ sein",
+    "selectAtLeastOneFeature": "Wähle mindestens eine Funktion aus"
   },
   "toasts": {
     "businessAdminApproveFailed": "Business Admin konnte nicht freigegeben werden",
@@ -556,6 +808,16 @@
     "tenantDeleted": "Mandant erfolgreich gelöscht",
     "tenantRegisterFailed": "Mandant konnte nicht registriert werden",
     "tenantRegistered": "Mandant erfolgreich registriert!",
-    "tenantUpdateFailed": "Mandant konnte nicht aktualisiert werden"
+    "tenantUpdateFailed": "Mandant konnte nicht aktualisiert werden",
+    "packagePlanCreated": "Paketplan erfolgreich erstellt",
+    "packagePlanCreateFailed": "Paketplan konnte nicht erstellt werden",
+    "packagePlanUpdated": "Paketplan erfolgreich aktualisiert",
+    "packagePlanUpdateFailed": "Paketplan konnte nicht aktualisiert werden",
+    "packagePlanDeleted": "Paketplan erfolgreich gelöscht",
+    "packagePlanDeleteFailed": "Paketplan konnte nicht gelöscht werden",
+    "subscriptionAssigned": "Abonnement erfolgreich zugewiesen",
+    "subscriptionAssignFailed": "Abonnement konnte nicht zugewiesen werden",
+    "subscriptionUpdated": "Abonnement erfolgreich aktualisiert",
+    "subscriptionUpdateFailed": "Abonnement konnte nicht aktualisiert werden"
   }
 }

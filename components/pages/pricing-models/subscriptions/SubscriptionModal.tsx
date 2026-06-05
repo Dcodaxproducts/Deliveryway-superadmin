@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Search, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   useCreatePackageSubscription,
   useGetPackagePlans,
@@ -252,11 +253,14 @@ const mergeSelectedRestaurant = (
   ];
 };
 
-export default function SubscriptionModal({
+export function SubscriptionModal({
   open,
   onOpenChange,
   initialData,
 }: SubscriptionModalProps) {
+  const pricingModel = useTranslations("pricingModel");
+  const common = useTranslations("common");
+  const filters = useTranslations("filters");
   const isEditMode = Boolean(initialData?.id);
 
   const [form, setForm] = useState<SubscriptionFormState>(defaultForm);
@@ -394,12 +398,14 @@ export default function SubscriptionModal({
         <div className="sticky top-0 z-10 flex items-start justify-between border-b border-gray-100 bg-white px-6 py-5">
           <div>
             <h2 className="text-xl font-semibold text-dark">
-              {isEditMode ? "Update Subscription" : "Assign Subscription"}
+              {isEditMode
+                ? pricingModel("actions.updateSubscription")
+                : pricingModel("actions.assignSubscription")}
             </h2>
             <p className="mt-1 text-sm text-gray">
               {isEditMode
-                ? "Update lifecycle, billing status, or package assignment."
-                : "Select a tenant or restaurant, then assign a package plan."}
+                ? pricingModel("subscriptions.updateSubscriptionDescription")
+                : pricingModel("subscriptions.assignSubscriptionDescription")}
             </p>
           </div>
 
@@ -415,19 +421,18 @@ export default function SubscriptionModal({
         <div className="space-y-6 px-6 py-6">
           <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3">
             <p className="text-sm font-semibold text-primary">
-              Select at least one owner
+              {pricingModel("subscriptions.selectAtLeastOneOwner")}
             </p>
             <p className="mt-1 text-xs text-gray">
-              You can assign the subscription to a tenant, a restaurant, or both
-              depending on your backend ownership flow.
+              {pricingModel("subscriptions.selectAtLeastOneOwnerDescription")}
             </p>
           </div>
 
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <SearchableSelect
-              label="Tenant"
-              placeholder="Search tenants..."
-              selectPlaceholder="Select tenant"
+              label={pricingModel("fields.tenant")}
+              placeholder={filters("searchTenantsPlaceholder")}
+              selectPlaceholder={pricingModel("placeholders.selectTenant")}
               value={form.tenantId}
               search={tenantSearch}
               loading={tenantsQuery.isLoading || tenantsQuery.isFetching}
@@ -442,9 +447,9 @@ export default function SubscriptionModal({
             />
 
             <SearchableSelect
-              label="Restaurant"
-              placeholder="Search restaurants..."
-              selectPlaceholder="Select restaurant"
+              label={pricingModel("fields.restaurant")}
+              placeholder={filters("searchRestaurantsPlaceholder")}
+              selectPlaceholder={pricingModel("placeholders.selectRestaurant")}
               value={form.restaurantId}
               search={restaurantSearch}
               loading={restaurantsQuery.isLoading || restaurantsQuery.isFetching}
@@ -463,7 +468,7 @@ export default function SubscriptionModal({
 
           <div>
             <label className="text-xs font-semibold text-gray">
-              Package Plan
+              {pricingModel("fields.packagePlan")}
             </label>
 
             <select
@@ -475,8 +480,8 @@ export default function SubscriptionModal({
             >
               <option value="">
                 {packagePlansQuery.isLoading || packagePlansQuery.isFetching
-                  ? "Loading package plans..."
-                  : "Select package plan"}
+                  ? pricingModel("subscriptions.loadingPackagePlans")
+                  : pricingModel("placeholders.selectPackagePlan")}
               </option>
 
               {packagePlans.map((plan) => (
@@ -490,7 +495,7 @@ export default function SubscriptionModal({
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <div>
               <label className="text-xs font-semibold text-gray">
-                Payment Status
+                {pricingModel("fields.paymentStatus")}
               </label>
 
               <select
@@ -503,16 +508,24 @@ export default function SubscriptionModal({
                 }
                 className="mt-2 h-11 w-full rounded-lg border border-gray-100 bg-gray-50 px-4 text-sm text-dark outline-none transition focus:border-primary focus:bg-white"
               >
-                <option value="PENDING">Pending</option>
-                <option value="PAID">Paid</option>
-                <option value="FAILED">Failed</option>
-                <option value="CANCELLED">Cancelled</option>
+                <option value="PENDING">
+                  {pricingModel("display.paymentStatus.pending")}
+                </option>
+                <option value="PAID">
+                  {pricingModel("display.paymentStatus.paid")}
+                </option>
+                <option value="FAILED">
+                  {pricingModel("display.paymentStatus.failed")}
+                </option>
+                <option value="CANCELLED">
+                  {pricingModel("display.paymentStatus.cancelled")}
+                </option>
               </select>
             </div>
 
             <div>
               <label className="text-xs font-semibold text-gray">
-                Subscription Status
+                {pricingModel("fields.subscriptionStatus")}
               </label>
 
               <select
@@ -525,11 +538,21 @@ export default function SubscriptionModal({
                 }
                 className="mt-2 h-11 w-full rounded-lg border border-gray-100 bg-gray-50 px-4 text-sm text-dark outline-none transition focus:border-primary focus:bg-white"
               >
-                <option value="TRIALING">Trialing</option>
-                <option value="ACTIVE">Active</option>
-                <option value="PAST_DUE">Past Due</option>
-                <option value="CANCELLED">Cancelled</option>
-                <option value="EXPIRED">Expired</option>
+                <option value="TRIALING">
+                  {pricingModel("display.status.trialing")}
+                </option>
+                <option value="ACTIVE">
+                  {pricingModel("display.status.active")}
+                </option>
+                <option value="PAST_DUE">
+                  {pricingModel("display.status.pastDue")}
+                </option>
+                <option value="CANCELLED">
+                  {pricingModel("display.status.cancelled")}
+                </option>
+                <option value="EXPIRED">
+                  {pricingModel("display.status.expired")}
+                </option>
               </select>
             </div>
           </div>
@@ -537,7 +560,7 @@ export default function SubscriptionModal({
           <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
             <div>
               <label className="text-xs font-semibold text-gray">
-                Starts At
+                {pricingModel("fields.startsAt")}
               </label>
               <input
                 type="date"
@@ -548,7 +571,9 @@ export default function SubscriptionModal({
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-gray">Ends At</label>
+              <label className="text-xs font-semibold text-gray">
+                {pricingModel("fields.endsAt")}
+              </label>
               <input
                 type="date"
                 value={form.endsAt}
@@ -559,7 +584,7 @@ export default function SubscriptionModal({
 
             <div>
               <label className="text-xs font-semibold text-gray">
-                Next Billing At
+                {pricingModel("fields.nextBillingAt")}
               </label>
               <input
                 type="date"
@@ -573,12 +598,14 @@ export default function SubscriptionModal({
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-gray">Note</label>
+            <label className="text-xs font-semibold text-gray">
+              {pricingModel("fields.note")}
+            </label>
             <textarea
               value={form.note}
               onChange={(event) => updateForm("note", event.target.value)}
               rows={3}
-              placeholder="Internal note"
+              placeholder={pricingModel("placeholders.internalNote")}
               className="mt-2 w-full resize-none rounded-lg border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-dark outline-none transition focus:border-primary focus:bg-white"
             />
           </div>
@@ -591,7 +618,7 @@ export default function SubscriptionModal({
             onClick={handleClose}
             className="h-11 rounded-lg border border-gray-100 px-5 text-sm font-semibold text-gray transition hover:bg-gray-50 hover:text-dark disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Cancel
+            {common("cancel")}
           </button>
 
           <button
@@ -602,11 +629,11 @@ export default function SubscriptionModal({
           >
             {isSubmitting
               ? isEditMode
-                ? "Updating..."
-                : "Assigning..."
+                ? pricingModel("actions.updating")
+                : pricingModel("actions.assigning")
               : isEditMode
-                ? "Update Subscription"
-                : "Assign Subscription"}
+                ? pricingModel("actions.updateSubscription")
+                : pricingModel("actions.assignSubscription")}
           </button>
         </div>
       </div>
@@ -643,6 +670,9 @@ function SearchableSelect<T extends { id: string }>({
   onSearchChange,
   onChange,
 }: SearchableSelectProps<T>) {
+  const pricingModel = useTranslations("pricingModel");
+  const common = useTranslations("common");
+
   return (
     <div>
       <label className="text-xs font-semibold text-gray">{label}</label>
@@ -667,7 +697,9 @@ function SearchableSelect<T extends { id: string }>({
           onChange={(event) => onChange(event.target.value)}
           className="mt-2 h-10 w-full rounded-md border border-transparent bg-white px-3 text-sm text-dark outline-none transition focus:border-primary"
         >
-          <option value="">{loading ? "Loading..." : selectPlaceholder}</option>
+          <option value="">
+            {loading ? common("loading") : selectPlaceholder}
+          </option>
 
           {options.map((option) => (
             <option key={option.id} value={option.id}>
@@ -680,10 +712,12 @@ function SearchableSelect<T extends { id: string }>({
           <div className="mt-2 flex items-start justify-between gap-3 rounded-md bg-red-50 px-3 py-2">
             <div className="min-w-0">
               <p className="truncate text-xs font-semibold text-primary">
-                Selected: {selectedLabel || value}
+                {pricingModel("subscriptions.selectedValue", {
+                  value: selectedLabel || value,
+                })}
               </p>
               <p className="mt-0.5 truncate text-[11px] text-gray">
-                ID: {value}
+                {pricingModel("subscriptions.idValue", { value })}
               </p>
               {selectedLabel && getOptionMeta && (
                 <p className="mt-0.5 truncate text-[11px] text-gray">
@@ -696,7 +730,7 @@ function SearchableSelect<T extends { id: string }>({
               type="button"
               onClick={() => onChange("")}
               className="shrink-0 text-gray transition hover:text-primary"
-              title="Clear selection"
+              title={pricingModel("actions.clearSelection")}
             >
               <X size={14} />
             </button>
