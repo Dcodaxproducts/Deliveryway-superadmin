@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   CalendarDays,
   CheckCircle2,
@@ -134,7 +135,7 @@ const matchesSearch = (invoice: AdminInvoice, search: string) => {
   return text.includes(keyword);
 };
 
-export default function GenerateInvoiceModal({
+export function GenerateInvoiceModal({
   open,
   onOpenChange,
   invoices,
@@ -143,6 +144,8 @@ export default function GenerateInvoiceModal({
   onBillingCycleChange,
   onPreview,
 }: GenerateInvoiceModalProps) {
+  const invoicing = useTranslations("invoicing");
+  const common = useTranslations("common");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [invoiceDate, setInvoiceDate] = useState(formatInputDate(new Date()));
   const [dueDate, setDueDate] = useState(getDefaultDueDate());
@@ -249,10 +252,10 @@ export default function GenerateInvoiceModal({
       >
         <DialogHeader className="shrink-0 border-b border-gray-200 px-5 py-5 sm:px-8">
           <DialogTitle className="text-[24px] font-semibold text-gray-950">
-            Generate Invoice
+            {invoicing("generateInvoice")}
           </DialogTitle>
           <p className="text-sm text-gray-500">
-            Select generated order invoices and billing period to preview.
+            {invoicing("invoiceGeneratedDescription")}
           </p>
         </DialogHeader>
 
@@ -260,13 +263,13 @@ export default function GenerateInvoiceModal({
           <div className="rounded-[14px] bg-white p-4">
             <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-gray-900">
               <CalendarDays size={16} className="text-primary" />
-              Billing Information
+              {invoicing("billingInformation")}
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-1.5 md:col-span-2">
                 <label className="block text-xs font-semibold text-gray-700">
-                  Billing Cycle
+                  {invoicing("billingCycle")}
                 </label>
 
                 <Select
@@ -274,7 +277,7 @@ export default function GenerateInvoiceModal({
                   onValueChange={onBillingCycleChange}
                 >
                   <SelectTrigger className="h-[46px] w-full cursor-pointer rounded-[12px] border border-primary/50 bg-white px-3 text-sm font-medium text-gray-900 transition hover:border-primary hover:bg-primary/[0.02] focus:ring-2 focus:ring-primary/15">
-                    <SelectValue placeholder="Select billing cycle" />
+                    <SelectValue placeholder={invoicing("selectBillingCycle")} />
                   </SelectTrigger>
 
                   <SelectContent>
@@ -289,7 +292,7 @@ export default function GenerateInvoiceModal({
 
               <div className="space-y-1.5">
                 <label className="block text-xs font-semibold text-gray-700">
-                  Invoice Date
+                  {invoicing("invoiceDate")}
                 </label>
 
                 <Input
@@ -302,7 +305,7 @@ export default function GenerateInvoiceModal({
 
               <div className="space-y-1.5">
                 <label className="block text-xs font-semibold text-gray-700">
-                  Due Date
+                  {invoicing("dueDate")}
                 </label>
 
                 <Input
@@ -318,19 +321,19 @@ export default function GenerateInvoiceModal({
           <div className="mt-5 rounded-[14px] bg-white p-4">
             <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-gray-900">
               <MessageSquare size={16} className="text-primary" />
-              Message & Additional Charges
+              {invoicing("messageAdditionalCharges")}
             </div>
 
             <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_230px]">
               <div className="space-y-1.5">
                 <label className="block text-xs font-semibold text-gray-700">
-                  Message
+                  {invoicing("message")}
                 </label>
 
                 <textarea
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
-                  placeholder="Add an optional message for this invoice..."
+                  placeholder={invoicing("messagePlaceholder")}
                   rows={4}
                   className="w-full resize-none rounded-[12px] border border-gray-200 bg-white px-3 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 hover:border-primary/40 focus:border-primary focus:ring-2 focus:ring-primary/15"
                 />
@@ -338,7 +341,7 @@ export default function GenerateInvoiceModal({
 
               <div className="space-y-1.5">
                 <label className="block text-xs font-semibold text-gray-700">
-                  Additional Charges
+                  {invoicing("additionalCharges")}
                 </label>
 
                 <Input
@@ -353,12 +356,12 @@ export default function GenerateInvoiceModal({
                 />
 
                 <p className="text-[11px] leading-5 text-gray-400">
-                  Positive values are added. Negative values are subtracted.
+                  {invoicing("additionalChargesHelp")}
                 </p>
 
                 <div className="rounded-[12px] border border-gray-100 bg-[#FAFAFA] p-3">
                   <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span>Adjustment</span>
+                    <span>{invoicing("adjustment")}</span>
                     <span
                       className={
                         additionalCharges < 0
@@ -373,7 +376,9 @@ export default function GenerateInvoiceModal({
                   </div>
 
                   <div className="mt-2 flex items-center justify-between border-t border-gray-200 pt-2 text-sm">
-                    <span className="font-semibold text-gray-900">Final</span>
+                    <span className="font-semibold text-gray-900">
+                      {invoicing("final")}
+                    </span>
                     <span className="font-bold text-green">
                       {formatMoney(finalTotalAmount, currency)}
                     </span>
@@ -387,7 +392,7 @@ export default function GenerateInvoiceModal({
             <div className="flex items-center justify-between border-b border-gray-100 p-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
                 <ReceiptText size={16} className="text-primary" />
-                Select Invoices
+                {invoicing("selectInvoices")}
               </div>
 
               <button
@@ -395,7 +400,9 @@ export default function GenerateInvoiceModal({
                 onClick={toggleSelectAllVisible}
                 className="rounded-full px-3 py-1 text-xs font-semibold text-gray-600 transition hover:bg-primary/10 hover:text-primary"
               >
-                {allVisibleSelected ? "Clear Visible" : "Select All"}
+                {allVisibleSelected
+                  ? invoicing("clearVisible")
+                  : invoicing("selectAll")}
               </button>
             </div>
 
@@ -409,7 +416,7 @@ export default function GenerateInvoiceModal({
                 <Input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search invoice, restaurant, customer..."
+                  placeholder={invoicing("searchInvoicePlaceholder")}
                   className="h-[42px] rounded-[12px] border-gray-200 pl-10"
                 />
               </div>
@@ -418,7 +425,7 @@ export default function GenerateInvoiceModal({
             <div className="max-h-[360px] overflow-y-auto p-2">
               {visibleInvoices.length === 0 ? (
                 <div className="py-12 text-center text-sm text-gray-400">
-                  No invoices available for the selected filters.
+                  {invoicing("noInvoicesAvailable")}
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -466,25 +473,31 @@ export default function GenerateInvoiceModal({
                             </p>
 
                             <p className="mt-1 text-[11px] font-medium text-gray-400 opacity-0 transition group-hover:opacity-100">
-                              Click to {selected ? "unselect" : "select"} this
-                              invoice
+                              {invoicing("clickToSelect", {
+                                action: selected
+                                  ? invoicing("unselect")
+                                  : invoicing("select"),
+                              })}
                             </p>
                           </div>
                         </div>
 
                         <div className="shrink-0 text-right">
-                          <p className="text-xs text-gray-400">Total Amount</p>
+                          <p className="text-xs text-gray-400">
+                            {invoicing("totalAmountLabel")}
+                          </p>
 
                           <p className="text-base font-bold text-gray-900">
                             {formatMoney(invoice.totalAmount, invoiceCurrency)}
                           </p>
 
                           <p className="text-xs text-primary">
-                            -{formatMoney(deduction, invoiceCurrency)} deduction
+                            -{formatMoney(deduction, invoiceCurrency)}{" "}
+                            {invoicing("deduction")}
                           </p>
 
                           <p className="text-xs font-semibold text-green">
-                            Net:{" "}
+                            {invoicing("net")}{" "}
                             {formatMoney(invoice.totalAmount, invoiceCurrency)}
                           </p>
                         </div>
@@ -499,21 +512,27 @@ export default function GenerateInvoiceModal({
           <div className="mt-4 rounded-[10px] border border-green-200 bg-green-50 px-4 py-3">
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm font-medium text-green-700">
-                {selectedInvoices.length} invoice(s) selected
+                {invoicing("invoicesSelected", {
+                  count: selectedInvoices.length,
+                })}
               </p>
 
               <p className="text-sm font-bold text-green-700">
-                Final Total: {formatMoney(finalTotalAmount, currency)}
+                {invoicing("finalTotal")}:{" "}
+                {formatMoney(finalTotalAmount, currency)}
               </p>
             </div>
 
             <div className="mt-2 grid gap-2 text-xs text-green-700 sm:grid-cols-3">
-              <span>Base: {formatMoney(baseTotalAmount, currency)}</span>
               <span>
-                Adjustment: {formatSignedMoney(additionalCharges, currency)}
+                {invoicing("base")}: {formatMoney(baseTotalAmount, currency)}
+              </span>
+              <span>
+                {invoicing("adjustment")}:{" "}
+                {formatSignedMoney(additionalCharges, currency)}
               </span>
               <span className="font-semibold">
-                Total: {formatMoney(finalTotalAmount, currency)}
+                {invoicing("total")}: {formatMoney(finalTotalAmount, currency)}
               </span>
             </div>
           </div>
@@ -527,12 +546,14 @@ export default function GenerateInvoiceModal({
               onClick={() => onOpenChange(false)}
               className="h-[44px] rounded-[12px]"
             >
-              Cancel
+              {common("cancel")}
             </Button>
 
             <div className="flex items-center justify-end gap-4">
               <div className="hidden text-right sm:block">
-                <p className="text-xs text-gray-400">Final Total</p>
+                <p className="text-xs text-gray-400">
+                  {invoicing("finalTotal")}
+                </p>
                 <p className="font-bold text-green">
                   {formatMoney(finalTotalAmount, currency)}
                 </p>
@@ -546,7 +567,7 @@ export default function GenerateInvoiceModal({
                 className="h-[48px] rounded-[14px] px-7 disabled:opacity-50"
               >
                 <PlusCircle size={17} className="mr-2" />
-                Preview Invoice
+                {invoicing("previewInvoice")}
               </Button>
             </div>
           </div>

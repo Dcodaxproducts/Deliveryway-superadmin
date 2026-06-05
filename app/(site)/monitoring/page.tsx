@@ -2,25 +2,28 @@
 
 import Header from "@/components/header";
 import Container from "@/components/container";
-import ServerHealthSection from "@/components/pages/monitoring/server-health-section";
-import ApiHealthSection from "@/components/pages/monitoring/api-health-section";
-import ApiLatencyGraphSection from "@/components/pages/monitoring/api-latency-graph-section";
-import IntegrationLogsSection from "@/components/pages/monitoring/integration-logs-section";
-import AlertsAndNotificationsSection from "@/components/pages/monitoring/alerts-and-notifications-section";
+import { useTranslations } from "next-intl";
+import { ServerHealthSection } from "@/components/pages/monitoring/server-health-section";
+import { ApiHealthSection } from "@/components/pages/monitoring/api-health-section";
+import { ApiLatencyChartSection } from "@/components/pages/monitoring/api-latency-graph-section";
+import { IntegrationLogsSection } from "@/components/pages/monitoring/integration-logs-section";
+import { AlertsAndNotificationsSection } from "@/components/pages/monitoring/alerts-and-notifications-section";
 
 export default function SystemHealthPage() {
+    const monitoring = useTranslations("monitoring");
+
     return (
         <Container>
             <Header
-                title="System Health Monitoring"
-                description="Track system performance, uptime, and integrations in real time."
+                title={monitoring("title")}
+                description={monitoring("description")}
             />
 
             <ServerHealthSection />
 
             <ApiHealthSection />
 
-            <ApiLatencyGraphSection />
+            <ApiLatencyChartSection />
 
             <IntegrationLogsSection />
 

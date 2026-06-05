@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PlusCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export type BillingCycleOption = {
   value: string;
@@ -27,7 +28,7 @@ type InvoicingHeaderProps = {
   onGenerateClick: () => void;
 };
 
-export default function InvoicingHeader({
+export function InvoicingHeader({
   title,
   description,
   billingCycle,
@@ -35,17 +36,21 @@ export default function InvoicingHeader({
   onBillingCycleChange,
   onGenerateClick,
 }: InvoicingHeaderProps) {
+  const invoicing = useTranslations("invoicing");
+
   return (
     <div className="flex w-full flex-col gap-4 md:gap-6 lg:flex-row lg:items-end lg:justify-between">
       <Header title={title} description={description} />
 
       <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-end lg:gap-[12px]">
         <div className="flex w-full flex-col gap-1 sm:w-auto">
-          <span className="text-base text-gray-600">Billing Cycle</span>
+          <span className="text-base text-gray-600">
+            {invoicing("billingCycle")}
+          </span>
 
           <Select value={billingCycle} onValueChange={onBillingCycleChange}>
             <SelectTrigger className="h-[44px] w-full rounded-lg sm:w-[190px]">
-              <SelectValue placeholder="Select month" />
+              <SelectValue placeholder={invoicing("selectMonth")} />
             </SelectTrigger>
 
             <SelectContent>
@@ -65,7 +70,7 @@ export default function InvoicingHeader({
           className="h-[44px] w-full sm:w-auto"
         >
           <PlusCircle size={17} className="mr-2" />
-          Generate Invoice
+          {invoicing("generateInvoice")}
         </Button>
       </div>
     </div>

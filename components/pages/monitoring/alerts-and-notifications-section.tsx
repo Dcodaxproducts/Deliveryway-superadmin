@@ -1,15 +1,18 @@
 import { Switch } from "@/components/ui/switch";
 import { notificationChannels, alertTypes } from "@/constants/integration";
+import { useTranslations } from "next-intl";
 
-const AlertsAndNotificationsSection = () => {
+export const AlertsAndNotificationsSection = () => {
+    const monitoring = useTranslations("monitoring");
+
     return (
         <section className="bg-white rounded-[14px] p-4 lg:p-[30px] shadow-sm space-y-8">
             <div>
-                <h3 className="text-lg font-bold text-dark">Alert & Notifications</h3>
-                <p className="text-sm text-gray">Configure how and where system alerts are delivered.</p>
+                <h3 className="text-lg font-bold text-dark">{monitoring("alertsNotifications")}</h3>
+                <p className="text-sm text-gray">{monitoring("alertsDescription")}</p>
             </div>
             <div>
-                <h4 className="text-base text-dark mb-4">Notification Channels</h4>
+                <h4 className="text-base text-dark mb-4">{monitoring("notificationChannels")}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {notificationChannels.map((channel, index) => (
                         <ChannelToggle key={index} icon={<channel.icon size={18} />} label={channel.label} />
@@ -17,7 +20,7 @@ const AlertsAndNotificationsSection = () => {
                 </div>
             </div>
             <div>
-                <h4 className="text-base text-dark mb-4">Alert Types</h4>
+                <h4 className="text-base text-dark mb-4">{monitoring("alertTypes")}</h4>
                 <div className="space-y-4">
                     {alertTypes.map((alert, index) => (
                         <AlertTypeToggle key={index} icon={<alert.icon size={20} />} title={alert.title} description={alert.description} />
@@ -56,5 +59,3 @@ function AlertTypeToggle({ icon, title, description }: { icon: React.ReactNode, 
         </div>
     );
 }
-
-export default AlertsAndNotificationsSection;

@@ -15,42 +15,51 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Box, Menu, Bike, CircleDollarSign, BarChart3, Settings } from "lucide-react";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useCreateStaffRole } from "@/hooks/useRbac";
 
 const permissionsModules = [
     {
         access: "Orders",
+        labelKey: "orders",
         icon: Box,
-        operations: ["View", "Create/Edit", "Cancel"]
+        operations: [{ value: "View", labelKey: "view" }, { value: "Create/Edit", labelKey: "createEdit" }, { value: "Cancel", labelKey: "cancel" }]
     },
     {
         access: "Menus",
+        labelKey: "menus",
         icon: Menu,
-        operations: ["View", "Add/Edit", "Delete"]
+        operations: [{ value: "View", labelKey: "view" }, { value: "Add/Edit", labelKey: "addEdit" }, { value: "Delete", labelKey: "delete" }]
     },
     {
         access: "Drivers",
+        labelKey: "drivers",
         icon: Bike,
-        operations: ["View", "Assign", "Manage Status"]
+        operations: [{ value: "View", labelKey: "view" }, { value: "Assign", labelKey: "assign" }, { value: "Manage Status", labelKey: "manageStatus" }]
     },
     {
         access: "Finance",
+        labelKey: "finance",
         icon: CircleDollarSign,
-        operations: ["View", "Manage Payout", "Access Invoice"]
+        operations: [{ value: "View", labelKey: "view" }, { value: "Manage Payout", labelKey: "managePayout" }, { value: "Access Invoice", labelKey: "accessInvoice" }]
     },
     {
         access: "Reports",
+        labelKey: "reports",
         icon: BarChart3,
-        operations: ["View", "Export"]
+        operations: [{ value: "View", labelKey: "view" }, { value: "Export", labelKey: "export" }]
     },
     {
         access: "Settings",
+        labelKey: "settings",
         icon: Settings,
-        operations: ["View", "Manage"]
+        operations: [{ value: "View", labelKey: "view" }, { value: "Manage", labelKey: "manage" }]
     },
 ];
 
-export default function CreateRoleDialog() {
+export function CreateRoleDialog() {
+    const rbac = useTranslations("rbac");
+    const validation = useTranslations("validation");
     const { mutate: createRole, isPending } = useCreateStaffRole();
     const [open, setOpen] = useState(false);
     const [roleName, setRoleName] = useState("");
@@ -106,39 +115,39 @@ export default function CreateRoleDialog() {
                 <Button
                     variant="primary"
                 >
-                    Add New Role
+                    {rbac("addNewRole")}
                 </Button>
             </DialogTrigger>
             {/* Added max-w and bg-color to match the design */}
             <DialogContent className="sm:max-w-[618px] bg-[#F5F5F5] p-[40px] border-none shadow-lg rounded-[14px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader className="text-left">
-                    <DialogTitle className="h-[42px]">Create Role</DialogTitle>
+                    <DialogTitle className="h-[42px]">{rbac("createRole")}</DialogTitle>
                     <DialogDescription>
-                        Create Role from here
+                        {rbac("createRoleDescription")}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid gap-6 mt-[32px] p-[24px] bg-white rounded-[14px] shadow-sm">
                     <div className="grid gap-[6px]">
                         <Label htmlFor="roleName">
-                            Role Name <span>*</span>
+                            {rbac("roleName")} <span>*</span>
                         </Label>
                         <Input
                             id="roleName"
-                            placeholder="eg. Manager"
+                            placeholder={rbac("roleNamePlaceholder")}
                             value={roleName}
                             onChange={(e) => setRoleName(e.target.value)}
                         />
-                        {!roleName.trim() && <p className="text-sm text-primary">Role name is required</p>}
+                        {!roleName.trim() && <p className="text-sm text-primary">{validation("roleNameRequired")}</p>}
                     </div>
 
                     <div className="grid gap-[6px]">
                         <Label htmlFor="roleDescription">
-                            Role Description <span>*</span>
+                            {rbac("roleDescription")} <span>*</span>
                         </Label>
                         <Input
                             id="roleDescription"
-                            placeholder="eg. Management role with operational access"
+                            placeholder={rbac("roleDescriptionPlaceholder")}
                             value={roleDescription}
                             onChange={(e) => setRoleDescription(e.target.value)}
                         />
@@ -159,9 +168,9 @@ export default function CreateRoleDialog() {
 
                     {/* Permissions Section */}
                     <div>
-                        <h3 className="text-base text-dark mb-[6px]">Permissions</h3>
+                        <h3 className="text-base text-dark mb-[6px]">{rbac("permissions")}</h3>
                         <p className="text-sm text-gray mb-[24px] pb-[24px] border-b border-[#BBBBBB]">
-                            Select which actions this role can perform
+                            {rbac("permissionsDescription")}
                         </p>
 
                         <div className="grid grid-cols-2 gap-x-8 gap-y-8">
@@ -171,22 +180,22 @@ export default function CreateRoleDialog() {
                                 >
                                     <div className="flex items-center gap-[12px] mb-4">
                                         <module.icon className="text-primary" size={24} />
-                                        <h4 className="font-semibold text-lg text-gray">{module.access}</h4>
+                                        <h4 className="font-semibold text-lg text-gray">{rbac(module.labelKey)}</h4>
                                     </div>
                                     <div className="grid gap-3">
                                         {module.operations.map((operation) => (
-                                            <div key={operation} className="flex items-center gap-2">
+                                            <div key={operation.value} className="flex items-center gap-2">
                                                 <Checkbox
-                                                    id={`${module.access}-${operation}`}
-                                                    checked={selectedPermissions[module.access]?.includes(operation) || false}
-                                                    onCheckedChange={(checked) => handlePermissionChange(module.access, operation, checked as boolean)}
+                                                    id={`${module.access}-${operation.value}`}
+                                                    checked={selectedPermissions[module.access]?.includes(operation.value) || false}
+                                                    onCheckedChange={(checked) => handlePermissionChange(module.access, operation.value, checked as boolean)}
                                                     className="w-[20px] h-[20px] data-[state=checked]:bg-primary data-[state=checked]:border-primary border-gray-300"
                                                 />
                                                 <Label
-                                                    htmlFor={`${module.access}-${operation}`}
+                                                    htmlFor={`${module.access}-${operation.value}`}
                                                     className="text-base text-dark cursor-pointer"
                                                 >
-                                                    {operation}
+                                                    {rbac(operation.labelKey)}
                                                 </Label>
                                             </div>
                                         ))}
@@ -203,7 +212,7 @@ export default function CreateRoleDialog() {
                         onClick={handleReset}
                         disabled={isPending}
                     >
-                        Reset
+                        {rbac("reset")}
                     </Button>
                     <Button
                         variant="primary"
@@ -211,7 +220,7 @@ export default function CreateRoleDialog() {
                         onClick={handleSubmit}
                         disabled={isPending || !roleName.trim()}
                     >
-                        {isPending ? "Creating..." : "Create"}
+                        {isPending ? rbac("creating") : rbac("create")}
                     </Button>
                 </DialogFooter>
             </DialogContent>

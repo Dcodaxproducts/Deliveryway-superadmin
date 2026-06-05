@@ -1,16 +1,17 @@
 "use client";
 
 import OrdersGraph from "@/components/graphs/orders-graph";
+import { useTranslations } from "next-intl";
 
 export const ApiLatencyChartSection = () => {
+  const monitoring = useTranslations("monitoring");
+
   return (
     <section className="space-y-[20px]">
       <OrdersGraph
-        title="API Latency Over Time"
-        description="Monitor real-time API reliability and response times"
+        title={monitoring("apiLatencyOverTime")}
+        description={monitoring("apiLatencyDescription")}
       />
     </section>
   );
 };
-
-export { ApiLatencyChartSection as default };

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -45,7 +46,9 @@ const defaultEnabledState: ChannelEnabledState = {
   whatsapp: true,
 };
 
-export default function NotificationForm() {
+export function NotificationForm() {
+  const notificationSettings = useTranslations("notificationSettings");
+  const common = useTranslations("common");
   const [form, setForm] = useState<NotificationFormState>(defaultState);
   const [enabledChannels, setEnabledChannels] =
     useState<ChannelEnabledState>(defaultEnabledState);
@@ -267,10 +270,10 @@ export default function NotificationForm() {
             <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
               <div className="mb-6">
                 <h3 className="text-xl font-semibold text-foreground">
-                  Notification Types
+                  {notificationSettings("notificationTypes")}
                 </h3>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Choose which active channels should receive each notification.
+                  {notificationSettings("notificationTypesDescription")}
                 </p>
               </div>
 
@@ -280,7 +283,7 @@ export default function NotificationForm() {
                   gridTemplateColumns: `minmax(220px, 1.5fr) repeat(${visibleChannels.length}, minmax(90px, 1fr))`,
                 }}
               >
-                <div>Notification Type</div>
+                <div>{notificationSettings("notificationType")}</div>
                 {visibleChannels.map((channel) => (
                   <div key={channel} className="text-center">
                     {formatLabel(channel)}
@@ -303,15 +306,15 @@ export default function NotificationForm() {
                   ))
                 ) : (
                   <div className="py-8 text-sm text-muted-foreground">
-                    No notification types available.
+                    {notificationSettings("noNotificationTypes")}
                   </div>
                 )}
               </div>
             </div>
           ) : (
             <EmptyStateCard
-              title="No active channels available"
-              description="Enable at least one channel to configure notification type preferences."
+              title={notificationSettings("noActiveChannels")}
+              description={notificationSettings("noActiveChannelsDescription")}
             />
           )}
 
@@ -325,7 +328,7 @@ export default function NotificationForm() {
                 onClick={handleCancel}
                 disabled={mutation.isPending}
               >
-                Cancel
+                {common("cancel")}
               </Button>
 
               <Button
@@ -334,7 +337,9 @@ export default function NotificationForm() {
                 disabled={mutation.isPending}
                 className="px-8 py-2.5"
               >
-                {mutation.isPending ? "Saving..." : "Save & Activate"}
+                {mutation.isPending
+                  ? common("saving")
+                  : notificationSettings("saveActivate")}
               </Button>
             </div>
           )}
@@ -362,6 +367,8 @@ function ChannelSection({
   onChange,
   onToggle,
 }: ChannelSectionProps) {
+  const notificationSettings = useTranslations("notificationSettings");
+
   return (
     <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
       <div className="flex items-center justify-between gap-4">
@@ -369,8 +376,8 @@ function ChannelSection({
           <h3 className="text-xl font-semibold text-foreground">{title}</h3>
           <p className="mt-1 text-sm text-muted-foreground">
             {enabled
-              ? `This channel is active for notifications.`
-              : `This channel is currently disabled.`}
+              ? notificationSettings("channelActive")
+              : notificationSettings("channelDisabled")}
           </p>
         </div>
 
@@ -384,7 +391,10 @@ function ChannelSection({
       {enabled && (
         <div className="mt-6 space-y-2">
           <Label className="text-sm font-medium text-foreground">
-            {title} {title === "Email" ? "Address" : "Number"}
+            {title}{" "}
+            {title === "Email"
+              ? notificationSettings("address")
+              : notificationSettings("number")}
           </Label>
           <Input
             value={value ?? ""}
@@ -394,8 +404,10 @@ function ChannelSection({
             className="h-[52px]"
             placeholder={
               title === "Email"
-                ? "Enter email address"
-                : `Enter ${title.toLowerCase()} number`
+                ? notificationSettings("enterEmailAddress")
+                : notificationSettings("enterChannelNumber", {
+                    channel: title.toLowerCase(),
+                  })
             }
           />
         </div>

@@ -1,14 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { ShieldCheck, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "../../ui/button";
 import { useStaffRoles, useDeleteStaffRole } from "@/hooks/useRbac";
 import DeleteDialog from "@/components/dialogs/delete-dialog";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function RolesList() {
+type StaffRoleItem = {
+    id: string;
+    name: string;
+    sub?: string;
+    description?: string;
+    isEditing?: boolean;
+};
+
+function RolesListContent() {
+    const rbac = useTranslations("rbac");
     const { data: roles, isLoading, error } = useStaffRoles();
     const { mutate: deleteRole, isPending } = useDeleteStaffRole();
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -39,13 +49,13 @@ export default function RolesList() {
         }
     };
 
-    if (isLoading) return <div>Loading roles...</div>;
-    if (error) return <div>Error loading roles</div>;
+    if (isLoading) return <div>{rbac("loadingRoles")}</div>;
+    if (error) return <div>{rbac("errorLoadingRoles")}</div>;
 
     return (
         <>
             <div className="flex flex-col gap-[32px]">
-                {roles?.map((role: any) => (
+                {roles?.map((role: StaffRoleItem) => (
                     <Card
                         key={role.id}
                         className={`p-[24px] border-none shadow-sm rounded-[14px] gap-0 relative transition-all ${role.isEditing ? "ring-1 ring-primary" : ""
@@ -86,7 +96,7 @@ export default function RolesList() {
                                 className="self-start"
                                 onClick={() => handleViewPermissions(role.id)}
                             >
-                                View Permissions
+                                {rbac("viewPermissions")}
                             </Button>
                         </div>
                     </Card>
@@ -98,9 +108,19 @@ export default function RolesList() {
                 onOpenChange={setDeleteDialogOpen}
                 onConfirm={handleConfirmDelete}
                 isLoading={isPending}
-                title="Delete Role"
-                description="Are you sure you want to delete this role? This action cannot be undone."
+                title={rbac("deleteRole")}
+                description={rbac("deleteRoleDescription")}
             />
         </>
+    );
+}
+
+export function RolesList() {
+    const rbac = useTranslations("rbac");
+
+    return (
+        <Suspense fallback={<div>{rbac("loadingRoles")}</div>}>
+            <RolesListContent />
+        </Suspense>
     );
 }

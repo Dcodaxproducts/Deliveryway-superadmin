@@ -3,6 +3,7 @@
 import HealthCard from "@/components/cards/health-card";
 import { serverHealthStats } from "@/constants/monitoring";
 import { useGetSystemHealthOverview } from "@/hooks/useSystemHealth";
+import { useTranslations } from "next-intl";
 
 /**
  * ==============================
@@ -42,7 +43,8 @@ const formatUptime = (seconds: number) => {
 };
 
 
-const ServerHealthSection = () => {
+export const ServerHealthSection = () => {
+  const monitoring = useTranslations("monitoring");
   const { data, isLoading, isFetching } = useGetSystemHealthOverview();
 
   /**
@@ -52,27 +54,27 @@ const ServerHealthSection = () => {
    */
   const dynamicStats: StatType[] = [
     {
-      title: "CPU Usage",
+      title: monitoring("cpuUsage"),
       value: `${data?.server?.cpu?.estimatedUsagePercent ?? 0}%`,
       percentage: data?.server?.cpu?.estimatedUsagePercent ?? 0,
       status: getStatus(data?.server?.cpu?.estimatedUsagePercent ?? 0),
     },
     {
-      title: "Memory Usage",
+      title: monitoring("memoryUsage"),
       value: formatBytes(data?.server?.memory?.usedBytes ?? 0),
       subValue: formatBytes(data?.server?.memory?.totalBytes ?? 0),
       percentage: data?.server?.memory?.usedPercent ?? 0,
       status: getStatus(data?.server?.memory?.usedPercent ?? 0),
     },
     {
-      title: "Disk Usage",
+      title: monitoring("diskUsage"),
       value: formatBytes(data?.server?.disk?.usedBytes ?? 0),
       subValue: formatBytes(data?.server?.disk?.totalBytes ?? 0),
       percentage: data?.server?.disk?.usedPercent ?? 0,
       status: getStatus(data?.server?.disk?.usedPercent ?? 0),
     },
     {
-      title: "Uptime",
+      title: monitoring("uptime"),
       value: formatUptime(data?.server?.uptimeSeconds ?? 0),
       percentage: 100,
       status: "Healthy",
@@ -98,7 +100,9 @@ const ServerHealthSection = () => {
 
   return (
     <section className="space-y-[20px]">
-      <h3 className="text-lg font-semibold text-dark">Server Health</h3>
+      <h3 className="text-lg font-semibold text-dark">
+        {monitoring("serverHealth")}
+      </h3>
 
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[24px]">
   {(isLoading || isFetching)
@@ -111,5 +115,3 @@ const ServerHealthSection = () => {
     </section>
   );
 };
-
-export default ServerHealthSection;

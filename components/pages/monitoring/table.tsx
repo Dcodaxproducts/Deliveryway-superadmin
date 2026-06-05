@@ -12,10 +12,14 @@ import {
 import { Eye, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGetIntegrationLogs } from "@/hooks/useSystemHealth";
+import { useTranslations } from "next-intl";
 
 type LogType = "webhook" | "printer";
 
-const LogsTable = () => {
+type IntegrationLog = Record<string, unknown>;
+
+export const MonitoringLogsTable = () => {
+  const monitoring = useTranslations("monitoring");
   const [activeTab, setActiveTab] = useState<LogType>("webhook");
 
   const { data, isLoading } = useGetIntegrationLogs(activeTab, 20);
@@ -33,7 +37,7 @@ const LogsTable = () => {
             activeTab === "webhook" ? "text-primary" : "text-gray"
           )}
         >
-          Webhook Logs
+          {monitoring("webhookLogs")}
         </button>
 
         <button
@@ -43,7 +47,7 @@ const LogsTable = () => {
             activeTab === "printer" ? "text-primary" : "text-gray"
           )}
         >
-          Printer Connectivity Logs
+          {monitoring("printerConnectivityLogs")}
         </button>
       </div>
 
@@ -72,29 +76,40 @@ const LogsTable = () => {
 const WebhookLogsTableHeader = () => (
   <TableHeader>
     <TableRow className="border-none">
-      <TableHead className="font-normal">Timestamp</TableHead>
-      <TableHead className="font-normal">Event Type</TableHead>
-      <TableHead className="font-normal">Status</TableHead>
-      <TableHead className="font-normal">Response Code</TableHead>
-      <TableHead className="font-normal">Retry Count</TableHead>
-      <TableHead className="font-normal">Actions</TableHead>
+      <WebhookHeadings />
     </TableRow>
   </TableHeader>
 );
+
+function WebhookHeadings() {
+  const monitoring = useTranslations("monitoring");
+  return (
+    <>
+      <TableHead className="font-normal">{monitoring("timestamp")}</TableHead>
+      <TableHead className="font-normal">{monitoring("eventType")}</TableHead>
+      <TableHead className="font-normal">{monitoring("status")}</TableHead>
+      <TableHead className="font-normal">{monitoring("responseCode")}</TableHead>
+      <TableHead className="font-normal">{monitoring("retryCount")}</TableHead>
+      <TableHead className="font-normal">{monitoring("actions")}</TableHead>
+    </>
+  );
+}
 
 const WebhookLogsTableBody = ({
   logs,
   isLoading,
 }: {
-  logs: any[];
+  logs: IntegrationLog[];
   isLoading: boolean;
 }) => {
+  const monitoring = useTranslations("monitoring");
+
   if (isLoading) {
     return (
       <TableBody>
         <TableRow>
           <TableCell colSpan={6} className="text-center py-6">
-            Loading...
+            {monitoring("loading")}
           </TableCell>
         </TableRow>
       </TableBody>
@@ -106,7 +121,7 @@ const WebhookLogsTableBody = ({
       <TableBody>
         <TableRow>
           <TableCell colSpan={6} className="text-center py-6 text-gray-600">
-            No webhook logs found
+            {monitoring("noWebhookLogs")}
           </TableCell>
         </TableRow>
       </TableBody>
@@ -118,18 +133,18 @@ const WebhookLogsTableBody = ({
       {logs.map((log, i) => (
         <TableRow key={i} className="border-none h-[60px]">
           <TableCell className="text-xs">
-            {new Date(log.timestamp).toLocaleString()}
+            {log.timestamp ? new Date(String(log.timestamp)).toLocaleString() : "-"}
           </TableCell>
-          <TableCell>{log.eventType || "-"}</TableCell>
+          <TableCell>{String(log.eventType || "-")}</TableCell>
           <TableCell
             className={cn(
               log.status === "success" ? "text-green" : "text-primary"
             )}
           >
-            {log.status}
+            {String(log.status || "-")}
           </TableCell>
-          <TableCell>{log.responseCode ?? "-"}</TableCell>
-          <TableCell>{log.retryCount ?? 0}</TableCell>
+          <TableCell>{String(log.responseCode ?? "-")}</TableCell>
+          <TableCell>{String(log.retryCount ?? 0)}</TableCell>
           <TableCell>
             <div className="flex items-center gap-2 text-gray p-2 border rounded-md w-fit">
               <Eye size={16} />
@@ -154,29 +169,40 @@ const WebhookLogsTableBody = ({
 const PrinterLogsTableHeader = () => (
   <TableHeader>
     <TableRow className="border-none">
-      <TableHead className="font-normal">Printer ID</TableHead>
-      <TableHead className="font-normal">Restaurant</TableHead>
-      <TableHead className="font-normal">Location</TableHead>
-      <TableHead className="font-normal">Status</TableHead>
-      <TableHead className="font-normal">Last Connected</TableHead>
-      <TableHead className="font-normal">Error Message</TableHead>
+      <PrinterHeadings />
     </TableRow>
   </TableHeader>
 );
+
+function PrinterHeadings() {
+  const monitoring = useTranslations("monitoring");
+  return (
+    <>
+      <TableHead className="font-normal">{monitoring("printerId")}</TableHead>
+      <TableHead className="font-normal">{monitoring("restaurant")}</TableHead>
+      <TableHead className="font-normal">{monitoring("location")}</TableHead>
+      <TableHead className="font-normal">{monitoring("status")}</TableHead>
+      <TableHead className="font-normal">{monitoring("lastConnected")}</TableHead>
+      <TableHead className="font-normal">{monitoring("errorMessage")}</TableHead>
+    </>
+  );
+}
 
 const PrinterLogsTableBody = ({
   logs,
   isLoading,
 }: {
-  logs: any[];
+  logs: IntegrationLog[];
   isLoading: boolean;
 }) => {
+  const monitoring = useTranslations("monitoring");
+
   if (isLoading) {
     return (
       <TableBody>
         <TableRow>
           <TableCell colSpan={6} className="text-center py-6">
-            Loading...
+            {monitoring("loading")}
           </TableCell>
         </TableRow>
       </TableBody>
@@ -188,7 +214,7 @@ const PrinterLogsTableBody = ({
       <TableBody>
         <TableRow>
           <TableCell colSpan={6} className="text-center py-6 text-gray-600">
-            No printer logs found
+            {monitoring("noPrinterLogs")}
           </TableCell>
         </TableRow>
       </TableBody>
@@ -199,24 +225,22 @@ const PrinterLogsTableBody = ({
     <TableBody>
       {logs.map((log, i) => (
         <TableRow key={i} className="border-none h-[60px]">
-          <TableCell>{log.printerId || "-"}</TableCell>
-          <TableCell>{log.restaurant || "-"}</TableCell>
-          <TableCell>{log.location || "-"}</TableCell>
-          <TableCell>{log.status || "-"}</TableCell>
+          <TableCell>{String(log.printerId || "-")}</TableCell>
+          <TableCell>{String(log.restaurant || "-")}</TableCell>
+          <TableCell>{String(log.location || "-")}</TableCell>
+          <TableCell>{String(log.status || "-")}</TableCell>
           <TableCell>
             {log.lastConnected
-              ? new Date(log.lastConnected).toLocaleString()
+              ? new Date(String(log.lastConnected)).toLocaleString()
               : "-"}
           </TableCell>
           <TableCell
-            className={cn(log.errorMessage && "text-primary")}
+            className={cn(Boolean(log.errorMessage) && "text-primary")}
           >
-            {log.errorMessage || "---"}
+            {String(log.errorMessage || "---")}
           </TableCell>
         </TableRow>
       ))}
     </TableBody>
   );
 };
-
-export default LogsTable;

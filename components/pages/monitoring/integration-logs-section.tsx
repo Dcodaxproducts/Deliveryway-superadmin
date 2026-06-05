@@ -1,12 +1,15 @@
-import Table from "./table";
+import { useTranslations } from "next-intl";
+import { MonitoringLogsTable } from "./table";
 
-const IntegrationLogsSection = () => {
+export const IntegrationLogsSection = () => {
+    const monitoring = useTranslations("monitoring");
+
     return (
         <section className="space-y-[20px]">
-            <h3 className="text-lg font-semibold text-dark">Integration Logs</h3>
-            <Table />
+            <h3 className="text-lg font-semibold text-dark">
+                {monitoring("integrationLogs")}
+            </h3>
+            <MonitoringLogsTable />
         </section>
     );
 };
-
-export default IntegrationLogsSection;

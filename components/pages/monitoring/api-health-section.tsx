@@ -3,6 +3,7 @@
 import HealthStatCard from "@/components/cards/health-card";
 import { Card } from "@/components/ui/card";
 import { useGetRequestMetrics } from "@/hooks/useSystemHealth";
+import { useTranslations } from "next-intl";
 
 /**
  * ==============================
@@ -31,7 +32,8 @@ const getStatus = (percentage: number): StatusType => {
 
 
 
-const ApiHealthSection = () => {
+export const ApiHealthSection = () => {
+  const monitoring = useTranslations("monitoring");
   const { data, isLoading, isFetching } = useGetRequestMetrics("hour");
 
   const summary = data?.summary;
@@ -43,13 +45,13 @@ const ApiHealthSection = () => {
    */
   const stats: StatItem[] = [
     {
-      title: "Success Rate",
+      title: monitoring("successRate"),
       value: `${summary?.successRate ?? 0}%`,
       percentage: summary?.successRate ?? 0,
       status: getStatus(summary?.successRate ?? 0),
     },
     {
-      title: "Failure Rate",
+      title: monitoring("failureRate"),
       value: `${summary?.failureRate ?? 0}%`,
       percentage: summary?.failureRate ?? 0,
       status:
@@ -58,7 +60,7 @@ const ApiHealthSection = () => {
           : ("Critical" as StatusType),
     },
     {
-      title: "Total Requests",
+      title: monitoring("totalRequests"),
       value: `${summary?.totalRequests ?? 0}`,
       percentage: 100,
       status: "Healthy",
@@ -67,7 +69,9 @@ const ApiHealthSection = () => {
 
   return (
     <section className="space-y-[20px]">
-      <h3 className="text-lg font-semibold text-dark">API Health</h3>
+      <h3 className="text-lg font-semibold text-dark">
+        {monitoring("apiHealth")}
+      </h3>
 
      <div className="grid grid-cols-1 lg:grid-cols-4 gap-[24px]">
   {(isLoading || isFetching) ? (
@@ -99,7 +103,7 @@ const ApiHealthSection = () => {
         className="p-[24px] border-none shadow-sm rounded-[14px] flex flex-col justify-center"
       >
         <h4 className="text-base text-dark mb-1">
-          Average Latency
+          {monitoring("averageLatency")}
         </h4>
 
         <p className="text-xs text-gray mb-2">
@@ -107,7 +111,7 @@ const ApiHealthSection = () => {
         </p>
 
         <p className="text-base text-gray">
-          {summary?.totalRequests ?? 0} total requests
+          {summary?.totalRequests ?? 0} {monitoring("totalRequestsLower")}
         </p>
 
         <p className="text-xs text-gray mt-1">
@@ -120,5 +124,3 @@ const ApiHealthSection = () => {
     </section>
   );
 };
-
-export default ApiHealthSection;

@@ -8,6 +8,7 @@ import {
   Mail,
   ReceiptText,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import {
   Table,
@@ -126,14 +127,16 @@ const SkeletonRow = () => (
   </TableRow>
 );
 
-const InvoicingTable = ({
+export function InvoicingTable({
   invoices,
   isLoading,
   isFetching,
   onViewInvoice,
   onDownloadInvoice,
   onSendInvoice,
-}: InvoicingTableProps) => {
+}: InvoicingTableProps) {
+  const invoicing = useTranslations("invoicing");
+  const common = useTranslations("common");
   const loading = isLoading || (isFetching && invoices.length === 0);
 
   const [sendingOrderId, setSendingOrderId] = useState<string | null>(null);
@@ -169,15 +172,17 @@ const InvoicingTable = ({
         <TableHeader>
           <TableRow className="border-none">
             <TableHead className="min-w-[230px] font-normal">
-              Invoice / Restaurant
+              {invoicing("invoiceRestaurant")}
             </TableHead>
-            <TableHead className="min-w-[170px]">Customer</TableHead>
-            <TableHead>Order Type</TableHead>
-            <TableHead>Order Status</TableHead>
-            <TableHead>Payment</TableHead>
-            <TableHead className="text-right">Total</TableHead>
-            <TableHead>Issued</TableHead>
-            <TableHead className="text-center">Actions</TableHead>
+            <TableHead className="min-w-[170px]">
+              {invoicing("customer")}
+            </TableHead>
+            <TableHead>{invoicing("orderType")}</TableHead>
+            <TableHead>{invoicing("orderStatus")}</TableHead>
+            <TableHead>{invoicing("payment")}</TableHead>
+            <TableHead className="text-right">{invoicing("total")}</TableHead>
+            <TableHead>{invoicing("issued")}</TableHead>
+            <TableHead className="text-center">{common("actions")}</TableHead>
           </TableRow>
         </TableHeader>
 
@@ -195,12 +200,11 @@ const InvoicingTable = ({
                   </div>
 
                   <h3 className="text-base font-semibold text-gray-900">
-                    No invoices found
+                    {invoicing("noInvoicesFound")}
                   </h3>
 
                   <p className="mt-1 max-w-[420px] text-sm text-gray-500">
-                    Try changing filters, billing cycle, payment status, or
-                    invoice type.
+                    {invoicing("noInvoicesDescription")}
                   </p>
                 </div>
               </TableCell>
@@ -290,7 +294,7 @@ const InvoicingTable = ({
                         type="button"
                         className="rounded-full p-2 transition hover:bg-gray-100 hover:text-primary"
                         onClick={() => onViewInvoice?.(invoice)}
-                        title="View invoice"
+                        title={invoicing("viewInvoice")}
                       >
                         <Eye size={18} />
                       </button>
@@ -301,7 +305,7 @@ const InvoicingTable = ({
                           className="rounded-full p-2 transition hover:bg-gray-100 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
                           onClick={() => onDownloadInvoice?.(invoice)}
                           disabled={!onDownloadInvoice}
-                          title="Download invoice"
+                          title={invoicing("downloadInvoice")}
                         >
                           <Download size={18} />
                         </button>
@@ -311,7 +315,7 @@ const InvoicingTable = ({
                           className="rounded-full p-2 transition hover:bg-gray-100 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
                           onClick={() => handleSendInvoiceEmail(invoice)}
                           disabled={isSendingInvoiceEmail}
-                          title="Send invoice to customer email"
+                          title={invoicing("sendInvoiceToCustomerEmail")}
                         >
                           {isCurrentInvoiceSending ? (
                             <Loader2 size={18} className="animate-spin" />
@@ -332,7 +336,7 @@ const InvoicingTable = ({
               <TableCell colSpan={8}>
                 <div className="flex items-center justify-center gap-2 py-4 text-sm text-gray-400">
                   <Loader2 size={16} className="animate-spin" />
-                  Refreshing invoices...
+                  {invoicing("refreshingInvoices")}
                 </div>
               </TableCell>
             </TableRow>
@@ -341,6 +345,4 @@ const InvoicingTable = ({
       </Table>
     </div>
   );
-};
-
-export default InvoicingTable;
+}

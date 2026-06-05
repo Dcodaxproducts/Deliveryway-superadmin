@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { AlertTriangle, Download, Loader2, Share2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
 
@@ -159,10 +160,14 @@ const buildInvoiceText = (payload: InvoiceGenerationPayload) => {
         );
 
         if (Array.isArray(item.snapshotModifiers)) {
-          item.snapshotModifiers.forEach((modifier: any) => {
-            const modifierName = modifier?.name || "Modifier";
-            const modifierQty = Number(modifier?.quantity || 1);
-            const modifierUnitPrice = Number(modifier?.unitPrice || 0);
+          item.snapshotModifiers.forEach((modifier) => {
+            const modifierRecord =
+              modifier && typeof modifier === "object"
+                ? (modifier as Record<string, unknown>)
+                : {};
+            const modifierName = String(modifierRecord.name || "Modifier");
+            const modifierQty = Number(modifierRecord.quantity || 1);
+            const modifierUnitPrice = Number(modifierRecord.unitPrice || 0);
 
             lines.push(
               `  + ${modifierName} x${modifierQty} @ ${formatAmountPlain(
@@ -307,13 +312,15 @@ const downloadBlobFile = (blob: Blob, fileName: string) => {
   window.URL.revokeObjectURL(url);
 };
 
-export default function InvoicePreviewModal({
+export function InvoicePreviewModal({
   open,
   payload,
   onOpenChange,
   onBack,
   onGenerate,
 }: InvoicePreviewModalProps) {
+  const invoicing = useTranslations("invoicing");
+  const toasts = useTranslations("toasts");
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isSharingPdf, setIsSharingPdf] = useState(false);
 
@@ -364,15 +371,15 @@ export default function InvoicePreviewModal({
 
       if (navigator.share && navigator.canShare?.(shareData)) {
         await navigator.share(shareData);
-        toast.success("Invoice shared successfully");
+        toast.success(toasts("invoiceShared"));
         return;
       }
 
       downloadBlobFile(blob, fileName);
-      toast.info("Sharing is not supported in this browser. PDF downloaded instead.");
-    } catch (error: any) {
-      if (error?.name !== "AbortError") {
-        toast.error("Failed to share invoice");
+      toast.info(toasts("invoiceShareFallback"));
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name !== "AbortError") {
+        toast.error(toasts("invoiceShareFailed"));
       }
     } finally {
       setIsSharingPdf(false);
@@ -387,17 +394,17 @@ export default function InvoicePreviewModal({
       >
         <DialogHeader className="shrink-0 border-b border-gray-200 px-6 py-6 sm:px-8">
           <DialogTitle className="text-[26px] font-semibold text-gray-950">
-            Invoice Preview
+            {invoicing("invoicePreview")}
           </DialogTitle>
           <p className="text-sm text-gray-500">
-            Preview the invoice exactly as it will be downloaded or shared.
+            {invoicing("invoicePreviewDescription")}
           </p>
         </DialogHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6 sm:px-8">
           {!payload ? (
             <div className="py-20 text-center text-gray-400">
-              No invoice preview data available.
+              {invoicing("noInvoicePreview")}
             </div>
           ) : (
             <>
@@ -405,15 +412,19 @@ export default function InvoicePreviewModal({
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm font-semibold text-gray-950">
-                      {payload.invoices.length} invoice(s) selected
+                      {invoicing("invoicesSelected", {
+                        count: payload.invoices.length,
+                      })}
                     </p>
                     <p className="mt-1 text-xs text-gray-500">
-                      Billing Cycle: {payload.billingCycleLabel}
+                      {invoicing("billingCycle")}: {payload.billingCycleLabel}
                     </p>
                   </div>
 
                   <div className="text-left sm:text-right">
-                    <p className="text-xs text-gray-400">Final Total</p>
+                    <p className="text-xs text-gray-400">
+                      {invoicing("finalTotal")}
+                    </p>
                     <p className="text-lg font-bold text-green">
                       {formatMoney(finalTotalAmount, currency)}
                     </p>
@@ -424,10 +435,10 @@ export default function InvoicePreviewModal({
               <div className="mt-5 rounded-[16px] border border-gray-200 bg-white shadow-sm">
                 <div className="border-b border-gray-100 px-5 py-4">
                   <h3 className="text-sm font-semibold text-gray-950">
-                    Receipt Style Preview
+                    {invoicing("receiptStylePreview")}
                   </h3>
                   <p className="mt-1 text-xs text-gray-500">
-                    This layout follows the updated invoice PDF design.
+                    {invoicing("receiptStyleDescription")}
                   </p>
                 </div>
 
@@ -446,12 +457,10 @@ export default function InvoicePreviewModal({
                   />
                   <div>
                     <p className="text-sm font-semibold text-yellow-800">
-                      Important Notice
+                      {invoicing("importantNotice")}
                     </p>
                     <p className="mt-1 text-sm leading-6 text-yellow-700">
-                      Once generated, invoices will be considered ready for
-                      finance processing. Review selected invoices carefully
-                      before continuing.
+                      {invoicing("importantNoticeDescription")}
                     </p>
                   </div>
                 </div>
@@ -469,7 +478,7 @@ export default function InvoicePreviewModal({
               disabled={isGeneratingPdf || isSharingPdf}
               className="h-[44px] rounded-[12px]"
             >
-              Back
+              {invoicing("back")}
             </Button>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -483,12 +492,12 @@ export default function InvoicePreviewModal({
                 {isSharingPdf ? (
                   <>
                     <Loader2 size={17} className="mr-2 animate-spin" />
-                    Sharing...
+                    {invoicing("sharing")}
                   </>
                 ) : (
                   <>
                     <Share2 size={17} className="mr-2" />
-                    Share
+                    {invoicing("share")}
                   </>
                 )}
               </Button>
@@ -503,12 +512,12 @@ export default function InvoicePreviewModal({
                 {isGeneratingPdf ? (
                   <>
                     <Loader2 size={17} className="mr-2 animate-spin" />
-                    Generating...
+                    {invoicing("generating")}
                   </>
                 ) : (
                   <>
                     <Download size={17} className="mr-2" />
-                    Download
+                    {invoicing("download")}
                   </>
                 )}
               </Button>

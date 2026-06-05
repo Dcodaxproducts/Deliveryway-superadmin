@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { FileDown, FileText, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { toast } from "sonner";
@@ -476,7 +477,9 @@ const buildPdfTable = (rows: string[][], exportType: ExportType) => {
     });
   });
 
-  const columnStyles = columns.reduce<Record<number, any>>((styles, column, index) => {
+  const columnStyles = columns.reduce<
+    Record<number, { cellWidth?: number; halign: "left" | "center" | "right" }>
+  >((styles, column, index) => {
     styles[index] = {
       cellWidth: column.width,
       halign: column.align || "left",
@@ -625,14 +628,14 @@ const downloadPdf = (response: CsvExportResponse, exportType: ExportType) => {
         rowCount,
       });
     },
-  } as any);
+  });
 
   drawPdfFooter(doc);
 
   doc.save(getPdfFileName(response, exportType));
 };
 
-export default function Filter({
+export function AnalyticsFilter({
   dateRange,
   onDateRangeChange,
   customFromDate,
@@ -643,6 +646,8 @@ export default function Filter({
   onExportTypeChange,
   exportParams,
 }: AnalyticsFilterProps) {
+  const analytics = useTranslations("analytics");
+  const toasts = useTranslations("toasts");
   const [exportingFormat, setExportingFormat] =
     useState<ExportFormat | null>(null);
 
@@ -679,13 +684,18 @@ export default function Filter({
           ? ` (${response.data.rowCount} rows)`
           : "";
 
-      toast.success(
-        `${REPORT_LABELS[exportType]} exported successfully${rowCount}`
-      );
-    } catch (error: any) {
+      toast.success(`${analytics(`${exportType}Report`)} exported successfully${rowCount}`);
+    } catch (error: unknown) {
+      const errorRecord =
+        error && typeof error === "object"
+          ? (error as Record<string, unknown>)
+          : {};
+      const response = errorRecord.response as
+        | { data?: { message?: string } }
+        | undefined;
       toast.error(
-        error?.response?.data?.message ||
-          error?.message ||
+        response?.data?.message ||
+          (error instanceof Error ? error.message : "") ||
           `Failed to export ${REPORT_LABELS[exportType].toLowerCase()}`
       );
     } finally {
@@ -697,7 +707,7 @@ export default function Filter({
     <div className="rounded-[14px] border border-gray-100 bg-white p-4 shadow-sm lg:p-[30px]">
       <div className="flex w-full flex-col gap-[24px] lg:flex-row lg:items-end">
         <div className="w-full flex-1 space-y-[12px]">
-          <Label>Date Range</Label>
+          <Label>{analytics("dateRange")}</Label>
 
           <Select
             value={dateRange}
@@ -706,16 +716,16 @@ export default function Filter({
             }
           >
             <SelectTrigger className="h-[52px] w-full rounded-[12px] border-gray-200 focus:ring-primary">
-              <SelectValue placeholder="Select Date Range" />
+              <SelectValue placeholder={analytics("dateRange")} />
             </SelectTrigger>
 
             <SelectContent>
-              <SelectItem value="all-time">All Time</SelectItem>
-              <SelectItem value="last-7">Last 7 Days</SelectItem>
-              <SelectItem value="last-30">Last 30 Days</SelectItem>
-              <SelectItem value="this-month">This Month</SelectItem>
-              <SelectItem value="last-month">Last Month</SelectItem>
-              <SelectItem value="individual">Individual</SelectItem>
+              <SelectItem value="all-time">{analytics("allTime")}</SelectItem>
+              <SelectItem value="last-7">{analytics("last7Days")}</SelectItem>
+              <SelectItem value="last-30">{analytics("last30Days")}</SelectItem>
+              <SelectItem value="this-month">{analytics("thisMonth")}</SelectItem>
+              <SelectItem value="last-month">{analytics("lastMonth")}</SelectItem>
+              <SelectItem value="individual">{analytics("customRange")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -723,7 +733,7 @@ export default function Filter({
         {dateRange === "individual" ? (
           <>
             <div className="w-full flex-1 space-y-[12px]">
-              <Label>From Date</Label>
+              <Label>{analytics("fromDate")}</Label>
 
               <input
                 type="date"
@@ -736,7 +746,7 @@ export default function Filter({
             </div>
 
             <div className="w-full flex-1 space-y-[12px]">
-              <Label>To Date</Label>
+              <Label>{analytics("toDate")}</Label>
 
               <input
                 type="date"
@@ -751,26 +761,26 @@ export default function Filter({
         ) : null}
 
         <div className="w-full flex-1 space-y-[12px]">
-          <Label>Report Type</Label>
+          <Label>{analytics("exportType")}</Label>
 
           <Select
             value={exportType}
             onValueChange={(value) => onExportTypeChange(value as ExportType)}
           >
             <SelectTrigger className="h-[52px] w-full rounded-[12px] border-gray-200 focus:ring-primary">
-              <SelectValue placeholder="Select Report Type" />
+              <SelectValue placeholder={analytics("exportType")} />
             </SelectTrigger>
 
             <SelectContent>
-              <SelectItem value="orders">Orders Report</SelectItem>
-              <SelectItem value="customers">Customers Report</SelectItem>
-              <SelectItem value="menu">Menu Report</SelectItem>
+              <SelectItem value="orders">{analytics("ordersReport")}</SelectItem>
+              <SelectItem value="customers">{analytics("customersReport")}</SelectItem>
+              <SelectItem value="menu">{analytics("menuReport")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="w-full flex-1 space-y-[12px]">
-          <Label>Export Report</Label>
+          <Label>{analytics("exportReport")}</Label>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Button
@@ -785,7 +795,7 @@ export default function Filter({
               ) : (
                 <FileText size={18} className="text-gray-400" />
               )}
-              {isExportingCsv ? "Exporting..." : "CSV"}
+              {isExportingCsv ? analytics("exporting") : "CSV"}
             </Button>
 
             <Button
@@ -800,7 +810,7 @@ export default function Filter({
               ) : (
                 <FileDown size={18} className="text-gray-400" />
               )}
-              {isExportingPdf ? "Exporting..." : "PDF"}
+              {isExportingPdf ? analytics("exporting") : "PDF"}
             </Button>
           </div>
         </div>

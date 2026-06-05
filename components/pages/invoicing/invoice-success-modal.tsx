@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import {
   Dialog,
@@ -45,13 +46,13 @@ const formatDate = (value?: string) => {
   });
 };
 
-export default function InvoiceSuccessModal({
+export function InvoiceSuccessModal({
   open,
   payload,
   onOpenChange,
   onGenerateMore,
 }: InvoiceSuccessModalProps) {
-  
+  const invoicing = useTranslations("invoicing");
 
   const currency = payload?.invoices?.[0]?.transactions?.[0]?.currency || "EUR";
 
@@ -63,11 +64,11 @@ export default function InvoiceSuccessModal({
       >
         <DialogHeader className="border-b border-gray-200 px-6 py-6 sm:px-8">
           <DialogTitle className="text-[26px] font-semibold text-gray-700">
-            Invoice Generated Successfully
+            {invoicing("invoiceGeneratedSuccessfully")}
           </DialogTitle>
 
           <p className="text-sm text-gray-500">
-            Your invoices have been created and are ready for finance review
+            {invoicing("invoiceGeneratedDescription")}
           </p>
         </DialogHeader>
 
@@ -78,30 +79,32 @@ export default function InvoiceSuccessModal({
             </div>
 
             <h3 className="text-[24px] font-semibold text-gray-950">
-              Invoices Generated Successfully!
+              {invoicing("invoicesGeneratedSuccessfully")}
             </h3>
 
             <p className="mx-auto mt-4 max-w-[520px] text-base leading-7 text-gray-500">
-              {payload?.invoices.length || 0} invoice(s) have been generated for{" "}
-              {payload?.billingCycleLabel || "-"}.
+              {invoicing("generatedForCycle", {
+                count: payload?.invoices.length || 0,
+                cycle: payload?.billingCycleLabel || "-",
+              })}
             </p>
 
             <div className="mx-auto mt-7 max-w-[420px] rounded-[12px] border border-gray-200 bg-[#F9FAFB] p-5 text-left">
               <InfoRow
-                label="Total Invoices:"
+                label={invoicing("totalInvoices")}
                 value={String(payload?.invoices.length || 0)}
               />
 
               <InfoRow
-                label="Billing Cycle:"
+                label={invoicing("billingCycleLabel")}
                 value={payload?.billingCycleLabel || "-"}
               />
 
-              <InfoRow label="Due Date:" value={formatDate(payload?.dueDate)} />
+              <InfoRow label={invoicing("dueDateLabel")} value={formatDate(payload?.dueDate)} />
 
               <div className="mt-3 flex items-center justify-between border-t border-gray-200 pt-3">
                 <span className="font-semibold text-gray-900">
-                  Total Amount:
+                  {invoicing("totalAmountColon")}
                 </span>
 
                 <span className="text-lg font-bold text-green">
@@ -117,7 +120,7 @@ export default function InvoiceSuccessModal({
                 onClick={onGenerateMore}
                 className="h-[44px] rounded-[12px] border-primary px-6 text-primary hover:bg-primary/5"
               >
-                Generate More
+                {invoicing("generateMore")}
               </Button>
 
             <Button
@@ -126,7 +129,7 @@ export default function InvoiceSuccessModal({
   onClick={() => onOpenChange(false)}
   className="h-[44px] rounded-[12px] px-6"
 >
-  Back to Dashboard
+  {invoicing("backToDashboard")}
 </Button>
             </div>
           </div>

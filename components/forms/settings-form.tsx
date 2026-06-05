@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -57,7 +58,6 @@ type SettingsFormValues = {
 const LANGUAGE_OPTIONS: SelectOption[] = [
   { label: "German", value: "de" },
   { label: "English", value: "en" },
-  { label: "Urdu", value: "ur" },
 ];
 
 const TIMEZONE_OPTIONS: SelectOption[] = [
@@ -111,6 +111,8 @@ const formatPaymentMethodCode = (code: PaymentMethodCode) => {
 };
 
 export function SettingsForm() {
+  const globalSettings = useTranslations("globalSettings");
+  const common = useTranslations("common");
   const { data } = useGetGlobalSettings();
   const { mutate, isPending } = useUpdateGlobalSettings();
   const {
@@ -298,7 +300,7 @@ export function SettingsForm() {
   };
 
   const paymentMethodsValidationMessage = hasDuplicatePaymentMethods()
-    ? "Duplicate payment method codes are not allowed."
+    ? globalSettings("duplicatePaymentMethods")
     : "";
   const activePaymentMethodsCount = paymentMethods.filter(
     (method) => method.isActive
@@ -311,35 +313,35 @@ export function SettingsForm() {
           <div className="flex items-center gap-[12px] cursor-pointer">
             <Info size={18} className="text-gray" />
             <span className="text-base font-semibold text-[#646982] group-hover:text-primary transition-colors">
-              Tax Settings
+              {globalSettings("taxSettings")}
             </span>
           </div>
 
           <div className="flex items-center gap-[12px] cursor-pointer absolute top-88">
             <Info size={18} className="text-gray" />
             <span className="text-base font-semibold text-[#646982] group-hover:text-primary transition-colors">
-              Commission Settings
+              {globalSettings("commissionSettings")}
             </span>
           </div>
 
           <div className="flex items-center gap-[12px] cursor-pointer absolute top-143">
             <Info size={18} className="text-gray" />
             <span className="text-base font-semibold text-[#646982] group-hover:text-primary transition-colors">
-              Currency Settings
+              {globalSettings("currencySettings")}
             </span>
           </div>
 
           <div className="flex items-center gap-[12px] cursor-pointer absolute bottom-143">
             <Info size={18} className="text-gray" />
             <span className="text-base font-semibold text-[#646982] group-hover:text-primary transition-colors">
-              Localization Settings
+              {globalSettings("localizationSettings")}
             </span>
           </div>
 
           <div className="flex items-center gap-[12px] cursor-pointer absolute bottom-70">
             <Info size={18} className="text-gray" />
             <span className="text-base font-semibold text-[#646982] group-hover:text-primary transition-colors">
-              Branding (Quick Setup)
+              {globalSettings("brandingQuickSetup")}
             </span>
           </div>
         </div>
@@ -347,10 +349,9 @@ export function SettingsForm() {
         <div className="lg:col-span-8 space-y-[48px]">
           <section className="space-y-[24px]">
           <div className="space-y-[6px]">
-            <Label>Global Tax %</Label>
+            <Label>{globalSettings("globalTax")}</Label>
             <p className="text-sm text-gray mb-2">
-              Set the default tax percentage applied to transactions across the
-              platform.
+              {globalSettings("globalTaxDescription")}
             </p>
 
             <div className="relative">
@@ -370,9 +371,9 @@ export function SettingsForm() {
           </div>
 
           <div className="space-y-[6px]">
-            <Label>VAT/GST handling rules</Label>
+            <Label>{globalSettings("vatRules")}</Label>
             <p className="text-sm text-gray">
-              Choose how VAT/GST should be calculated and displayed system-wide.
+              {globalSettings("vatRulesDescription")}
             </p>
 
             <RadioGroup
@@ -384,17 +385,17 @@ export function SettingsForm() {
             >
               <div className="flex items-center gap-3">
                 <RadioGroupItem value="inclusive" />
-                <Label>Prices are inclusive of tax</Label>
+                <Label>{globalSettings("pricesInclusive")}</Label>
               </div>
 
               <div className="flex items-center gap-3">
                 <RadioGroupItem value="exclusive" />
-                <Label>Prices are exclusive of tax</Label>
+                <Label>{globalSettings("pricesExclusive")}</Label>
               </div>
 
               <div className="flex items-center gap-3">
                 <RadioGroupItem value="completed" />
-                <Label>Tax applies only to completed transactions</Label>
+                <Label>{globalSettings("taxCompleted")}</Label>
               </div>
             </RadioGroup>
           </div>
@@ -402,8 +403,8 @@ export function SettingsForm() {
 
         <section className="space-y-[24px]">
           <FormGroup
-            label="Default Commission (%)"
-            placeholder="Add Percentage"
+            label={globalSettings("defaultCommission")}
+            placeholder={globalSettings("addPercentage")}
             prefix="%"
             value={form.defaultCommissionPercentage}
             onChange={(value) =>
@@ -412,8 +413,8 @@ export function SettingsForm() {
           />
 
           <FormGroup
-            label="Default Hybrid Fee (%)"
-            placeholder="Add Percentage"
+            label={globalSettings("defaultHybridFee")}
+            placeholder={globalSettings("addPercentage")}
             prefix="%"
             value={form.defaultHybridFeePercentage}
             onChange={(value) =>
@@ -424,9 +425,9 @@ export function SettingsForm() {
 
         <section className="space-y-[24px]">
           <div className="space-y-[6px]">
-            <Label>Default Platform Currency</Label>
+            <Label>{globalSettings("defaultCurrency")}</Label>
             <p className="text-sm text-gray mb-2">
-              This currency will be used as the default for all monetary values.
+              {globalSettings("defaultCurrencyDescription")}
             </p>
 
             <Select
@@ -438,7 +439,7 @@ export function SettingsForm() {
                   <span className="text-dark">
                     {getCurrencySymbol(form.defaultCurrency)}
                   </span>
-                  <SelectValue placeholder="Select Currency" />
+                  <SelectValue placeholder={globalSettings("selectCurrency")} />
                 </div>
               </SelectTrigger>
 
@@ -455,7 +456,7 @@ export function SettingsForm() {
           </div>
 
           <div className="space-y-[12px]">
-            <Label>Currency Display Format</Label>
+            <Label>{globalSettings("currencyDisplayFormat")}</Label>
 
             <div className="grid grid-cols-3 gap-4">
               <FormatBtn
@@ -481,16 +482,16 @@ export function SettingsForm() {
 
         <section className="space-y-[24px]">
           <FormGroup
-            label="Default Platform Language"
+            label={globalSettings("defaultLanguage")}
             type="select"
-            placeholder="Select Language"
+            placeholder={globalSettings("selectLanguage")}
             value={form.defaultLanguage}
             options={LANGUAGE_OPTIONS}
             onChange={(value) => updateField("defaultLanguage", value)}
           />
 
           <div className="space-y-[12px]">
-            <Label>Date Format</Label>
+            <Label>{globalSettings("dateFormat")}</Label>
 
             <div className="grid grid-cols-3 gap-2">
               <FormatBtn
@@ -514,9 +515,9 @@ export function SettingsForm() {
           </div>
 
           <FormGroup
-            label="Timezone"
+            label={globalSettings("timezone")}
             type="select"
-            placeholder="Select Timezone"
+            placeholder={globalSettings("selectTimezone")}
             value={form.timezone}
             options={TIMEZONE_OPTIONS}
             onChange={(value) => updateField("timezone", value)}
@@ -537,9 +538,9 @@ export function SettingsForm() {
           </div>
 
           <FormGroup
-            label="Font Selection (Optional)"
+            label={globalSettings("fontSelection")}
             type="select"
-            placeholder="Select font"
+            placeholder={globalSettings("selectFont")}
             value={form.fontFamily}
             options={FONT_OPTIONS}
             onChange={(value) => updateField("fontFamily", value)}
@@ -548,7 +549,7 @@ export function SettingsForm() {
 
         <section className="flex flex-col sm:flex-row gap-4 justify-end">
           <Button variant="outline" disabled={isPending}>
-            Cancel
+            {common("cancel")}
           </Button>
 
           <Button
@@ -556,7 +557,7 @@ export function SettingsForm() {
             disabled={isPending}
             className="h-auto px-10 py-3"
           >
-            {isPending ? "Saving..." : "Save & Activate"}
+            {isPending ? common("saving") : globalSettings("saveActivate")}
           </Button>
         </section>
       </div>
@@ -566,10 +567,10 @@ export function SettingsForm() {
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="space-y-[6px]">
             <Label className="text-base font-semibold text-dark">
-              Platform Payment Methods
+              {globalSettings("platformPaymentMethods")}
             </Label>
             <p className="text-sm text-gray">
-              Enable or disable payment methods available across the platform.
+              {globalSettings("paymentMethodsDescription")}
             </p>
           </div>
 
@@ -577,23 +578,25 @@ export function SettingsForm() {
             <span className="font-semibold text-dark">
               {activePaymentMethodsCount}
             </span>
-            of {paymentMethods.length || PAYMENT_METHOD_CODES.length} active
+            {globalSettings("activeCount", {
+              total: paymentMethods.length || PAYMENT_METHOD_CODES.length,
+            })}
           </div>
         </div>
 
         {isPaymentMethodsLoading ? (
           <div className="rounded-[12px] border border-dashed border-[#BBBBBB] bg-[#F9FAFB] p-5 text-sm text-gray">
-            Loading payment methods...
+            {globalSettings("loadingPaymentMethods")}
           </div>
         ) : isPaymentMethodsError ? (
           <Alert variant="destructive">
             <AlertDescription>
-              Failed to load payment methods. Please try again.
+              {globalSettings("paymentMethodsLoadFailed")}
             </AlertDescription>
           </Alert>
         ) : paymentMethods.length === 0 ? (
           <div className="rounded-[12px] border border-dashed border-[#BBBBBB] bg-[#F9FAFB] p-5 text-sm text-gray">
-            No payment methods are available.
+            {globalSettings("noPaymentMethods")}
           </div>
         ) : (
           <div className="grid gap-4 xl:grid-cols-2">
@@ -633,13 +636,12 @@ export function SettingsForm() {
                               : "bg-gray-100 text-gray"
                           }`}
                         >
-                          {method.isActive ? "Active" : "Inactive"}
+                          {method.isActive ? common("active") : common("inactive")}
                         </span>
                       </div>
 
                       <p className="text-xs text-gray">
-                        Code is managed by the platform API and cannot be
-                        edited.
+                        {globalSettings("apiManagedCode")}
                       </p>
                     </div>
                   </div>
@@ -655,7 +657,7 @@ export function SettingsForm() {
                 </div>
 
                 <div className="mt-4 space-y-[6px]">
-                  <Label>Display Label</Label>
+                  <Label>{globalSettings("displayLabel")}</Label>
                   <Input
                     value={method.label}
                     onChange={(event) =>
@@ -691,7 +693,9 @@ export function SettingsForm() {
             }
             className="h-auto px-10 py-3"
           >
-            {isPaymentMethodsPending ? "Saving..." : "Save Payment Methods"}
+            {isPaymentMethodsPending
+              ? common("saving")
+              : globalSettings("savePaymentMethods")}
           </Button>
         </div>
       </section>

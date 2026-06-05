@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2, ReceiptText } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import {
   Dialog,
@@ -59,11 +60,12 @@ const prettyLabel = (value?: string) => {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 };
 
-export default function InvoiceDetailsModal({
+export function InvoiceDetailsModal({
   open,
   invoice,
   onOpenChange,
 }: InvoiceDetailsModalProps) {
+  const invoicing = useTranslations("invoicing");
   const { data, isLoading, isFetching } = useGetAdminReportInvoiceDetails(
     open && invoice
       ? {
@@ -86,10 +88,10 @@ export default function InvoiceDetailsModal({
       >
         <DialogHeader className="shrink-0 border-b border-gray-200 px-6 py-6 sm:px-8">
           <DialogTitle className="text-[26px] font-semibold text-gray-950">
-            Invoice Details
+            {invoicing("invoiceDetails")}
           </DialogTitle>
           <p className="text-sm text-gray-500">
-            {details?.invoiceNumber || "Loading invoice..."}
+            {details?.invoiceNumber || invoicing("loadingInvoice")}
           </p>
         </DialogHeader>
 
@@ -97,67 +99,69 @@ export default function InvoiceDetailsModal({
           {loading ? (
             <div className="flex min-h-[360px] items-center justify-center gap-2 text-gray-400">
               <Loader2 size={18} className="animate-spin" />
-              Loading invoice details...
+              {invoicing("loadingInvoiceDetails")}
             </div>
           ) : !details ? (
             <div className="flex min-h-[360px] flex-col items-center justify-center text-center">
               <ReceiptText size={34} className="mb-3 text-gray-300" />
-              <p className="text-sm text-gray-400">Invoice not found.</p>
+              <p className="text-sm text-gray-400">
+                {invoicing("invoiceNotFound")}
+              </p>
             </div>
           ) : (
             <div className="space-y-5">
               <div className="grid gap-4 md:grid-cols-3">
-                <SummaryCard label="Restaurant" value={details.restaurant?.name} />
-                <SummaryCard label="Branch" value={details.branch?.name} />
+                <SummaryCard label={invoicing("restaurant")} value={details.restaurant?.name} />
+                <SummaryCard label={invoicing("branch")} value={details.branch?.name} />
                 <SummaryCard
-                  label="Customer"
+                  label={invoicing("customer")}
                   value={details.customer?.name || details.customer?.email}
                 />
                 <SummaryCard
-                  label="Order Type"
+                  label={invoicing("orderType")}
                   value={prettyLabel(details.orderType)}
                 />
                 <SummaryCard
-                  label="Order Status"
+                  label={invoicing("orderStatus")}
                   value={prettyLabel(details.orderStatus)}
                 />
                 <SummaryCard
-                  label="Payment Status"
+                  label={invoicing("paymentStatus")}
                   value={prettyLabel(details.paymentStatus)}
                 />
               </div>
 
               <div className="rounded-[14px] bg-white p-5">
                 <h3 className="mb-4 text-base font-semibold text-gray-900">
-                  Amount Summary
+                  {invoicing("amountSummary")}
                 </h3>
 
                 <div className="grid gap-3 md:grid-cols-2">
                   <AmountRow
-                    label="Subtotal"
+                    label={invoicing("subtotal")}
                     value={formatMoney(details.subtotal, currency)}
                   />
                   <AmountRow
-                    label="Tax"
+                    label={invoicing("tax")}
                     value={formatMoney(details.taxAmount, currency)}
                   />
                   <AmountRow
-                    label="Delivery Fee"
+                    label={invoicing("deliveryFee")}
                     value={formatMoney(details.deliveryFee, currency)}
                   />
                   <AmountRow
-                    label="Discount"
+                    label={invoicing("discount")}
                     value={`-${formatMoney(details.discountAmount, currency)}`}
                   />
                   <AmountRow
-                    label="Wallet Applied"
+                    label={invoicing("walletApplied")}
                     value={`-${formatMoney(
                       details.walletAppliedAmount,
                       currency
                     )}`}
                   />
                   <AmountRow
-                    label="Loyalty Discount"
+                    label={invoicing("loyaltyDiscount")}
                     value={`-${formatMoney(
                       details.loyaltyDiscountAmount,
                       currency
@@ -167,7 +171,7 @@ export default function InvoiceDetailsModal({
 
                 <div className="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
                   <span className="text-base font-semibold text-gray-900">
-                    Total Amount
+                    {invoicing("totalAmount")}
                   </span>
                   <span className="text-xl font-bold text-green">
                     {formatMoney(details.totalAmount, currency)}
@@ -177,20 +181,20 @@ export default function InvoiceDetailsModal({
 
               <div className="rounded-[14px] bg-white p-5">
                 <h3 className="mb-4 text-base font-semibold text-gray-900">
-                  Dates
+                  {invoicing("dates")}
                 </h3>
 
                 <div className="grid gap-3 md:grid-cols-3">
                   <SummaryCard
-                    label="Issued At"
+                    label={invoicing("issuedAt")}
                     value={formatDateTime(details.issuedAt)}
                   />
                   <SummaryCard
-                    label="Order Time"
+                    label={invoicing("orderTime")}
                     value={formatDateTime(details.orderTime)}
                   />
                   <SummaryCard
-                    label="Paid At"
+                    label={invoicing("paidAt")}
                     value={formatDateTime(details.paidAt)}
                   />
                 </div>
@@ -198,23 +202,23 @@ export default function InvoiceDetailsModal({
 
               <div className="rounded-[14px] bg-white p-5">
                 <h3 className="mb-4 text-base font-semibold text-gray-900">
-                  Items
+                  {invoicing("items")}
                 </h3>
 
                 {!details.items?.length ? (
                   <div className="py-8 text-center text-sm text-gray-400">
-                    No item details available for this invoice.
+                    {invoicing("noItemDetails")}
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full min-w-[700px] text-sm">
                       <thead>
                         <tr className="border-b text-left text-xs text-gray-400">
-                          <th className="py-3">Item</th>
-                          <th>Variation</th>
-                          <th className="text-center">Qty</th>
-                          <th className="text-right">Unit</th>
-                          <th className="text-right">Line Total</th>
+                          <th className="py-3">{invoicing("item")}</th>
+                          <th>{invoicing("variation")}</th>
+                          <th className="text-center">{invoicing("qty")}</th>
+                          <th className="text-right">{invoicing("unit")}</th>
+                          <th className="text-right">{invoicing("lineTotal")}</th>
                         </tr>
                       </thead>
 
@@ -227,7 +231,7 @@ export default function InvoiceDetailsModal({
                               </p>
                               {item.note ? (
                                 <p className="mt-1 text-xs text-gray-400">
-                                  Note: {item.note}
+                                  {invoicing("note")}: {item.note}
                                 </p>
                               ) : null}
                             </td>
@@ -249,12 +253,12 @@ export default function InvoiceDetailsModal({
 
               <div className="rounded-[14px] bg-white p-5">
                 <h3 className="mb-4 text-base font-semibold text-gray-900">
-                  Transactions
+                  {invoicing("transactions")}
                 </h3>
 
                 {!details.transactions?.length ? (
                   <div className="py-8 text-center text-sm text-gray-400">
-                    No transactions available.
+                    {invoicing("noTransactions")}
                   </div>
                 ) : (
                   <div className="space-y-3">

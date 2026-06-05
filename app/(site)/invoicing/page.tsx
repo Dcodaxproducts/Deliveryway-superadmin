@@ -1,19 +1,22 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import Container from "../../../components/container";
 import Filters from "@/components/filter";
-import Header, {
+import {
   BillingCycleOption,
+  InvoicingHeader,
 } from "@/components/pages/invoicing/header";
-import InvoicingTable from "@/components/tables/invoicing-table";
-import GenerateInvoiceModal, {
+import { InvoicingTable } from "@/components/tables/invoicing-table";
+import {
+  GenerateInvoiceModal,
   InvoiceGenerationPayload,
 } from "@/components/pages/invoicing/generate-invoice-modal";
-import InvoicePreviewModal from "@/components/pages/invoicing/invoice-preview-modal";
-import InvoiceSuccessModal from "@/components/pages/invoicing/invoice-success-modal";
-import InvoiceDetailsModal from "@/components/pages/invoicing/invoice-details-modal";
+import { InvoicePreviewModal } from "@/components/pages/invoicing/invoice-preview-modal";
+import { InvoiceSuccessModal } from "@/components/pages/invoicing/invoice-success-modal";
+import { InvoiceDetailsModal } from "@/components/pages/invoicing/invoice-details-modal";
 
 import { useGetAdminReportInvoices } from "@/hooks/useReports";
 import type { AdminInvoice, AdminInvoicesParams } from "@/services/reports";
@@ -126,6 +129,7 @@ const matchesSearch = (invoice: AdminInvoice, search: string) => {
 };
 
 export default function InvoicingPage() {
+  const invoicing = useTranslations("invoicing");
   const billingCycleOptions = useMemo(() => createBillingCycleOptions(), []);
   const defaultBillingCycle = getCurrentBillingCycleValue();
   const defaultRange = getBillingCycleRange(defaultBillingCycle);
@@ -261,9 +265,9 @@ export default function InvoicingPage() {
 
   return (
     <Container>
-      <Header
-        title="Invoicing Dashboard"
-        description="Manage generated order invoices, payments, and finance records in one place."
+      <InvoicingHeader
+        title={invoicing("dashboardTitle")}
+        description={invoicing("dashboardDescription")}
         billingCycle={billingCycle}
         billingCycleOptions={billingCycleOptions}
         onBillingCycleChange={handleBillingCycleChange}
@@ -302,7 +306,7 @@ export default function InvoicingPage() {
                 : "bg-transparent text-gray hover:bg-gray-50"
             }`}
           >
-            Active Invoices ({activeCount})
+            {invoicing("activeInvoices")} ({activeCount})
           </button>
 
           <button
@@ -314,7 +318,7 @@ export default function InvoicingPage() {
                 : "bg-transparent text-gray hover:bg-gray-50"
             }`}
           >
-            Archive Invoices ({archiveCount})
+            {invoicing("archiveInvoices")} ({archiveCount})
           </button>
         </div>
 

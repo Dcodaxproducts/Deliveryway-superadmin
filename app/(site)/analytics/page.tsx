@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import Container from "../../../components/container";
 import RevenueGraph from "@/components/graphs/revenue-graph";
 import Header from "@/components/header";
 import StatsSection from "@/components/shared/stats-section";
 import OrdersGraph from "@/components/graphs/orders-graph";
 import TopPerformingRestaurants from "../models/top-restaurants-section";
-import Filter from "@/components/pages/analytics/filter";
+import { AnalyticsFilter } from "@/components/pages/analytics/filter";
 import { useGetOrdersReport } from "@/hooks/useReports";
 import { StatItem } from "@/types/stats";
 
@@ -112,6 +113,7 @@ const formatCurrency = (value: number | string | null | undefined) => {
 };
 
 const AnalyticsPage = () => {
+  const analytics = useTranslations("analytics");
   const [dateRange, setDateRange] = useState<DateRangeValue>("all-time");
 
   const [customFromDate, setCustomFromDate] = useState("");
@@ -139,67 +141,70 @@ const AnalyticsPage = () => {
   const statsData: StatItem[] = useMemo(() => {
     const paidCount =
       report?.paymentStatusBreakdown?.find(
-        (item: any) => item.key?.toUpperCase() === "PAID"
+        (item: { key?: string; count?: number }) =>
+          item.key?.toUpperCase() === "PAID"
       )?.count ?? 0;
 
     const pendingCount =
       report?.paymentStatusBreakdown?.find(
-        (item: any) => item.key?.toUpperCase() === "PENDING"
+        (item: { key?: string; count?: number }) =>
+          item.key?.toUpperCase() === "PENDING"
       )?.count ?? 0;
 
     const deliveredCount =
       report?.statusBreakdown?.find(
-        (item: any) => item.key?.toUpperCase() === "DELIVERED"
+        (item: { key?: string; count?: number }) =>
+          item.key?.toUpperCase() === "DELIVERED"
       )?.count ?? 0;
 
     return [
       {
         _id: "total-orders",
-        title: "Total Orders",
+        title: analytics("totalOrders"),
         value: String(report?.totalOrders ?? 0),
         footerType: "trend",
         trendData: {
           direction: "up",
           percentage: String(deliveredCount),
-          label: "delivered orders",
+          label: analytics("deliveredOrders"),
         },
       },
       {
         _id: "total-revenue",
-        title: "Total Revenue",
+        title: analytics("totalRevenue"),
         value: formatCurrency(report?.totalRevenue),
         footerType: "plain",
-        description: "Revenue from all orders",
+        description: analytics("revenueFromAllOrders"),
       },
       {
         _id: "average-order-value",
-        title: "Average Order Value",
+        title: analytics("averageOrderValue"),
         value: formatCurrency(report?.averageOrderValue),
         footerType: "plain",
-        description: "Average revenue per order",
+        description: analytics("averageRevenuePerOrder"),
       },
       {
         _id: "paid-orders",
-        title: "Paid Orders",
+        title: analytics("paidOrders"),
         value: String(paidCount),
         footerType: "trend",
         trendData: {
           direction: pendingCount > paidCount ? "down" : "up",
           percentage: String(pendingCount),
-          label: "pending payments",
+          label: analytics("pendingPayments"),
         },
       },
     ];
-  }, [report]);
+  }, [analytics, report]);
 
   return (
     <Container>
       <Header
-        title="Reports & Analytics"
-        description="Welcome back! Here's what's happening with your platform today."
+        title={analytics("title")}
+        description={analytics("description")}
       />
 
-      <Filter
+      <AnalyticsFilter
         dateRange={dateRange}
         onDateRangeChange={setDateRange}
         customFromDate={customFromDate}
