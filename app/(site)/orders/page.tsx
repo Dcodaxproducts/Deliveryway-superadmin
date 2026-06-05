@@ -19,6 +19,7 @@ import { getRestaurants } from "@/services/restaurant";
 import { Eye } from "lucide-react";
 import OrderDetailsDialog from "@/components/dialogs/order-details-dialog";
 import { StatItem } from "@/types/stats";
+import { useTranslations } from "next-intl";
 
 type SortKey =
   | "id"
@@ -86,13 +87,32 @@ const extractRestaurantsMeta = (response: any) => {
   );
 };
 
-const formatStatus = (status?: string) => {
+const formatStatus = (status: string | undefined, filters: (key: string) => string) => {
   if (!status) return "-";
 
-  return status
-    .replaceAll("_", " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const statusMap: Record<string, string> = {
+    PLACED: "orderStatusPlaced",
+    CONFIRMED: "orderStatusConfirmed",
+    PREPARING: "orderStatusPreparing",
+    READY_FOR_PICKUP: "orderStatusReadyForPickup",
+    PICKED_UP: "orderStatusPickedUp",
+    READY_TO_SERVE: "orderStatusReadyToServe",
+    SERVED: "orderStatusServed",
+    OUT_FOR_DELIVERY: "orderStatusOutForDelivery",
+    DELIVERED: "orderStatusDelivered",
+    CANCELLED: "orderStatusCancelled",
+    REJECTED: "orderStatusRejected",
+    DELIVERY: "orderTypeDelivery",
+    TAKEAWAY: "orderTypeTakeaway",
+    DINE_IN: "orderTypeDineIn",
+    PENDING: "paymentStatusPending",
+    PAID: "paymentStatusPaid",
+    FAILED: "paymentStatusFailed",
+    REFUNDED: "paymentStatusRefunded",
+  };
+
+  const key = statusMap[status.toUpperCase()];
+  return key ? filters(key) : status.replaceAll("_", " ");
 };
 
 const formatCurrency = (value: any) => {
@@ -140,6 +160,10 @@ const getOrderDate = (order: any) => {
 };
 
 const OrdersPage = () => {
+  const common = useTranslations("common");
+  const ordersText = useTranslations("orders");
+  const customersText = useTranslations("customers");
+  const filters = useTranslations("filters");
   const [page, setPage] = useState(1);
   const [limit] = useState(PAGE_LIMIT);
 
@@ -252,46 +276,46 @@ const OrdersPage = () => {
     return [
       {
         _id: "total-orders",
-        title: "Total Orders",
+        titleKey: "orders.totalOrders",
         value: String(report?.totalOrders ?? 0),
         footerType: "trend",
         trendData: {
           direction: "up",
           percentage: String(paidCount),
-          label: "paid orders",
+          labelKey: "orders.paidOrders",
         },
       },
       {
         _id: "total-revenue",
-        title: "Total Revenue",
+        titleKey: "orders.totalRevenue",
         value: formatCurrency(report?.totalRevenue ?? 0),
         footerType: "plain",
-        description: `Avg: ${formatCurrency(
-          report?.averageOrderValue ?? 0
-        )} per order`,
+        description: ordersText("avgPerOrder", {
+          amount: formatCurrency(report?.averageOrderValue ?? 0),
+        }),
       },
       {
         _id: "order-channels",
-        title: "Delivery vs Pickup",
+        titleKey: "orders.deliveryVsPickup",
         value: `${deliveryCount}/${takeawayCount}`,
         footerType: "trend",
         trendData: {
           direction: "up",
           percentage: String(deliveredCount),
-          label: "delivered orders",
+          labelKey: "orders.deliveredOrders",
         },
       },
       {
         _id: "top-selling-item",
-        title: "Top Selling Item",
+        titleKey: "orders.topSellingItem",
         value: topItem?.menuItemName || "-",
         footerType: "plain",
         description: topItem
           ? `${topItem.quantity} sold | ${formatCurrency(topItem.revenue ?? 0)}`
-          : "No item sales yet",
+          : ordersText("noItemSalesYet"),
       },
     ];
-  }, [report]);
+  }, [ordersText, report]);
 
   const orders = useMemo(() => extractOrders(data), [data]);
   const rawMeta = useMemo(() => extractMeta(data), [data]);
@@ -352,7 +376,7 @@ const OrdersPage = () => {
   if (isError) {
     return (
       <p className="py-6 text-center text-sm text-red-500">
-        Something went wrong.
+        {common("somethingWentWrong")}
       </p>
     );
   }
@@ -360,8 +384,8 @@ const OrdersPage = () => {
   return (
     <Container>
       <Header
-        title="Orders & Revenue Performance"
-        description="View real-time order tracking and revenue analytics"
+        title={ordersText("performanceTitle")}
+        description={ordersText("performanceDescription")}
       />
 
       <StatsSection
@@ -418,7 +442,7 @@ const OrdersPage = () => {
             headers={
               <>
                 <SortHeader
-                  label="Order ID"
+                  label={ordersText("orderId")}
                   sortKey="id"
                   activeKey={sortKey}
                   direction={sortDir}
@@ -426,19 +450,19 @@ const OrdersPage = () => {
                 />
 
                 <SortHeader
-                  label="Date"
+                  label={ordersText("date")}
                   sortKey="createdAt"
                   activeKey={sortKey}
                   direction={sortDir}
                   onSort={handleSort}
                 />
 
-                <TableHead>Customer Name</TableHead>
+                <TableHead>{customersText("customerName")}</TableHead>
 
-                <TableHead>Restaurant Name</TableHead>
+                <TableHead>{ordersText("restaurantName")}</TableHead>
 
                 <SortHeader
-                  label="Order Status"
+                  label={ordersText("orderStatus")}
                   sortKey="status"
                   activeKey={sortKey}
                   direction={sortDir}
@@ -446,7 +470,7 @@ const OrdersPage = () => {
                 />
 
                 <SortHeader
-                  label="Order Type"
+                  label={filters("orderType")}
                   sortKey="orderType"
                   activeKey={sortKey}
                   direction={sortDir}
@@ -454,14 +478,14 @@ const OrdersPage = () => {
                 />
 
                 <SortHeader
-                  label="Amount"
+                  label={ordersText("amount")}
                   sortKey="totalAmount"
                   activeKey={sortKey}
                   direction={sortDir}
                   onSort={handleSort}
                 />
 
-                <TableHead className="text-center">Actions</TableHead>
+                <TableHead className="text-center">{common("actions")}</TableHead>
               </>
             }
             row={(order: Order) => (
@@ -482,9 +506,9 @@ const OrdersPage = () => {
                   {getRestaurantName(order)}
                 </TableCell>
 
-                <TableCell>{formatStatus(order.status)}</TableCell>
+                <TableCell>{formatStatus(order.status, filters)}</TableCell>
 
-                <TableCell>{formatStatus((order as any).orderType)}</TableCell>
+                <TableCell>{formatStatus((order as any).orderType, filters)}</TableCell>
 
                 <TableCell className="text-green">
                   {formatCurrency((order as any).totalAmount)}
@@ -496,7 +520,7 @@ const OrdersPage = () => {
                       type="button"
                       onClick={() => setSelectedOrderId(order.id)}
                       className="cursor-pointer transition-colors hover:text-dark"
-                      aria-label="View order details"
+                      aria-label={ordersText("viewOrderDetails")}
                     >
                       <Eye size={18} />
                     </button>
@@ -510,7 +534,7 @@ const OrdersPage = () => {
 
         {isFetching && !isLoading ? (
           <div className="pb-4 text-center text-xs text-gray-400">
-            Refreshing orders...
+            {ordersText("refreshingOrders")}
           </div>
         ) : null}
       </div>

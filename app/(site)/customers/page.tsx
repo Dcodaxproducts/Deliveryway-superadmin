@@ -20,6 +20,7 @@ import { DataTable } from "@/components/custom/data-table";
 import { formatDate } from "@/utils/format-date";
 import CustomerDetailsDialog from "@/components/dialogs/customer-details-dialog";
 import DeleteDialog from "@/components/dialogs/delete-dialog";
+import { useTranslations } from "next-intl";
 
 type SortKey =
   | "firstName"
@@ -29,6 +30,9 @@ type SortKey =
   | "restaurantId";
 
 const WorldWideCustomerPage = () => {
+  const common = useTranslations("common");
+  const customersText = useTranslations("customers");
+  const dialogs = useTranslations("dialogs");
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
@@ -77,7 +81,7 @@ const WorldWideCustomerPage = () => {
     () => [
       {
         _id: "total-customers",
-        title: "Total Customers",
+        titleKey: "customers.totalCustomers",
         value: String(customerStats?.totalCustomers ?? 0),
         footerType: "status",
         statusData: {
@@ -87,27 +91,27 @@ const WorldWideCustomerPage = () => {
       },
       {
         _id: "active-customers",
-        title: "Active Customers",
+        titleKey: "customers.activeCustomers",
         value: String(customerStats?.activeCustomers ?? 0),
         footerType: "plain",
-        description: "Currently active customers",
+        descriptionKey: "customers.currentlyActiveCustomers",
       },
       {
         _id: "inactive-customers",
-        title: "Inactive Customers",
+        titleKey: "customers.inactiveCustomers",
         value: String(customerStats?.inactiveCustomers ?? 0),
         footerType: "plain",
-        description: "Currently inactive customers",
+        descriptionKey: "customers.currentlyInactiveCustomers",
       },
       {
         _id: "new-customers",
-        title: "New Customers",
+        titleKey: "customers.newCustomers",
         value: String(customerStats?.newCustomersLast30Days ?? 0),
         footerType: "trend",
         trendData: {
           direction: "up" as const,
           percentage: String(customerStats?.newCustomersLast30Days ?? 0),
-          label: "in last 30 days",
+          labelKey: "customers.inLast30Days",
         },
       },
     ],
@@ -117,7 +121,7 @@ const WorldWideCustomerPage = () => {
   if (isError) {
     return (
       <p className="p-10 text-center font-medium text-red-500">
-        Error loading customers.
+        {customersText("loadError")}
       </p>
     );
   }
@@ -131,12 +135,13 @@ const WorldWideCustomerPage = () => {
       />
 
       <Header
-        title="Worldwide Customers"
-        description="View customer distribution across global regions"
+        title={customersText("worldwideCustomers")}
+        description={customersText("description")}
       />
 
       <div className="space-y-[30px] rounded-[14px] bg-white lg:p-[24px]">
         <Filters
+          type="customers"
           search={search}
           onSearchChange={(val) => {
             setSearch(val);
@@ -149,14 +154,14 @@ const WorldWideCustomerPage = () => {
             variant="primary"
             className="w-full rounded-[14px] lg:w-auto"
           >
-            Active Customers
+            {customersText("activeCustomers")}
           </Button>
 
           <Button
             variant="ghost"
             className="w-full text-base font-semibold text-gray lg:w-auto"
           >
-            Blocked Customers
+            {customersText("blockedCustomers")}
           </Button>
         </div>
 
@@ -168,36 +173,36 @@ const WorldWideCustomerPage = () => {
             headers={
               <>
                 <SortHeader
-                  label="Customer Name"
+                  label={customersText("customerName")}
                   sortKey="firstName"
                   activeKey={sortKey}
                   direction={sortDir}
                   onSort={handleSort}
                 />
                 <SortHeader
-                  label="Customer Info"
+                  label={customersText("customerInfo")}
                   sortKey="email"
                   activeKey={sortKey}
                   direction={sortDir}
                   onSort={handleSort}
                 />
                 <SortHeader
-                  label="Joining Date"
+                  label={customersText("joiningDate")}
                   sortKey="createdAt"
                   activeKey={sortKey}
                   direction={sortDir}
                   onSort={handleSort}
                 />
-                <TableHead>Status</TableHead>
+                <TableHead>{common("status")}</TableHead>
                 <SortHeader
-                  label="Restaurant"
+                  label={customersText("restaurant")}
                   sortKey="restaurantId"
                   activeKey={sortKey}
                   direction={sortDir}
                   onSort={handleSort}
                 />
-                <TableHead className="text-center">Block</TableHead>
-                <TableHead className="text-center">Actions</TableHead>
+                <TableHead className="text-center">{customersText("block")}</TableHead>
+                <TableHead className="text-center">{common("actions")}</TableHead>
               </>
             }
             row={(customer: any) => (
@@ -207,7 +212,7 @@ const WorldWideCustomerPage = () => {
                     ? `${customer.profile.firstName} ${
                         customer.profile.lastName || ""
                       }`
-                    : "N/A"}
+                    : common("notAvailable")}
                 </TableCell>
 
                 <TableCell>
@@ -216,7 +221,7 @@ const WorldWideCustomerPage = () => {
                       {customer.email}
                     </span>
                     <span className="text-xs text-[#A3A3A3]">
-                      {customer.profile?.phone || "N/A"}
+                      {customer.profile?.phone || common("notAvailable")}
                     </span>
                   </div>
                 </TableCell>
@@ -232,7 +237,7 @@ const WorldWideCustomerPage = () => {
                       customer.isActive ? "text-green" : "text-primary"
                     )}
                   >
-                    {customer.isActive ? "Active" : "Inactive"}
+                    {customer.isActive ? common("active") : common("inactive")}
                   </span>
                 </TableCell>
 
@@ -286,8 +291,8 @@ const WorldWideCustomerPage = () => {
         onOpenChange={(open) => !open && setDeleteEmail(null)}
         onConfirm={handleDeleteConfirm}
         isLoading={isDeleting}
-        title="Delete Customer"
-        description="Are you sure you want to delete this customer? This action cannot be undone."
+        title={dialogs("deleteCustomer")}
+        description={dialogs("deleteCustomerDescription")}
       />
     </Container>
   );

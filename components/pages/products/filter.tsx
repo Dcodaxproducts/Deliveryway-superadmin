@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import ExportSection from "../../export";
 import { Button } from "../../ui/button";
+import { useTranslations } from "next-intl";
 
 type Props = {
     search?: string;
@@ -12,18 +13,21 @@ type Props = {
 };
 
 export default function Filters({ search, onSearchChange }: Props) {
+    const common = useTranslations("common");
+    const filters = useTranslations("filters");
+
     return (
         <div className="bg-white p-4 lg:p-[24px] rounded-[14px] lg:border-2 border-[#F3F4F6] space-y-[30px]">
             <div className="flex flex-col gap-[20px] md:flex-row md:items-end md:flex-wrap">
                 <div className="flex-1 min-w-[280px] space-y-[6px]">
-                    <Label>Search</Label>
+                    <Label>{common("search")}</Label>
                     <div className="relative">
                         <Search
                             className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                             size={18}
                         />
                         <Input
-                            placeholder="Search by product name or SKU"
+                            placeholder={filters("searchProductsPlaceholder")}
                             className="pl-10 border-[#BBBBBB] focus-visible:ring-primary"
                             value={search ?? undefined}
                             onChange={(e) => onSearchChange?.(e.target.value)}
@@ -38,7 +42,7 @@ export default function Filters({ search, onSearchChange }: Props) {
                     >
                         <>
                             <ListFilter size={18} />
-                            Filter
+                            {filters("filter")}
                         </>
                     </Button>
                 </div>

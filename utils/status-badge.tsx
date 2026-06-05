@@ -8,6 +8,8 @@ const StatusBadge = ({ status }: { status: string }) => {
         ? common("active")
         : status === "Disabled"
         ? common("disabled")
+        : status === "Inactive"
+        ? common("inactive")
         : status;
 
     return (

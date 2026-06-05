@@ -7,6 +7,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { useTranslations } from "next-intl";
 
 interface ProductDetailsDialogProps {
     open: boolean;
@@ -15,6 +16,8 @@ interface ProductDetailsDialogProps {
 }
 
 export default function ProductDetailsDialog({ open, onOpenChange, product }: ProductDetailsDialogProps) {
+    const common = useTranslations("common");
+    const products = useTranslations("products");
     if (!product) return null;
 
     return (
@@ -22,7 +25,7 @@ export default function ProductDetailsDialog({ open, onOpenChange, product }: Pr
             <DialogContent className="max-w-[618px]! p-0 border-none bg-white rounded-[24px] overflow-hidden">
                 <div className="p-[30px] space-y-[32px]">
                     <DialogHeader className="justify-center gap-0">
-                        <DialogTitle className="text-center">Product ID #{product.sku}</DialogTitle>
+                        <DialogTitle className="text-center">{products("productIdNumber", { id: product.sku })}</DialogTitle>
                     </DialogHeader>
 
                     <div className="flex flex-col items-center space-y-[24px]">
@@ -43,10 +46,10 @@ export default function ProductDetailsDialog({ open, onOpenChange, product }: Pr
 
                         {/* Info List */}
                         <div className="w-full space-y-4 pt-4 border-t border-gray-100">
-                            <InfoRow label="Restaurant Name" value={product.restaurant.name || "N/A"} />
-                            <InfoRow label="Category" value={product.category?.name || "N/A"} />
-                            <InfoRow label="Prep Time" value={`${product.prepTimeMinutes || 0} mins`} />
-                            <InfoRow label="Status" value={product.isActive ? "Active" : "Inactive"} />
+                            <InfoRow label={products("restaurantName")} value={product.restaurant.name || common("notAvailable")} />
+                            <InfoRow label={products("category")} value={product.category?.name || common("notAvailable")} />
+                            <InfoRow label={products("prepTime")} value={products("minsValue", { count: product.prepTimeMinutes || 0 })} />
+                            <InfoRow label={common("status")} value={product.isActive ? common("active") : common("inactive")} />
                         </div>
 
                         {/* <Button

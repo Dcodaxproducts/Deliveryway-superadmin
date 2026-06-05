@@ -5,7 +5,7 @@ import { RxTriangleDown, RxTriangleUp } from "react-icons/rx";
 
 type SortDir = "asc" | "desc";
 
-const SortHeader = ({
+const SortHeader = <TSortKey extends string,>({
     label,
     sortKey,
     activeKey,
@@ -14,10 +14,10 @@ const SortHeader = ({
     className,
 }: {
     label: string;
-    sortKey: any;
-    activeKey: any | null;
+    sortKey: TSortKey;
+    activeKey: TSortKey | null;
     direction: SortDir;
-    onSort: (key: any) => void;
+    onSort: (key: TSortKey) => void;
     className?: string;
 }) => {
     const isActive = activeKey === sortKey;

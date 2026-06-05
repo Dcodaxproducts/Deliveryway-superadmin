@@ -3,31 +3,31 @@ import { StatItem } from "@/types/stats";
 export const stats: StatItem[] = [
     {
         _id: "total-orders",
-        title: "Total Products",
+        titleKey: "products.totalProducts",
         value: "8,452",
         footerType: "plain",
-        description: "+124 new products this month"
+        descriptionKey: "products.newProductsThisMonth"
     },
     {
         _id: "active-products",
-        title: "Active Products",
+        titleKey: "products.activeProducts",
         value: "7,234",
         footerType: "plain",
-        description : "Available for purchase"
+        descriptionKey : "products.availableForPurchase"
     },
     {
         _id: "inactive-products",
-        title: "Inactive Products",
+        titleKey: "products.inactiveProducts",
         value: "7,234",
         footerType: "plain",
-        description : "Temporarily disabled"
+        descriptionKey : "products.temporarilyDisabled"
     }
 ];
 
 export const productData = [
-  { name: "Sushi", no: "#100001", restaurant: "Dragon Wok", status: "Active", price: "$4.99", blocked: true },
-  { name: "Burger", no: "#100001", restaurant: "Dragon Wok", status: "Active", price: "$15.85", blocked: true },
-  { name: "Pizza", no: "#100001", restaurant: "Dragon Wok", status: "Active", price: "$4.99", blocked: true },
-  { name: "Sandwich", no: "#100001", restaurant: "Dragon Wok", status: "Active", price: "$15.85", blocked: true },
-  { name: "Noodles", no: "#100001", restaurant: "Dragon Wok", status: "Inactive", price: "$15.85", blocked: true },
+  { name: "Sushi", no: "#100001", restaurant: "Dragon Wok", statusKey: "common.active", price: "$4.99", blocked: true },
+  { name: "Burger", no: "#100001", restaurant: "Dragon Wok", statusKey: "common.active", price: "$15.85", blocked: true },
+  { name: "Pizza", no: "#100001", restaurant: "Dragon Wok", statusKey: "common.active", price: "$4.99", blocked: true },
+  { name: "Sandwich", no: "#100001", restaurant: "Dragon Wok", statusKey: "common.active", price: "$15.85", blocked: true },
+  { name: "Noodles", no: "#100001", restaurant: "Dragon Wok", statusKey: "common.inactive", price: "$15.85", blocked: true },
 ];

@@ -18,11 +18,16 @@ import { useGetProducts } from "@/hooks/useProduct";
 import { useDebounce } from "@/hooks/useDebounce";
 import { sortData } from "@/utils/sort-data";
 import { Product } from "@/services/product";
+import { useTranslations } from "next-intl";
+
+type SortKey = "name" | "sku" | "restaurantId" | "isActive" | "basePrice";
 
 const ProductsPage = () => {
+    const common = useTranslations("common");
+    const productsText = useTranslations("products");
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
-    const [sortKey, setSortKey] = useState<any>(null);
+    const [sortKey, setSortKey] = useState<SortKey | null>(null);
     const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
@@ -32,7 +37,7 @@ const ProductsPage = () => {
         search: debouncedSearch || undefined,
     });
 
-    const handleSort = (key: any) => {
+    const handleSort = (key: SortKey) => {
         if (sortKey === key) {
             setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
         } else {
@@ -44,11 +49,11 @@ const ProductsPage = () => {
     const products = data?.data ?? [];
     const sorted = sortKey ? sortData(products, sortKey, sortDir) : products;
 
-    if (isError) return <p className="text-center p-10 text-red-500 font-medium">Error loading products.</p>;
+    if (isError) return <p className="text-center p-10 text-red-500 font-medium">{productsText("loadError")}</p>;
 
     return (
         <Container>
-            <Header title="Product Overview" description="Monitor product availability across the platform" />
+            <Header title={productsText("overview")} description={productsText("description")} />
             <StatsSection stats={stats} className="md:grid-cols-3" />
 
             <div className="bg-white lg:p-[30px] space-y-[30px] rounded-[14px]">
@@ -66,13 +71,13 @@ const ProductsPage = () => {
                         data={sorted}
                         headers={
                             <>
-                                <SortHeader label="Product Name" sortKey="name" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
-                                <SortHeader label="Product No#" sortKey="sku" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
-                                <SortHeader label="Restaurant Name" sortKey="restaurantId" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
-                                <SortHeader label="Status" sortKey="isActive" activeKey={sortKey} direction={sortDir} onSort={handleSort} className="text-center" />
-                                <SortHeader label="Price" sortKey="basePrice" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
-                                <TableHead className="text-center">Unblock/Block</TableHead>
-                                <TableHead className="text-center">Actions</TableHead>
+                                <SortHeader label={productsText("productName")} sortKey="name" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
+                                <SortHeader label={productsText("productNo")} sortKey="sku" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
+                                <SortHeader label={productsText("restaurantName")} sortKey="restaurantId" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
+                                <SortHeader label={common("status")} sortKey="isActive" activeKey={sortKey} direction={sortDir} onSort={handleSort} className="text-center" />
+                                <SortHeader label={productsText("price")} sortKey="basePrice" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
+                                <TableHead className="text-center">{productsText("unblockBlock")}</TableHead>
+                                <TableHead className="text-center">{common("actions")}</TableHead>
                             </>
                         }
                         row={(product: Product) => (
@@ -81,7 +86,7 @@ const ProductsPage = () => {
                                 <TableCell>#{product.sku}</TableCell>
                                 <TableCell className="capitalize">{product.restaurant.name || "-"}</TableCell>
                                 <TableCell className={`${product.isActive ? "text-green" : "text-primary"}`}>
-                                        {product.isActive ? "Active" : "Inactive"}
+                                        {product.isActive ? common("active") : common("inactive")}
                                 </TableCell>
                                 <TableCell className="text-green">${product.basePrice}</TableCell>
                                 <TableCell className="text-center">

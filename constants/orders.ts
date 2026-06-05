@@ -3,17 +3,17 @@ import { StatItem } from "@/types/stats";
 export const stats: StatItem[] = [
     {
         _id: "total-orders",
-        title: "Total Orders",
+        titleKey: "orders.totalOrders",
         value: "12,458",
         footerType: "trend",
-        trendData: { direction: "up", percentage: "12.5%", label: "vs last period" },
+        trendData: { direction: "up", percentage: "12.5%", labelKey: "dashboard.vsLastPeriod" },
     },
     {
         _id: "total-revenue",
-        title: "Total Revenue",
+        titleKey: "orders.totalRevenue",
         value: "$284,392",
         footerType: "trend",
-        trendData: { direction: "up", percentage: "12.5%", label: "vs last period" },
+        trendData: { direction: "up", percentage: "12.5%", labelKey: "dashboard.vsLastPeriod" },
     }
 ];
 
@@ -23,7 +23,7 @@ export const orders = [
     date: "12/13/2025 07:01 PM",
     customer: "Laura White",
     restaurant: "Dragon Wok",
-    status: "Delivered",
+    statusKey: "filters.orderStatusDelivered",
     amount: "$27.99",
   },
   {
@@ -31,7 +31,7 @@ export const orders = [
     date: "12/13/2025 07:01 PM",
     customer: "Laura White",
     restaurant: "Dragon Wok",
-    status: "Delivered",
+    statusKey: "filters.orderStatusDelivered",
     amount: "$27.99",
   },
   {
@@ -39,7 +39,7 @@ export const orders = [
     date: "12/13/2025 07:01 PM",
     customer: "Laura White",
     restaurant: "Dragon Wok",
-    status: "Delivered",
+    statusKey: "filters.orderStatusDelivered",
     amount: "$27.99",
   },
   {
@@ -47,7 +47,7 @@ export const orders = [
     date: "12/13/2025 07:01 PM",
     customer: "Laura White",
     restaurant: "Dragon Wok",
-    status: "Delivered",
+    statusKey: "filters.orderStatusDelivered",
     amount: "$27.99",
   },
   {
@@ -55,7 +55,7 @@ export const orders = [
     date: "12/13/2025 07:01 PM",
     customer: "Laura White",
     restaurant: "Dragon Wok",
-    status: "Delivered",
+    statusKey: "filters.orderStatusDelivered",
     amount: "$27.99",
   },
 ];

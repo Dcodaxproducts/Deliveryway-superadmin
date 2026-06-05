@@ -11,6 +11,7 @@ import { Star } from "lucide-react";
 import MyImage from "@/components/MyImage";
 import { useGetOrder } from "@/hooks/useOrder";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "next-intl";
 
 interface Props {
     open: boolean;
@@ -19,6 +20,9 @@ interface Props {
 }
 
 export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Props) {
+    const common = useTranslations("common");
+    const orders = useTranslations("orders");
+    const products = useTranslations("products");
     const { data: order, isLoading } = useGetOrder(orderId as string);
 
     return (
@@ -27,7 +31,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Prop
                 <div className="p-6 md:p-8">
                     <DialogHeader>
                         <DialogTitle className="text-center mb-6">
-                            Order ID# {orderId ? orderId.slice(-7) : "-------"}
+                            {orders("orderIdNumber", { id: orderId ? orderId.slice(-7) : "-------" })}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -55,7 +59,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Prop
                                             </div>
                                             <div className="min-w-0">
                                                 <span className="text-[10px] font-semibold text-[#FF4B4B] uppercase tracking-wider">
-                                                    {item.menuItem?.category?.name || "MAIN COURSE"}
+                                                    {item.menuItem?.category?.name || products("mainCourse")}
                                                 </span>
                                                 <h4 className="text-sm font-semisemibold text-dark leading-tight truncate">
                                                     {item.menuItemName}
@@ -74,7 +78,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Prop
                                                     ))}
                                                     {item.menuItem?.reviewCount != null && (
                                                         <span className="text-[10px] text-gray-400 ml-1">
-                                                            ({item.menuItem.reviewCount} reviews)
+                                                            ({orders("reviews", { count: item.menuItem.reviewCount })})
                                                         </span>
                                                     )}
                                                 </div>
@@ -90,18 +94,18 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Prop
                             </div>
 
                             <div className="flex justify-between items-center py-6">
-                                <span className="text-lg font-semibold text-dark">Total Amount</span>
+                                <span className="text-lg font-semibold text-dark">{orders("totalAmount")}</span>
                                 <span className="text-xl font-semibold text-green">${order?.totalAmount || "0.00"}</span>
                             </div>
 
                             {/* Info Rows */}
                             <div className="space-y-4 mb-8">
-                                <InfoRow label="Restaurant Name" value={order?.restaurant?.name} />
-                                <InfoRow label="Restaurant Phone" value={order?.branch?.settings?.contact?.phone} />
-                                <InfoRow label="Customer Name" value={order?.customer?.fullName} />
-                                <InfoRow label="Customer Phone" value={order?.customer?.phone} />
-                                <InfoRow label="Delivery Man Name" value={order?.deliveryman?.firstName} />
-                                <InfoRow label="Delivery Man Phone" value={order?.deliveryman?.phone} />
+                                <InfoRow label={orders("restaurantName")} value={order?.restaurant?.name || common("notAvailable")} />
+                                <InfoRow label={orders("restaurantPhone")} value={order?.branch?.settings?.contact?.phone || common("notAvailable")} />
+                                <InfoRow label={orders("customerName")} value={order?.customer?.fullName || common("notAvailable")} />
+                                <InfoRow label={orders("customerPhone")} value={order?.customer?.phone || common("notAvailable")} />
+                                <InfoRow label={orders("deliveryManName")} value={order?.deliveryman?.firstName || common("notAvailable")} />
+                                <InfoRow label={orders("deliveryManPhone")} value={order?.deliveryman?.phone || common("notAvailable")} />
                             </div>
                         </>
                     )}
@@ -111,7 +115,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Prop
                         variant="primary"
                         className="w-full"
                     >
-                        Close
+                        {common("close")}
                     </Button>
                 </div>
             </DialogContent>

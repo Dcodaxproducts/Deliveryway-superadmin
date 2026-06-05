@@ -118,6 +118,7 @@ export default function Filters({
   const filters = useTranslations("filters");
   const isOrders = type === "orders";
   const isInvoices = type === "invoices";
+  const isCustomers = type === "customers";
 
   const showOrderFilters = isOrders || isInvoices;
   const showResetButton = isOrders || isInvoices;
@@ -141,6 +142,8 @@ export default function Filters({
                   ? filters("searchOrdersPlaceholder")
                   : isInvoices
                   ? filters("searchInvoicesPlaceholder")
+                  : isCustomers
+                  ? filters("searchCustomersPlaceholder")
                   : filters("searchRestaurantPlaceholder")
               }
               className="pl-10 border-[#BBBBBB] focus-visible:ring-primary h-11"
