@@ -2,11 +2,14 @@
 
 import ReactQueryProvider from "./tanstack-provider"
 import { Toaster } from "@/components/ui/sooner"
+import { I18nProvider } from "@/components/providers/i18n-provider"
 
 export default function Providers({ children }: { children: React.ReactNode }) {
     return (
         <ReactQueryProvider>
-            {children}
+            <I18nProvider>
+                {children}
+            </I18nProvider>
             <Toaster />
         </ReactQueryProvider>
 

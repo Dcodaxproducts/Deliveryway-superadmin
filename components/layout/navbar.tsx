@@ -6,6 +6,7 @@ import Sidebar from "@/components/layout/sidebar"
 import NotificationBell from "../notification"
 import ProfileSection from "../profile-section"
 import Logo from "../logo"
+import LanguageSelector from "../language-selector"
 
 export default function Navbar() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -28,6 +29,7 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-4 lg:gap-6">
+            <LanguageSelector />
             <NotificationBell />
             <div className="w-px h-12 bg-primary" />
             <ProfileSection />
