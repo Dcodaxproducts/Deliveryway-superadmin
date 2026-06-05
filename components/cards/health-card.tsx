@@ -1,6 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 interface HealthCardProps {
@@ -22,6 +23,7 @@ export default function HealthCard({
   className,
   loading = false,
 }: HealthCardProps) {
+  const dashboard = useTranslations("dashboard");
   /**
    * ==============================
    * LOADING STATE (SKELETON)
@@ -72,6 +74,15 @@ export default function HealthCard({
       ? "text-red-500"
       : "text-gray";
 
+  const translatedStatus =
+    status === "Healthy"
+      ? dashboard("healthy")
+      : status === "Warning"
+      ? dashboard("warning")
+      : status === "Critical"
+      ? dashboard("critical")
+      : status;
+
   return (
     <Card
       style={{
@@ -103,7 +114,7 @@ export default function HealthCard({
 
         {status && (
           <span className={cn("text-base block", textColor)}>
-            {status}
+            {translatedStatus}
           </span>
         )}
       </div>

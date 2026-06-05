@@ -1,18 +1,20 @@
 import { Card } from '@/components/ui/card'
 import { ArrowDown, ArrowUp } from 'lucide-react'
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatItem } from '@/types/stats';
 
 // ... (StatItem type remains same)
 
 interface StatsCardProps {
-    data?: any;
+    data?: StatItem;
     isLoading?: boolean;
 }
 
 const StatsCard = ({ data, isLoading }: StatsCardProps) => {
     const router = useRouter();
+    const t = useTranslations();
 
     if (isLoading || !data) {
         return (
@@ -28,10 +30,21 @@ const StatsCard = ({ data, isLoading }: StatsCardProps) => {
         );
     }
 
+    const title = data.titleKey ? t(data.titleKey) : data.title;
+    const description = data.descriptionKey ? t(data.descriptionKey) : data.description;
+    const trendLabel = data.trendData?.labelKey
+        ? t(data.trendData.labelKey)
+        : data.trendData?.label;
+    const targetHref =
+        data.routeHref ??
+        (data._id === "total-customers" || data._id === "total-tenants"
+            ? "/customers"
+            : "/restaurants");
+
     return (
         <Card
             key={data._id}
-            onClick={() => router.push(`${data.title === "Total Customers" || data.title === "Total Tenants " ? "/customers" : "/restaurants"}`)}
+            onClick={() => router.push(targetHref)}
             style={{
                 background: `linear-gradient(134.39deg, rgba(216, 0, 39, 0) 50.72%, rgba(216, 0, 39, 0.12) 107.74%), #FFFFFF`,
             }}
@@ -39,7 +52,7 @@ const StatsCard = ({ data, isLoading }: StatsCardProps) => {
         >
             <div className="flex items-start justify-between">
                 <span className="text-gray text-base font-medium truncate">
-                    {data.title}
+                    {title}
                 </span>
                 <span className="text-dark text-lg font-semibold truncate">
                     {data.value}
@@ -51,11 +64,11 @@ const StatsCard = ({ data, isLoading }: StatsCardProps) => {
                     <div className="flex items-center gap-[12px] truncate">
                         <div className="flex items-center gap-1.5">
                             <div className="size-2 rounded-full bg-green"></div>
-                            <span>{data.statusData?.active} active</span>
+                            <span>{data.statusData?.active} {t("common.active").toLowerCase()}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                             <div className="size-2 rounded-full bg-gray-2"></div>
-                            <span>{data.statusData?.inactive} inactive</span>
+                            <span>{data.statusData?.inactive} {t("common.inactive").toLowerCase()}</span>
                         </div>
                     </div>
                 )}
@@ -75,13 +88,13 @@ const StatsCard = ({ data, isLoading }: StatsCardProps) => {
                             )}
                             {data.trendData?.percentage}
                         </span>
-                        <span>{data.trendData?.label}</span>
+                        <span>{trendLabel}</span>
                     </div>
                 )}
 
                 {data.footerType === "plain" && (
                     <div className="flex items-center gap-[12px] truncate">
-                        <span>{data.description}</span>
+                        <span>{description}</span>
                     </div>
                 )}
             </div>

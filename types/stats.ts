@@ -1,8 +1,10 @@
 export type StatItem = {
   _id: string;
-  title: string;
+  title?: string;
+  titleKey?: string;
   value: string;
   footerType: 'status' | 'trend' | 'plain';
+  routeHref?: string;
   statusData?: {
     active: number;
     inactive: number;
@@ -10,8 +12,10 @@ export type StatItem = {
   trendData?: {
     direction: 'up' | 'down';
     percentage: string;
-    label: string;
+    label?: string;
+    labelKey?: string;
   };
+  descriptionKey?: string;
   description?: string;
 };
 

@@ -4,40 +4,40 @@ import { CheckCircle2, FileText, XCircle, AlertCircle } from 'lucide-react';
 export const statsData: StatItem[] = [
   {
     _id: "total-restaurants",
-    title: "Total Restaurants",
+    titleKey: "dashboard.totalRestaurants",
     value: "247",
     footerType: "status",
     statusData: { active: 189, inactive: 58 },
   },
   {
     _id: "total-orders",
-    title: "Total Orders",
+    titleKey: "dashboard.totalOrders",
     value: "12,458",
     footerType: "trend",
-    trendData: { direction: "up", percentage: "12.5%", label: "vs last period" },
+    trendData: { direction: "up", percentage: "12.5%", labelKey: "dashboard.vsLastPeriod" },
   },
   {
     _id: "total-revenue",
-    title: "Total Revenue",
+    titleKey: "dashboard.totalRevenue",
     value: "$284,392",
     footerType: "trend",
-    trendData: { direction: "up", percentage: "12.5%", label: "vs last period" },
+    trendData: { direction: "up", percentage: "12.5%", labelKey: "dashboard.vsLastPeriod" },
   },
   {
     _id: "active-tenants",
-    title: "Active Tenants",
+    titleKey: "dashboard.activeTenants",
     value: "189",
     footerType: "trend",
-    trendData: { direction: "down", percentage: "2.1%", label: "vs last period" },
+    trendData: { direction: "down", percentage: "2.1%", labelKey: "dashboard.vsLastPeriod" },
   },
 ];
 
 export const systemHealth = [
-  { label: "API Uptime", value: "99.9%", status: "success" },
-  { label: "CPU Usage", value: "42%", status: "success" },
-  { label: "RAM Usage", value: "76%", status: "warning" },
-  { label: "Printer Status", value: "95% online", status: "success" },
-  { label: "Webhook Status", value: "All active", status: "success" },
+  { labelKey: "dashboard.apiUptime", value: "99.9%", status: "success" },
+  { labelKey: "dashboard.cpuUsage", value: "42%", status: "success" },
+  { labelKey: "dashboard.ramUsage", value: "76%", status: "warning" },
+  { labelKey: "dashboard.printerStatus", value: "95% online", status: "success" },
+  { labelKey: "dashboard.webhookStatus", value: "All active", status: "success" },
 ];
 
 export const recentActivity = [

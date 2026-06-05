@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   Table,
   TableBody,
@@ -34,11 +35,12 @@ export function DataTable<T>({
   pagination,
   showPagination = true,
 }: DataTableProps<T>) {
+  const common = useTranslations("common");
 
   if (data.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 bg-gray-50/30 rounded-xl border border-gray-200">
-        <p className="text-gray-400 text-sm font-medium">No data found.</p>
+        <p className="text-gray-400 text-sm font-medium">{common("noDataFound")}</p>
       </div>
     );
   }

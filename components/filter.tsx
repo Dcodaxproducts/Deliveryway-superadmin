@@ -1,6 +1,7 @@
 "use client";
 
 import { Search, RotateCcw, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,36 +17,36 @@ import ExportSection from "./export";
 import AsyncSelect from "./ui/AsyncSelect";
 
 const ORDER_STATUSES = [
-  { label: "Placed", value: "PLACED" },
-  { label: "Confirmed", value: "CONFIRMED" },
-  { label: "Preparing", value: "PREPARING" },
-  { label: "Ready for Pickup", value: "READY_FOR_PICKUP" },
-  { label: "Picked Up", value: "PICKED_UP" },
-  { label: "Ready to Serve", value: "READY_TO_SERVE" },
-  { label: "Served", value: "SERVED" },
-  { label: "Out for Delivery", value: "OUT_FOR_DELIVERY" },
-  { label: "Delivered", value: "DELIVERED" },
-  { label: "Cancelled", value: "CANCELLED" },
-  { label: "Rejected", value: "REJECTED" },
+  { labelKey: "orderStatusPlaced", value: "PLACED" },
+  { labelKey: "orderStatusConfirmed", value: "CONFIRMED" },
+  { labelKey: "orderStatusPreparing", value: "PREPARING" },
+  { labelKey: "orderStatusReadyForPickup", value: "READY_FOR_PICKUP" },
+  { labelKey: "orderStatusPickedUp", value: "PICKED_UP" },
+  { labelKey: "orderStatusReadyToServe", value: "READY_TO_SERVE" },
+  { labelKey: "orderStatusServed", value: "SERVED" },
+  { labelKey: "orderStatusOutForDelivery", value: "OUT_FOR_DELIVERY" },
+  { labelKey: "orderStatusDelivered", value: "DELIVERED" },
+  { labelKey: "orderStatusCancelled", value: "CANCELLED" },
+  { labelKey: "orderStatusRejected", value: "REJECTED" },
 ];
 
 const ORDER_TYPES = [
-  { label: "Delivery", value: "DELIVERY" },
-  { label: "Takeaway", value: "TAKEAWAY" },
-  { label: "Dine In", value: "DINE_IN" },
+  { labelKey: "orderTypeDelivery", value: "DELIVERY" },
+  { labelKey: "orderTypeTakeaway", value: "TAKEAWAY" },
+  { labelKey: "orderTypeDineIn", value: "DINE_IN" },
 ];
 
 const PAYMENT_STATUSES = [
-  { label: "Pending", value: "PENDING" },
-  { label: "Paid", value: "PAID" },
-  { label: "Failed", value: "FAILED" },
-  { label: "Cancelled", value: "CANCELLED" },
-  { label: "Refunded", value: "REFUNDED" },
+  { labelKey: "paymentStatusPending", value: "PENDING" },
+  { labelKey: "paymentStatusPaid", value: "PAID" },
+  { labelKey: "paymentStatusFailed", value: "FAILED" },
+  { labelKey: "paymentStatusCancelled", value: "CANCELLED" },
+  { labelKey: "paymentStatusRefunded", value: "REFUNDED" },
 ];
 
 const ORDER_KINDS = [
-  { label: "Regular Orders", value: "order" },
-  { label: "Group Checkout Orders", value: "group-orders" },
+  { labelKey: "regularOrders", value: "order" },
+  { labelKey: "groupCheckoutOrders", value: "group-orders" },
 ];
 
 type RestaurantFetchOptions = (params: {
@@ -113,6 +114,8 @@ export default function Filters({
   onToDateChange,
   onReset,
 }: Props) {
+  const common = useTranslations("common");
+  const filters = useTranslations("filters");
   const isOrders = type === "orders";
   const isInvoices = type === "invoices";
 
@@ -124,7 +127,7 @@ export default function Filters({
     <div className="space-y-[30px] rounded-[14px] bg-white p-4 lg:border-2 lg:border-[#F3F4F6] lg:p-[24px]">
       <div className="flex flex-col gap-[20px] md:flex-row md:flex-wrap md:items-end">
         <div className="min-w-[280px] flex-1 space-y-[6px]">
-          <Label>Search</Label>
+          <Label>{common("search")}</Label>
 
           <div className="relative">
             <Search
@@ -135,10 +138,10 @@ export default function Filters({
             <Input
               placeholder={
                 isOrders
-                  ? "Search by name, email or order ID"
+                  ? filters("searchOrdersPlaceholder")
                   : isInvoices
-                  ? "Search invoice, restaurant, customer or order ID"
-                  : "Search by restaurant name or domain"
+                  ? filters("searchInvoicesPlaceholder")
+                  : filters("searchRestaurantPlaceholder")
               }
               className="pl-10 border-[#BBBBBB] focus-visible:ring-primary h-11"
               value={search ?? ""}
@@ -149,14 +152,14 @@ export default function Filters({
 
         {isOrders && fetchRestaurantOptions ? (
           <div className="w-full space-y-[6px] md:w-[260px]">
-            <Label>Restaurant</Label>
+            <Label>{filters("restaurant")}</Label>
 
             <div className="flex items-center gap-2">
               <div className="min-w-0 flex-1">
                 <AsyncSelect
                   value={restaurant}
                   onChange={onRestaurantChange || (() => {})}
-                  placeholder="Select restaurant"
+                  placeholder={filters("selectRestaurant")}
                   fetchOptions={fetchRestaurantOptions}
                   labelKey="name"
                   valueKey="id"
@@ -168,7 +171,7 @@ export default function Filters({
                   type="button"
                   onClick={() => onRestaurantChange?.(null)}
                   className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-lg border border-[#BBBBBB] text-gray-400 transition hover:border-primary hover:text-primary"
-                  aria-label="Clear restaurant"
+                  aria-label={filters("clearRestaurant")}
                 >
                   <X size={16} />
                 </button>
@@ -178,7 +181,7 @@ export default function Filters({
         ) : null}
 
         <div className="w-full space-y-[6px] md:w-[210px]">
-          <Label>Status</Label>
+          <Label>{common("status")}</Label>
 
           <Select
             value={normalizeSelectValue(status)}
@@ -189,22 +192,22 @@ export default function Filters({
             
           >
             <SelectTrigger className="h-11">
-              <SelectValue placeholder="Select Status" />
+              <SelectValue placeholder={filters("selectStatus")} />
             </SelectTrigger>
 
             <SelectContent>
-              <SelectItem value="ALL">All Statuses</SelectItem>
+              <SelectItem value="ALL">{filters("allStatuses")}</SelectItem>
 
               {showOrderFilters ? (
                 ORDER_STATUSES.map((item) => (
                   <SelectItem key={item.value} value={item.value}>
-                    {item.label}
+                    {filters(item.labelKey)}
                   </SelectItem>
                 ))
               ) : (
                 <>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="disabled">Disabled</SelectItem>
+                  <SelectItem value="active">{common("active")}</SelectItem>
+                  <SelectItem value="disabled">{common("disabled")}</SelectItem>
                 </>
               )}
             </SelectContent>
@@ -214,7 +217,7 @@ export default function Filters({
         {showOrderFilters ? (
           <>
             <div className="w-full space-y-[6px] md:w-[180px]">
-              <Label>Order Type</Label>
+              <Label>{filters("orderType")}</Label>
 
               <Select
                 value={normalizeSelectValue(orderType)}
@@ -223,14 +226,14 @@ export default function Filters({
                 }
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Order Type" />
+                  <SelectValue placeholder={filters("orderType")} />
                 </SelectTrigger>
 
                 <SelectContent>
-                  <SelectItem value="ALL">All Types</SelectItem>
+                  <SelectItem value="ALL">{filters("allTypes")}</SelectItem>
                   {ORDER_TYPES.map((item) => (
                     <SelectItem key={item.value} value={item.value}>
-                      {item.label}
+                      {filters(item.labelKey)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -238,7 +241,7 @@ export default function Filters({
             </div>
 
             <div className="w-full space-y-[6px] md:w-[210px]">
-              <Label>Kind</Label>
+              <Label>{filters("kind")}</Label>
 
               <Select
                 value={normalizeSelectValue(kind)}
@@ -247,14 +250,14 @@ export default function Filters({
                 }
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Kind" />
+                  <SelectValue placeholder={filters("kind")} />
                 </SelectTrigger>
 
                 <SelectContent>
-                  <SelectItem value="ALL">All Kinds</SelectItem>
+                  <SelectItem value="ALL">{filters("allKinds")}</SelectItem>
                   {ORDER_KINDS.map((item) => (
                     <SelectItem key={item.value} value={item.value}>
-                      {item.label}
+                      {filters(item.labelKey)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -266,7 +269,7 @@ export default function Filters({
         {isInvoices ? (
           <>
             <div className="w-full space-y-[6px] md:w-[190px]">
-              <Label>Payment</Label>
+              <Label>{filters("payment")}</Label>
 
               <Select
                 value={normalizeSelectValue(paymentStatus)}
@@ -275,14 +278,14 @@ export default function Filters({
                 }
               >
                 <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Payment Status" />
+                  <SelectValue placeholder={filters("paymentStatus")} />
                 </SelectTrigger>
 
                 <SelectContent>
-                  <SelectItem value="ALL">All Payments</SelectItem>
+                  <SelectItem value="ALL">{filters("allPayments")}</SelectItem>
                   {PAYMENT_STATUSES.map((item) => (
                     <SelectItem key={item.value} value={item.value}>
-                      {item.label}
+                      {filters(item.labelKey)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -290,7 +293,7 @@ export default function Filters({
             </div>
 
             <div className="w-full space-y-[6px] md:w-[170px]">
-              <Label>From Date</Label>
+              <Label>{filters("fromDate")}</Label>
 
               <Input
                 type="date"
@@ -301,7 +304,7 @@ export default function Filters({
             </div>
 
             <div className="w-full space-y-[6px] md:w-[170px]">
-              <Label>To Date</Label>
+              <Label>{filters("toDate")}</Label>
 
               <Input
                 type="date"
@@ -321,7 +324,7 @@ export default function Filters({
             className="h-[44px] rounded-[12px]"
           >
             <RotateCcw size={16} className="mr-2" />
-            Reset
+            {common("reset")}
           </Button>
         ) : null}
       </div>
