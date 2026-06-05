@@ -9,8 +9,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <ReactQueryProvider>
             <I18nProvider>
                 {children}
+                <Toaster />
             </I18nProvider>
-            <Toaster />
         </ReactQueryProvider>
 
     )

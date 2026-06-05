@@ -3,7 +3,7 @@
 import { Languages } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { LANGUAGE_LABELS, SUPPORTED_LOCALES, getSafeLocale } from "@/config/i18n";
-import { useAppLocale } from "@/components/providers/i18n-provider";
+import { useAppLocale } from "@/hooks/useAppLocale";
 import {
   Select,
   SelectContent,
