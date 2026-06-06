@@ -18,17 +18,19 @@ type InvoiceDetailsModalProps = {
   onOpenChange: (open: boolean) => void;
 };
 
-const getCurrency = (invoice?: AdminInvoice | null) => {
-  return invoice?.transactions?.[0]?.currency || "EUR";
+const getCurrency = () => {
+  return "EUR";
 };
 
 const formatMoney = (value: number, currency = "EUR") => {
   const numeric = Number(value || 0);
 
   try {
-    return new Intl.NumberFormat("de-DE", {
+    return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(numeric);
   } catch {
     return `${currency} ${numeric.toFixed(2)}`;
@@ -77,7 +79,7 @@ export function InvoiceDetailsModal({
   );
 
   const details = data?.data || invoice;
-  const currency = getCurrency(details);
+  const currency = getCurrency();
   const loading = isLoading || isFetching;
 
   return (

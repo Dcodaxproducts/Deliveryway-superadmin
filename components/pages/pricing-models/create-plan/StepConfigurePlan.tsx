@@ -118,9 +118,8 @@ export function StepConfigurePlan({
               onChange={(event) => onChange("currency", event.target.value)}
               className="mt-2 h-12 w-full cursor-pointer rounded-lg border border-slate-200 bg-white px-4 text-sm outline-none transition focus:border-primary"
             >
-              <option value="PKR">PKR</option>
-              <option value="USD">USD</option>
               <option value="EUR">EUR</option>
+              <option value="USD">USD</option>
               <option value="GBP">GBP</option>
               <option value="AED">AED</option>
             </select>
@@ -249,7 +248,7 @@ export function StepConfigurePlan({
                 />
 
                 <div className="flex h-full min-w-14 items-center justify-center border-l px-4 text-sm font-semibold text-slate-400">
-                  {isFixedCommission ? form.currency || "PKR" : "%"}
+                  {isFixedCommission ? form.currency || "EUR" : "%"}
                 </div>
               </div>
 

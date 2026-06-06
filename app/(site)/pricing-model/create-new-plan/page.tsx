@@ -141,7 +141,7 @@ const defaultForm: PlanFormState = {
   pricingModel: "HYBRID",
   name: "",
   description: "",
-  currency: "PKR",
+  currency: "EUR",
   planPrice: "0",
   billingInterval: "MONTHLY",
 
@@ -253,7 +253,7 @@ const mapPackagePlanToForm = (plan: PackagePlanDetail): PlanFormState => {
     pricingModel: normalizePricingModel(plan.billingModel),
     name: toSafeString(plan.name),
     description: toSafeString(plan.description),
-    currency: toSafeString(plan.currency, "PKR"),
+    currency: toSafeString(plan.currency, "EUR"),
     planPrice: toSafeString(plan.planPrice, "0"),
     billingInterval: normalizeBillingInterval(plan.billingInterval),
 
@@ -391,7 +391,7 @@ function CreatePackagePlanContent() {
       vatPercentage: form.vatEnabled ? toNumber(form.vatPercentage) : 0,
       payoutCycle: form.payoutCycle,
       termsDocumentUrl: form.termsDocumentUrl,
-      currency: form.currency || "PKR",
+      currency: form.currency || "EUR",
       trialDays: toNumber(form.trialDays),
       features: form.features,
       isActive,

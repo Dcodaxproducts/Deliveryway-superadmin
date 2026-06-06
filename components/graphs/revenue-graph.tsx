@@ -43,7 +43,7 @@ const RevenueGraph = ({ type = "home" }: { type?: string }) => {
     );
   }, [trendData]);
 
-  const currency = trendData?.currency ?? "USD";
+  const currency = "EUR";
   const totalRevenueInRange = trendData?.totalRevenueInRange ?? 0;
   const loading = isLoading || isFetching;
 
@@ -52,7 +52,8 @@ const RevenueGraph = ({ type = "home" }: { type?: string }) => {
       return new Intl.NumberFormat("en-US", {
         style: "currency",
         currency,
-        maximumFractionDigits: 0,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
       }).format(value);
     } catch {
       return `${currency} ${Number(value).toLocaleString()}`;
@@ -60,9 +61,12 @@ const RevenueGraph = ({ type = "home" }: { type?: string }) => {
   };
 
   const formatCompactCurrency = (value: number) => {
-    if (value >= 1000000) return `${currency} ${(value / 1000000).toFixed(1)}M`;
-    if (value >= 1000) return `${currency} ${(value / 1000).toFixed(1)}K`;
-    return `${currency} ${value}`;
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      notation: "compact",
+      maximumFractionDigits: 1,
+    }).format(value);
   };
 
   return (

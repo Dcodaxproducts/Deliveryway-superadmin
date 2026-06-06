@@ -23,9 +23,11 @@ const formatMoney = (value: number, currency = "EUR") => {
   const numeric = Number(value || 0);
 
   try {
-    return new Intl.NumberFormat("de-DE", {
+    return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(numeric);
   } catch {
     return `${currency} ${numeric.toFixed(2)}`;
@@ -54,7 +56,7 @@ export function InvoiceSuccessModal({
 }: InvoiceSuccessModalProps) {
   const invoicing = useTranslations("invoicing");
 
-  const currency = payload?.invoices?.[0]?.transactions?.[0]?.currency || "EUR";
+  const currency = "EUR";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange} modal>

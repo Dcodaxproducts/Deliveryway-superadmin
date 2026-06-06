@@ -41,17 +41,19 @@ const getInitials = (name?: string) => {
   return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
 };
 
-const getTransactionCurrency = (invoice: AdminInvoice) => {
-  return invoice.transactions?.[0]?.currency || "EUR";
+const getTransactionCurrency = () => {
+  return "EUR";
 };
 
 const formatMoney = (value: number, currency = "EUR") => {
   const numeric = Number(value || 0);
 
   try {
-    return new Intl.NumberFormat("de-DE", {
+    return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(numeric);
   } catch {
     return `${currency} ${numeric.toFixed(2)}`;
@@ -211,7 +213,7 @@ export function InvoicingTable({
             </TableRow>
           ) : (
             invoices.map((invoice) => {
-              const currency = getTransactionCurrency(invoice);
+              const currency = getTransactionCurrency();
               const restaurantName = invoice.restaurant?.name || "-";
               const branchName = invoice.branch?.name || "-";
               const customerName =

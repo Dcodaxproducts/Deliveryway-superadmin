@@ -66,17 +66,19 @@ const getDefaultDueDate = () => {
   return formatInputDate(date);
 };
 
-const getCurrency = (invoice?: AdminInvoice) => {
-  return invoice?.transactions?.[0]?.currency || "EUR";
+const getCurrency = () => {
+  return "EUR";
 };
 
 const formatMoney = (value: number, currency = "EUR") => {
   const numeric = Number(value || 0);
 
   try {
-    return new Intl.NumberFormat("de-DE", {
+    return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(numeric);
   } catch {
     return `${currency} ${numeric.toFixed(2)}`;
@@ -193,7 +195,7 @@ export function GenerateInvoiceModal({
     );
   }, [visibleInvoices, selectedIds]);
 
-  const currency = getCurrency(selectedInvoices[0] || invoices[0]);
+  const currency = getCurrency();
 
   useEffect(() => {
     if (!open) return;
@@ -432,7 +434,7 @@ export function GenerateInvoiceModal({
                   {visibleInvoices.map((invoice) => {
                     const selected = selectedIds.includes(invoice.orderId);
                     const deduction = calculateDeductions(invoice);
-                    const invoiceCurrency = getCurrency(invoice);
+                    const invoiceCurrency = getCurrency();
 
                     return (
                       <button

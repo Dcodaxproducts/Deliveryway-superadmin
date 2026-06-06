@@ -119,12 +119,15 @@ const formatCurrency = (value: any) => {
   const numeric = Number(value ?? 0);
 
   if (Number.isNaN(numeric)) {
-    return "$0.00";
+    return "€0.00";
   }
 
-  return `$${numeric.toLocaleString(undefined, {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "EUR",
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })}`;
+  }).format(numeric);
 };
 
 const getCustomerName = (order: any) => {

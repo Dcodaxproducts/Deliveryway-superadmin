@@ -24,8 +24,8 @@ type InvoicePreviewModalProps = {
   onGenerate: () => void;
 };
 
-const getCurrency = (invoice?: AdminInvoice) => {
-  return invoice?.transactions?.[0]?.currency || "EUR";
+const getCurrency = () => {
+  return "EUR";
 };
 
 const formatMoney = (value: number, currency = "EUR") => {
@@ -114,7 +114,7 @@ const getCustomerName = (invoice: AdminInvoice) => {
 };
 
 const buildInvoiceText = (payload: InvoiceGenerationPayload) => {
-  const currency = getCurrency(payload.invoices[0]);
+  const currency = getCurrency();
   const baseTotalAmount = getPayloadBaseTotal(payload);
   const additionalCharges = Number(payload.additionalCharges || 0);
   const finalTotalAmount = Number(
@@ -199,15 +199,7 @@ const buildInvoiceText = (payload: InvoiceGenerationPayload) => {
       )}`
     );
 
-    if (payload.invoices.length === 1 && additionalCharges !== 0) {
-      lines.push(`Additional Charges: ${formatSignedAmountPlain(additionalCharges)}`);
-    }
-
-    if (payload.invoices.length === 1) {
-      lines.push(`Total: ${formatAmountPlain(finalTotalAmount)}`);
-    } else {
-      lines.push(`Total: ${formatAmountPlain(invoice.totalAmount || 0)}`);
-    }
+    lines.push(`Total: ${formatAmountPlain(invoice.totalAmount || 0)}`);
   });
 
   lines.push("");
@@ -328,7 +320,7 @@ export function InvoicePreviewModal({
     return payload ? buildInvoiceText(payload) : "";
   }, [payload]);
 
-  const currency = getCurrency(payload?.invoices?.[0]);
+  const currency = getCurrency();
   const baseTotalAmount = payload ? getPayloadBaseTotal(payload) : 0;
   const additionalCharges = Number(payload?.additionalCharges || 0);
   const finalTotalAmount = Number(

@@ -74,7 +74,7 @@ const formatMoney = (value?: string | number, currency?: string | null) => {
 
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: currency || "PKR",
+    currency: currency || "EUR",
     maximumFractionDigits: 2,
   }).format(amount);
 };

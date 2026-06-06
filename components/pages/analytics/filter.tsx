@@ -408,7 +408,7 @@ const formatAmount = (value: string) => {
 
   if (Number.isNaN(numeric)) return value;
 
-  return numeric.toLocaleString(undefined, {
+  return numeric.toLocaleString("en-US", {
     minimumFractionDigits: numeric % 1 === 0 ? 0 : 2,
     maximumFractionDigits: 2,
   });
