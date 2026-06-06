@@ -29,7 +29,12 @@ export default function LanguageSelector() {
       >
         <span>{locale.toUpperCase()}</span>
       </SelectTrigger>
-      <SelectContent align="end">
+      <SelectContent
+        align="end"
+        className="z-[100] min-w-[140px]"
+        position="popper"
+        sideOffset={8}
+      >
         {SUPPORTED_LOCALES.map((language) => (
           <SelectItem key={language} value={language}>
             {LANGUAGE_LABELS[language]}
