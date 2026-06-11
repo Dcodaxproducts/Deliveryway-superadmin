@@ -6,52 +6,30 @@ import {
   ChevronLeft,
   ChevronRight,
   CreditCard,
+  Download,
+  Eye,
+  Loader2,
+  Mail,
   Pencil,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-type PackageSubscriptionRow = {
-  id: string;
-  tenantId?: string | null;
-  restaurantId?: string | null;
-  packagePlanId: string;
-  paymentStatus?: string | null;
-  status: string;
-  startsAt?: string | null;
-  endsAt?: string | null;
-  nextBillingAt?: string | null;
-  note?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
-  packagePlan?: {
-    id: string;
-    name: string;
-    billingModel?: string;
-    billingInterval?: string;
-    planPrice?: string | number;
-    currency?: string;
-  } | null;
-  tenant?: {
-    id: string;
-    name?: string | null;
-    email?: string | null;
-  } | null;
-  restaurant?: {
-    id: string;
-    name?: string | null;
-    email?: string | null;
-  } | null;
-};
+import type { PackageSubscription } from "@/services/packagePlans";
 
 type SubscriptionsTableProps = {
-  subscriptions: PackageSubscriptionRow[];
+  subscriptions: PackageSubscription[];
   loading: boolean;
   currentPage: number;
   totalPages: number;
   total: number;
   pageSize: number;
   onPageChange: (page: number) => void;
-  onEdit: (subscription: PackageSubscriptionRow) => void;
+  onEdit: (subscription: PackageSubscription) => void;
+  onViewInvoice: (subscription: PackageSubscription) => void;
+  onDownloadInvoice: (subscriptionId: string) => void;
+  onSendInvoiceEmail: (subscription: PackageSubscription) => void;
+  downloadingInvoiceId?: string | null;
+  sendingInvoiceId?: string | null;
 };
 
 const formatDate = (value?: string | null) => {
@@ -136,7 +114,7 @@ const getPaymentClass = (status?: string | null) => {
   return "bg-gray-100 text-gray";
 };
 
-const getOwnerName = (item: PackageSubscriptionRow) => {
+const getOwnerName = (item: PackageSubscription) => {
   return (
     item.restaurant?.name ||
     item.tenant?.name ||
@@ -146,7 +124,7 @@ const getOwnerName = (item: PackageSubscriptionRow) => {
   );
 };
 
-const getOwnerMeta = (item: PackageSubscriptionRow) => {
+const getOwnerMeta = (item: PackageSubscription) => {
   return (
     item.restaurant?.email ||
     item.tenant?.email ||
@@ -165,6 +143,11 @@ export function SubscriptionsTable({
   pageSize,
   onPageChange,
   onEdit,
+  onViewInvoice,
+  onDownloadInvoice,
+  onSendInvoiceEmail,
+  downloadingInvoiceId,
+  sendingInvoiceId,
 }: SubscriptionsTableProps) {
   const pricingModel = useTranslations("pricingModel");
   const common = useTranslations("common");
@@ -215,6 +198,8 @@ export function SubscriptionsTable({
                 const plan = item.packagePlan;
                 const paymentStatus = item.paymentStatus || "N/A";
                 const subscriptionStatus = item.status || "N/A";
+                const isDownloading = downloadingInvoiceId === item.id;
+                const isSending = sendingInvoiceId === item.id;
 
                 return (
                   <tr
@@ -324,7 +309,41 @@ export function SubscriptionsTable({
                     </td>
 
                     <td className="px-6 py-5">
-                      <div className="flex justify-end">
+                      <div className="flex justify-end gap-1">
+                        <button
+                          type="button"
+                          onClick={() => onViewInvoice(item)}
+                          className="inline-flex size-8 items-center justify-center rounded-lg text-gray transition hover:bg-red-50 hover:text-primary"
+                          title={pricingModel("invoice.viewInvoice")}
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onDownloadInvoice(item.id)}
+                          disabled={isDownloading}
+                          className="inline-flex size-8 items-center justify-center rounded-lg text-gray transition hover:bg-red-50 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                          title={pricingModel("invoice.downloadPdf")}
+                        >
+                          {isDownloading ? (
+                            <Loader2 size={16} className="animate-spin" />
+                          ) : (
+                            <Download size={16} />
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onSendInvoiceEmail(item)}
+                          disabled={isSending}
+                          className="inline-flex size-8 items-center justify-center rounded-lg text-gray transition hover:bg-red-50 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                          title={pricingModel("invoice.sendEmail")}
+                        >
+                          {isSending ? (
+                            <Loader2 size={16} className="animate-spin" />
+                          ) : (
+                            <Mail size={16} />
+                          )}
+                        </button>
                         <button
                           type="button"
                           onClick={() => onEdit(item)}

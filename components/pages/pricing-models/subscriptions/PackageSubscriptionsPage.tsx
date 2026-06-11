@@ -5,8 +5,14 @@ import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Container from "@/components/container";
 import Header from "@/components/header";
-import { useGetPackageSubscriptions } from "@/hooks/usePackagePlans";
+import {
+  useDownloadPackageSubscriptionInvoicePdf,
+  useGetPackageSubscriptions,
+  useSendPackageSubscriptionInvoiceEmail,
+} from "@/hooks/usePackagePlans";
+import type { PackageSubscription } from "@/services/packagePlans";
 import { SubscriptionModal } from "./SubscriptionModal";
+import { SubscriptionInvoiceModal } from "./SubscriptionInvoiceModal";
 import { SubscriptionsFilters } from "./SubscriptionsFilters";
 import { SubscriptionsTable } from "./SubscriptionsTable";
 
@@ -18,42 +24,9 @@ type SubscriptionStatusFilter =
   | "CANCELLED"
   | "EXPIRED";
 
-type PackageSubscriptionRow = {
-  id: string;
-  tenantId?: string | null;
-  restaurantId?: string | null;
-  packagePlanId: string;
-  paymentStatus?: string | null;
-  status: string;
-  startsAt?: string | null;
-  endsAt?: string | null;
-  nextBillingAt?: string | null;
-  note?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
-  packagePlan?: {
-    id: string;
-    name: string;
-    billingModel?: string;
-    billingInterval?: string;
-    planPrice?: string | number;
-    currency?: string;
-  } | null;
-  tenant?: {
-    id: string;
-    name?: string | null;
-    email?: string | null;
-  } | null;
-  restaurant?: {
-    id: string;
-    name?: string | null;
-    email?: string | null;
-  } | null;
-};
-
 type PackageSubscriptionsResponse = {
   success?: boolean;
-  data?: PackageSubscriptionRow[];
+  data?: PackageSubscription[];
   meta?: {
     page?: number;
     limit?: number;
@@ -90,7 +63,14 @@ export function PackageSubscriptionsPage() {
   const [status, setStatus] = useState<SubscriptionStatusFilter>("ALL");
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [editData, setEditData] = useState<PackageSubscriptionRow | null>(null);
+  const [editData, setEditData] = useState<PackageSubscription | null>(null);
+  const [invoiceData, setInvoiceData] = useState<PackageSubscription | null>(
+    null
+  );
+  const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<
+    string | null
+  >(null);
+  const [sendingInvoiceId, setSendingInvoiceId] = useState<string | null>(null);
 
   const debouncedSearch = useDebouncedValue(search.trim());
 
@@ -108,6 +88,8 @@ export function PackageSubscriptionsPage() {
   }, [page, debouncedSearch, status]);
 
   const subscriptionsQuery = useGetPackageSubscriptions(params);
+  const downloadInvoiceMutation = useDownloadPackageSubscriptionInvoicePdf();
+  const sendInvoiceEmailMutation = useSendPackageSubscriptionInvoiceEmail();
 
   const response = subscriptionsQuery.data as PackageSubscriptionsResponse | undefined;
 
@@ -130,9 +112,39 @@ export function PackageSubscriptionsPage() {
     setModalOpen(true);
   };
 
-  const handleEdit = (item: PackageSubscriptionRow) => {
+  const handleEdit = (item: PackageSubscription) => {
     setEditData(item);
     setModalOpen(true);
+  };
+
+  const handleViewInvoice = (item: PackageSubscription) => {
+    setInvoiceData(item);
+  };
+
+  const handleDownloadInvoice = (subscriptionId: string) => {
+    setDownloadingInvoiceId(subscriptionId);
+
+    downloadInvoiceMutation.mutate(subscriptionId, {
+      onSettled: () => {
+        setDownloadingInvoiceId(null);
+      },
+    });
+  };
+
+  const handleSendInvoiceEmail = (subscriptionId: string, email?: string) => {
+    setSendingInvoiceId(subscriptionId);
+
+    sendInvoiceEmailMutation.mutate(
+      {
+        id: subscriptionId,
+        payload: email ? { email } : undefined,
+      },
+      {
+        onSettled: () => {
+          setSendingInvoiceId(null);
+        },
+      }
+    );
   };
 
   const handleStatusChange = (value: SubscriptionStatusFilter) => {
@@ -180,12 +192,31 @@ export function PackageSubscriptionsPage() {
           pageSize={DEFAULT_LIMIT}
           onPageChange={setPage}
           onEdit={handleEdit}
+          onViewInvoice={handleViewInvoice}
+          onDownloadInvoice={handleDownloadInvoice}
+          onSendInvoiceEmail={(item) => handleSendInvoiceEmail(item.id)}
+          downloadingInvoiceId={downloadingInvoiceId}
+          sendingInvoiceId={sendingInvoiceId}
         />
 
         <SubscriptionModal
           open={modalOpen}
           onOpenChange={setModalOpen}
           initialData={editData}
+        />
+
+        <SubscriptionInvoiceModal
+          open={!!invoiceData}
+          subscription={invoiceData}
+          downloading={
+            !!invoiceData?.id && downloadingInvoiceId === invoiceData.id
+          }
+          sending={!!invoiceData?.id && sendingInvoiceId === invoiceData.id}
+          onOpenChange={(open) => {
+            if (!open) setInvoiceData(null);
+          }}
+          onDownload={handleDownloadInvoice}
+          onSendEmail={handleSendInvoiceEmail}
         />
       </div>
     </Container>

@@ -103,6 +103,16 @@ export type PackageSubscription = {
   nextBillingAt?: string | null;
   note?: string | null;
   packagePlan?: PackagePlan;
+  tenant?: {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+  } | null;
+  restaurant?: {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+  } | null;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -145,6 +155,74 @@ export type PackagePlanFeatureCatalogItem = {
   enabled?: boolean;
   supportsLimit?: boolean;
   [key: string]: any;
+};
+
+export type PackageSubscriptionInvoiceParty = {
+  id?: string;
+  name?: string | null;
+  email?: string | null;
+  slug?: string | null;
+};
+
+export type PackageSubscriptionInvoicePlan = {
+  id?: string;
+  name?: string | null;
+  billingModel?: BillingModel | null;
+  billingInterval?: BillingInterval | null;
+  planPrice?: string | number | null;
+  currency?: string | null;
+  commissionPercentage?: string | number | null;
+  commissionCapAmount?: string | number | null;
+  vatPercentage?: string | number | null;
+};
+
+export type PackageSubscriptionInvoice = {
+  id?: string;
+  invoiceNumber?: string | null;
+  subscriptionId?: string | null;
+  tenantId?: string | null;
+  restaurantId?: string | null;
+  tenant?: PackageSubscriptionInvoiceParty | null;
+  restaurant?: PackageSubscriptionInvoiceParty | null;
+  servicePeriodStart?: string | null;
+  servicePeriodEnd?: string | null;
+  periodStart?: string | null;
+  periodEnd?: string | null;
+  packagePlan?: PackageSubscriptionInvoicePlan | null;
+  plan?: PackageSubscriptionInvoicePlan | null;
+  billingModel?: BillingModel | null;
+  billingInterval?: BillingInterval | null;
+  commissionPercentage?: string | number | null;
+  commissionCapAmount?: string | number | null;
+  vatPercentage?: string | number | null;
+  subtotal?: string | number | null;
+  vatAmount?: string | number | null;
+  taxAmount?: string | number | null;
+  totalAmount?: string | number | null;
+  amountDue?: string | number | null;
+  currency?: string | null;
+  paymentStatus?: SubscriptionPaymentStatus | null;
+  subscriptionStatus?: SubscriptionStatus | null;
+  status?: string | null;
+  issuedAt?: string | null;
+  dueAt?: string | null;
+  paidAt?: string | null;
+  createdAt?: string | null;
+};
+
+export type PackageSubscriptionInvoiceResponse = {
+  success?: boolean;
+  data?: PackageSubscriptionInvoice;
+  message?: string;
+};
+
+export type SendPackageSubscriptionInvoiceEmailPayload = {
+  email?: string;
+};
+
+export type SendPackageSubscriptionInvoiceEmailResponse = {
+  success?: boolean;
+  message?: string;
 };
 
 /**
@@ -227,5 +305,44 @@ export const updatePackageSubscription = async (
     `/admin/package-plans/subscriptions/${id}`,
     payload
   );
+  return data;
+};
+
+/**
+ * ==============================
+ * PACKAGE SUBSCRIPTION INVOICE APIS
+ * ==============================
+ */
+
+export const getPackageSubscriptionInvoice = async (
+  id: string
+): Promise<PackageSubscriptionInvoiceResponse> => {
+  const { data } = await api.get(
+    `/admin/package-plans/subscriptions/${id}/invoice`
+  );
+
+  return data;
+};
+
+export const downloadPackageSubscriptionInvoicePdf = async (id: string) => {
+  const response = await api.get<Blob>(
+    `/admin/package-plans/subscriptions/${id}/invoice/pdf`,
+    {
+      responseType: "blob",
+    }
+  );
+
+  return response.data;
+};
+
+export const sendPackageSubscriptionInvoiceEmail = async (
+  id: string,
+  payload?: SendPackageSubscriptionInvoiceEmailPayload
+): Promise<SendPackageSubscriptionInvoiceEmailResponse> => {
+  const { data } = await api.post(
+    `/admin/package-plans/subscriptions/${id}/invoice/send-email`,
+    payload?.email ? payload : undefined
+  );
+
   return data;
 };

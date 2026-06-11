@@ -5,16 +5,20 @@ import {
   createPackagePlan,
   createPackageSubscription,
   deletePackagePlan,
+  downloadPackageSubscriptionInvoicePdf,
+  getPackageSubscriptionInvoice,
   getPackagePlanDetail,
   getPackagePlanFeatureCatalog,
   getPackagePlans,
   getPackageSubscriptions,
+  sendPackageSubscriptionInvoiceEmail,
   updatePackagePlan,
   updatePackageSubscription,
   CreatePackagePlanPayload,
   CreatePackageSubscriptionPayload,
   PackagePlansParams,
   PackageSubscriptionsParams,
+  SendPackageSubscriptionInvoiceEmailPayload,
   UpdatePackagePlanPayload,
   UpdatePackageSubscriptionPayload,
 } from "@/services/packagePlans";
@@ -42,6 +46,8 @@ export const packagePlanKeys = {
     [...packagePlanKeys.all, "subscriptions"] as const,
   subscriptionList: (params?: PackageSubscriptionsParams) =>
     [...packagePlanKeys.subscriptions(), params] as const,
+  subscriptionInvoice: (id?: string) =>
+    [...packagePlanKeys.subscriptions(), "invoice", id] as const,
 };
 
 /**
@@ -57,6 +63,20 @@ const getErrorMessage = (err: any, fallback: string) => {
     err?.message ||
     fallback
   );
+};
+
+const downloadBlobFile = (blob: Blob, fileName: string) => {
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = fileName;
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  window.URL.revokeObjectURL(url);
 };
 
 /**
@@ -222,6 +242,53 @@ export const useUpdatePackageSubscription = () => {
     },
     onError: (err: any) => {
       toast.error(getErrorMessage(err, toasts("subscriptionUpdateFailed")));
+    },
+  });
+};
+
+export const useGetPackageSubscriptionInvoice = (id?: string) => {
+  return useQuery({
+    queryKey: packagePlanKeys.subscriptionInvoice(id),
+    queryFn: () => getPackageSubscriptionInvoice(id as string),
+    enabled: Boolean(id),
+  });
+};
+
+export const useDownloadPackageSubscriptionInvoicePdf = () => {
+  const toasts = useTranslations("toasts");
+
+  return useMutation({
+    mutationFn: (id: string) => downloadPackageSubscriptionInvoicePdf(id),
+    onSuccess: (blob, id) => {
+      downloadBlobFile(blob, `restaurant-subscription-invoice-${id}.pdf`);
+      toast.success(toasts("subscriptionInvoiceDownloaded"));
+    },
+    onError: (err: any) => {
+      toast.error(
+        getErrorMessage(err, toasts("subscriptionInvoiceDownloadFailed"))
+      );
+    },
+  });
+};
+
+export const useSendPackageSubscriptionInvoiceEmail = () => {
+  const toasts = useTranslations("toasts");
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload?: SendPackageSubscriptionInvoiceEmailPayload;
+    }) => sendPackageSubscriptionInvoiceEmail(id, payload),
+    onSuccess: (response) => {
+      toast.success(response?.message || toasts("subscriptionInvoiceEmailSent"));
+    },
+    onError: (err: any) => {
+      toast.error(
+        getErrorMessage(err, toasts("subscriptionInvoiceEmailSendFailed"))
+      );
     },
   });
 };
