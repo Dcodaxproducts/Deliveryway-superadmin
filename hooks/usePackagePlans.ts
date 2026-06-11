@@ -6,12 +6,15 @@ import {
   createPackageSubscription,
   deletePackagePlan,
   downloadPackageSubscriptionInvoicePdf,
+  downloadWeeklyPayoutInvoicePdf,
   getPackageSubscriptionInvoice,
   getPackagePlanDetail,
   getPackagePlanFeatureCatalog,
   getPackagePlans,
   getPackageSubscriptions,
+  getWeeklyPayoutInvoice,
   sendPackageSubscriptionInvoiceEmail,
+  sendWeeklyPayoutInvoiceEmail,
   updatePackagePlan,
   updatePackageSubscription,
   CreatePackagePlanPayload,
@@ -21,6 +24,8 @@ import {
   SendPackageSubscriptionInvoiceEmailPayload,
   UpdatePackagePlanPayload,
   UpdatePackageSubscriptionPayload,
+  WeeklyPayoutInvoiceEmailPayload,
+  WeeklyPayoutInvoiceParams,
 } from "@/services/packagePlans";
 
 /**
@@ -48,6 +53,7 @@ export const packagePlanKeys = {
     [...packagePlanKeys.subscriptions(), params] as const,
   subscriptionInvoice: (id?: string) =>
     [...packagePlanKeys.subscriptions(), "invoice", id] as const,
+  payoutInvoice: () => [...packagePlanKeys.all, "payout-invoice"] as const,
 };
 
 /**
@@ -288,6 +294,54 @@ export const useSendPackageSubscriptionInvoiceEmail = () => {
     onError: (err: any) => {
       toast.error(
         getErrorMessage(err, toasts("subscriptionInvoiceEmailSendFailed"))
+      );
+    },
+  });
+};
+
+export const useFetchWeeklyPayoutInvoice = () => {
+  return useMutation({
+    mutationFn: (params: WeeklyPayoutInvoiceParams) =>
+      getWeeklyPayoutInvoice(params),
+  });
+};
+
+export const useDownloadWeeklyPayoutInvoicePdf = () => {
+  const toasts = useTranslations("toasts");
+
+  return useMutation({
+    mutationFn: (params: WeeklyPayoutInvoiceParams) =>
+      downloadWeeklyPayoutInvoicePdf(params),
+    onSuccess: (blob, params) => {
+      downloadBlobFile(
+        blob,
+        `weekly-payout-invoice-${params.restaurantId}-${params.fromDate.slice(
+          0,
+          10
+        )}.pdf`
+      );
+      toast.success(toasts("weeklyPayoutInvoiceDownloaded"));
+    },
+    onError: (err: any) => {
+      toast.error(
+        getErrorMessage(err, toasts("weeklyPayoutInvoiceDownloadFailed"))
+      );
+    },
+  });
+};
+
+export const useSendWeeklyPayoutInvoiceEmail = () => {
+  const toasts = useTranslations("toasts");
+
+  return useMutation({
+    mutationFn: (payload: WeeklyPayoutInvoiceEmailPayload) =>
+      sendWeeklyPayoutInvoiceEmail(payload),
+    onSuccess: (response) => {
+      toast.success(response?.message || toasts("weeklyPayoutInvoiceEmailSent"));
+    },
+    onError: (err: any) => {
+      toast.error(
+        getErrorMessage(err, toasts("weeklyPayoutInvoiceEmailSendFailed"))
       );
     },
   });

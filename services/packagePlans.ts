@@ -225,6 +225,54 @@ export type SendPackageSubscriptionInvoiceEmailResponse = {
   message?: string;
 };
 
+export type WeeklyPayoutInvoiceParams = {
+  restaurantId: string;
+  fromDate: string;
+  toDate: string;
+};
+
+export type WeeklyPayoutInvoiceEmailPayload = WeeklyPayoutInvoiceParams & {
+  email?: string;
+};
+
+export type WeeklyPayoutInvoiceLineItem = {
+  orderId?: string | null;
+  grossAmount?: string | number | null;
+  platformCommissionAmount?: string | number | null;
+  restaurantPayoutAmount?: string | number | null;
+};
+
+export type WeeklyPayoutInvoice = {
+  invoiceNumber?: string | null;
+  restaurant?: {
+    id?: string;
+    name?: string | null;
+    billingEmail?: string | null;
+  } | null;
+  subscription?: {
+    billingInterval?: BillingInterval | null;
+    payoutCycle?: PayoutCycle | null;
+  } | null;
+  period?: {
+    from?: string | null;
+    to?: string | null;
+  } | null;
+  lineItems?: WeeklyPayoutInvoiceLineItem[];
+  totals?: {
+    ordersCount?: string | number | null;
+    grossAmount?: string | number | null;
+    platformCommissionAmount?: string | number | null;
+    restaurantPayoutAmount?: string | number | null;
+    currency?: string | null;
+  } | null;
+};
+
+export type WeeklyPayoutInvoiceResponse = {
+  success?: boolean;
+  data?: WeeklyPayoutInvoice;
+  message?: string;
+};
+
 /**
  * ==============================
  * PACKAGE PLAN APIS
@@ -342,6 +390,48 @@ export const sendPackageSubscriptionInvoiceEmail = async (
   const { data } = await api.post(
     `/admin/package-plans/subscriptions/${id}/invoice/send-email`,
     payload?.email ? payload : undefined
+  );
+
+  return data;
+};
+
+/**
+ * ==============================
+ * WEEKLY PAYOUT INVOICE APIS
+ * ==============================
+ */
+
+export const getWeeklyPayoutInvoice = async (
+  params: WeeklyPayoutInvoiceParams
+): Promise<WeeklyPayoutInvoiceResponse> => {
+  const { data } = await api.get(
+    "/admin/package-plans/payouts/weekly-invoice",
+    { params }
+  );
+
+  return data;
+};
+
+export const downloadWeeklyPayoutInvoicePdf = async (
+  params: WeeklyPayoutInvoiceParams
+) => {
+  const response = await api.get<Blob>(
+    "/admin/package-plans/payouts/weekly-invoice/pdf",
+    {
+      params,
+      responseType: "blob",
+    }
+  );
+
+  return response.data;
+};
+
+export const sendWeeklyPayoutInvoiceEmail = async (
+  payload: WeeklyPayoutInvoiceEmailPayload
+): Promise<SendPackageSubscriptionInvoiceEmailResponse> => {
+  const { data } = await api.post(
+    "/admin/package-plans/payouts/weekly-invoice/send-email",
+    payload
   );
 
   return data;

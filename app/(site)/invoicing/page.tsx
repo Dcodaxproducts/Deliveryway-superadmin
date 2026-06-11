@@ -20,6 +20,7 @@ import type { InvoiceGenerationPayload } from "@/components/pages/invoicing/gene
 import { InvoicePreviewModal } from "@/components/pages/invoicing/invoice-preview-modal";
 import { InvoiceSuccessModal } from "@/components/pages/invoicing/invoice-success-modal";
 import { InvoiceDetailsModal } from "@/components/pages/invoicing/invoice-details-modal";
+import { WeeklyPayoutInvoicePanel } from "@/components/pages/invoicing/weekly-payout-invoice-panel";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -622,6 +623,8 @@ export default function InvoicingPage() {
           </>
         ) : (
           <div className="space-y-5 px-4 pb-4 lg:px-0 lg:pb-0">
+            <WeeklyPayoutInvoicePanel />
+
             <SubscriptionsFilters
               search={subscriptionSearch}
               status={subscriptionStatus}
