@@ -320,6 +320,7 @@ export function SubscriptionInvoiceModal({
             type="button"
             onClick={() => subscription?.id && onDownload(subscription.id)}
             disabled={!subscription?.id || downloading}
+            className="h-[44px] px-6"
           >
             {downloading ? (
               <Loader2 size={18} className="animate-spin" />

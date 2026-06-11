@@ -519,13 +519,6 @@ export default function InvoicingPage() {
         billingCycle={billingCycle}
         billingCycleOptions={billingCycleOptions}
         onBillingCycleChange={handleBillingCycleChange}
-        onGenerateClick={
-          workspaceTab === "orders"
-            ? () => previewInvoices(selectedInvoices)
-            : undefined
-        }
-        generateDisabled={selectedInvoices.length === 0}
-        generateLabel={invoicing("previewSelected")}
       />
 
       <div className="space-y-[32px] rounded-[14px] bg-white shadow-sm lg:p-[30px]">

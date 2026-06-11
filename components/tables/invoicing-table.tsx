@@ -186,12 +186,12 @@ export function InvoicingTable({
   };
 
   return (
-    <div className="overflow-x-auto rounded-[14px] bg-white">
-      <Table>
+    <div className="rounded-[14px] bg-white">
+      <Table className="min-w-[1020px] table-fixed">
         <TableHeader>
           <TableRow className="border-none">
             {selectable ? (
-              <TableHead className="w-[52px]">
+              <TableHead className="w-[48px] pl-4 pr-1">
                 <Checkbox
                   checked={
                     allVisibleSelected
@@ -205,18 +205,18 @@ export function InvoicingTable({
                 />
               </TableHead>
             ) : null}
-            <TableHead className="min-w-[230px] font-normal">
+            <TableHead className="w-[218px] font-normal">
               {invoicing("invoiceRestaurant")}
             </TableHead>
-            <TableHead className="min-w-[170px]">
+            <TableHead className="w-[156px]">
               {invoicing("customer")}
             </TableHead>
-            <TableHead>{invoicing("orderType")}</TableHead>
-            <TableHead>{invoicing("orderStatus")}</TableHead>
-            <TableHead>{invoicing("payment")}</TableHead>
-            <TableHead className="text-right">{invoicing("total")}</TableHead>
-            <TableHead>{invoicing("issued")}</TableHead>
-            <TableHead className="text-center">{common("actions")}</TableHead>
+            <TableHead className="w-[100px]">{invoicing("orderType")}</TableHead>
+            <TableHead className="w-[140px]">{invoicing("orderStatus")}</TableHead>
+            <TableHead className="w-[116px]">{invoicing("payment")}</TableHead>
+            <TableHead className="w-[92px] text-right">{invoicing("total")}</TableHead>
+            <TableHead className="w-[100px]">{invoicing("issued")}</TableHead>
+            <TableHead className="w-[150px] text-center">{common("actions")}</TableHead>
           </TableRow>
         </TableHeader>
 
@@ -266,7 +266,7 @@ export function InvoicingTable({
                   className="h-[74px] border-none hover:bg-gray-50"
                 >
                   {selectable ? (
-                    <TableCell>
+                    <TableCell className="pl-4 pr-1">
                       <Checkbox
                         checked={isSelected}
                         onCheckedChange={() => onToggleInvoice?.(invoice.orderId)}
@@ -275,13 +275,13 @@ export function InvoicingTable({
                     </TableCell>
                   ) : null}
 
-                  <TableCell>
+                  <TableCell className="pr-3">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
                         {getInitials(restaurantName)}
                       </div>
 
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="truncate font-medium text-gray-900">
                           {restaurantName}
                         </p>
@@ -292,7 +292,7 @@ export function InvoicingTable({
                     </div>
                   </TableCell>
 
-                  <TableCell>
+                  <TableCell className="pr-3">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-gray-800">
                         {customerName}
@@ -303,12 +303,16 @@ export function InvoicingTable({
                     </div>
                   </TableCell>
 
-                  <TableCell>{prettyLabel(invoice.orderType)}</TableCell>
+                  <TableCell>
+                    <span className="block truncate">
+                      {prettyLabel(invoice.orderType)}
+                    </span>
+                  </TableCell>
 
                   <TableCell>
                     <span
                       className={cn(
-                        "text-sm font-medium",
+                        "block truncate text-sm font-medium",
                         getOrderStatusClass(invoice.orderStatus)
                       )}
                     >
@@ -319,11 +323,13 @@ export function InvoicingTable({
                   <TableCell>
                     <span
                       className={cn(
-                        "inline-flex rounded-full px-2 py-1 text-xs font-medium",
+                        "inline-flex max-w-full rounded-full px-2 py-1 text-xs font-medium",
                         getPaymentStatusClass(invoice.paymentStatus)
                       )}
                     >
-                      {prettyLabel(invoice.paymentStatus)}
+                      <span className="truncate">
+                        {prettyLabel(invoice.paymentStatus)}
+                      </span>
                     </span>
                   </TableCell>
 
@@ -333,8 +339,8 @@ export function InvoicingTable({
 
                   <TableCell>{formatDate(invoice.issuedAt)}</TableCell>
 
-                  <TableCell>
-                    <div className="flex items-center justify-center gap-2 text-gray">
+                  <TableCell className="pr-4">
+                    <div className="flex items-center justify-center gap-1 text-gray">
                       <button
                         type="button"
                         className="rounded-full p-2 transition hover:bg-gray-100 hover:text-primary"
