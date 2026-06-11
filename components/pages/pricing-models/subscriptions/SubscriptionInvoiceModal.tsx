@@ -78,6 +78,10 @@ const formatPercent = (value?: string | number | null) => {
   return `${numberValue(value).toFixed(2)}%`;
 };
 
+const valueOrFallback = <T,>(value: T | null | undefined, fallback: T) => {
+  return value ?? fallback;
+};
+
 const getPlan = (invoice?: PackageSubscriptionInvoice | null) => {
   return invoice?.packagePlan || invoice?.plan || null;
 };
@@ -102,8 +106,34 @@ export function SubscriptionInvoiceModal({
   const plan = getPlan(invoice) || subscription?.packagePlan || null;
   const restaurant = invoice?.restaurant || subscription?.restaurant || null;
   const tenant = invoice?.tenant || subscription?.tenant || null;
-  const currency = invoice?.currency || plan?.currency || "EUR";
+  const totals = invoice?.totals;
+  const transactionFee = invoice?.transactionFee;
+  const currency = totals?.currency || invoice?.currency || plan?.currency || "EUR";
   const loading = isLoading || isFetching;
+  const subscriptionFeeAmount = valueOrFallback(
+    totals?.subscriptionFeeAmount,
+    plan?.planPrice
+  );
+  const transactionFeeAmount = valueOrFallback(
+    totals?.transactionFeeAmount,
+    transactionFee?.amount
+  );
+  const subtotal = valueOrFallback(
+    totals?.subtotal,
+    valueOrFallback(invoice?.subtotal, plan?.planPrice)
+  );
+  const vatPercentage = valueOrFallback(
+    totals?.vatPercentage,
+    valueOrFallback(invoice?.vatPercentage, plan?.vatPercentage)
+  );
+  const vatAmount = valueOrFallback(
+    totals?.vatAmount,
+    valueOrFallback(invoice?.vatAmount, invoice?.taxAmount)
+  );
+  const totalAmount = valueOrFallback(
+    totals?.totalAmount,
+    valueOrFallback(invoice?.totalAmount, invoice?.amountDue)
+  );
 
   const rows = useMemo(() => {
     const servicePeriodStart =
@@ -220,23 +250,35 @@ export function SubscriptionInvoiceModal({
                   <SummaryCard
                     label={pricingModel("invoice.commissionRate")}
                     value={formatPercent(
-                      invoice?.commissionPercentage ||
+                      valueOrFallback(
+                        invoice?.commissionPercentage,
                         plan?.commissionPercentage
+                      )
+                    )}
+                  />
+                  <SummaryCard
+                    label={pricingModel("invoice.fixedCommission")}
+                    value={formatMoney(
+                      valueOrFallback(
+                        invoice?.commissionFixedAmount,
+                        plan?.commissionFixedAmount
+                      ),
+                      currency
                     )}
                   />
                   <SummaryCard
                     label={pricingModel("invoice.commissionCap")}
                     value={formatMoney(
-                      invoice?.commissionCapAmount ||
-                        plan?.commissionCapAmount,
+                      valueOrFallback(
+                        invoice?.commissionCapAmount,
+                        plan?.commissionCapAmount
+                      ),
                       currency
                     )}
                   />
                   <SummaryCard
                     label={pricingModel("invoice.vatRate")}
-                    value={formatPercent(
-                      invoice?.vatPercentage || plan?.vatPercentage
-                    )}
+                    value={formatPercent(vatPercentage)}
                   />
                 </div>
               </div>
@@ -248,25 +290,35 @@ export function SubscriptionInvoiceModal({
 
                 <div className="space-y-3">
                   <AmountRow
+                    label={pricingModel("invoice.subscriptionFee")}
+                    value={formatMoney(subscriptionFeeAmount, currency)}
+                  />
+                  <AmountRow
+                    label={pricingModel("invoice.transactionFee")}
+                    value={formatMoney(transactionFeeAmount, currency)}
+                    description={
+                      transactionFee?.ordersCount === undefined ||
+                      transactionFee?.ordersCount === null
+                        ? undefined
+                        : pricingModel("invoice.paidOrdersCount", {
+                            count: numberValue(transactionFee.ordersCount),
+                          })
+                    }
+                  />
+                  <AmountRow
                     label={pricingModel("invoice.subtotal")}
-                    value={formatMoney(invoice?.subtotal || plan?.planPrice, currency)}
+                    value={formatMoney(subtotal, currency)}
                   />
                   <AmountRow
                     label={pricingModel("invoice.vatAmount")}
-                    value={formatMoney(
-                      invoice?.vatAmount || invoice?.taxAmount,
-                      currency
-                    )}
+                    value={formatMoney(vatAmount, currency)}
                   />
                   <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                     <span className="text-base font-semibold text-gray-900">
                       {pricingModel("invoice.total")}
                     </span>
                     <span className="text-xl font-bold text-green">
-                      {formatMoney(
-                        invoice?.totalAmount || invoice?.amountDue,
-                        currency
-                      )}
+                      {formatMoney(totalAmount, currency)}
                     </span>
                   </div>
                 </div>
@@ -363,10 +415,23 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function AmountRow({ label, value }: { label: string; value: string }) {
+function AmountRow({
+  label,
+  value,
+  description,
+}: {
+  label: string;
+  value: string;
+  description?: string;
+}) {
   return (
-    <div className="flex items-center justify-between gap-4">
-      <span className="text-sm text-gray-500">{label}</span>
+    <div className="flex items-start justify-between gap-4">
+      <span className="text-sm text-gray-500">
+        {label}
+        {description ? (
+          <span className="mt-1 block text-xs text-gray-400">{description}</span>
+        ) : null}
+      </span>
       <span className="text-sm font-semibold text-gray-900">{value}</span>
     </div>
   );

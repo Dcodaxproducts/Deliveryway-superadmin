@@ -47,6 +47,7 @@ export type PackagePlan = {
   billingInterval: BillingInterval;
   planPrice: number | string;
   commissionPercentage?: number | string | null;
+  commissionFixedAmount?: number | string | null;
   commissionCapAmount?: number | string | null;
   vatPercentage?: number | string | null;
   payoutCycle?: PayoutCycle | null;
@@ -67,6 +68,7 @@ export type CreatePackagePlanPayload = {
   billingInterval: BillingInterval;
   planPrice: number;
   commissionPercentage?: number;
+  commissionFixedAmount?: number;
   commissionCapAmount?: number;
   vatPercentage?: number;
   payoutCycle?: PayoutCycle;
@@ -171,9 +173,26 @@ export type PackageSubscriptionInvoicePlan = {
   billingInterval?: BillingInterval | null;
   planPrice?: string | number | null;
   currency?: string | null;
+  commissionType?: string | null;
   commissionPercentage?: string | number | null;
+  commissionFixedAmount?: string | number | null;
   commissionCapAmount?: string | number | null;
   vatPercentage?: string | number | null;
+};
+
+export type PackageSubscriptionInvoiceTotals = {
+  subscriptionFeeAmount?: string | number | null;
+  transactionFeeAmount?: string | number | null;
+  subtotal?: string | number | null;
+  vatPercentage?: string | number | null;
+  vatAmount?: string | number | null;
+  totalAmount?: string | number | null;
+  currency?: string | null;
+};
+
+export type PackageSubscriptionInvoiceTransactionFee = {
+  ordersCount?: string | number | null;
+  amount?: string | number | null;
 };
 
 export type PackageSubscriptionInvoice = {
@@ -192,9 +211,13 @@ export type PackageSubscriptionInvoice = {
   plan?: PackageSubscriptionInvoicePlan | null;
   billingModel?: BillingModel | null;
   billingInterval?: BillingInterval | null;
+  commissionType?: string | null;
   commissionPercentage?: string | number | null;
+  commissionFixedAmount?: string | number | null;
   commissionCapAmount?: string | number | null;
   vatPercentage?: string | number | null;
+  totals?: PackageSubscriptionInvoiceTotals | null;
+  transactionFee?: PackageSubscriptionInvoiceTransactionFee | null;
   subtotal?: string | number | null;
   vatAmount?: string | number | null;
   taxAmount?: string | number | null;

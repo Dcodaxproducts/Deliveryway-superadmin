@@ -769,9 +769,13 @@
       "issuedAt": "Ausgestellt am",
       "commissionVat": "Provision & MwSt.",
       "commissionRate": "Provisionssatz",
+      "fixedCommission": "Feste Provision",
       "commissionCap": "Provisionslimit",
       "vatRate": "MwSt.-Satz",
       "totals": "Summen",
+      "subscriptionFee": "Monatliche Abonnementgebühr",
+      "transactionFee": "Transaktionsgebühr",
+      "paidOrdersCount": "{count} bezahlte Bestellung(en) im Abrechnungszeitraum",
       "subtotal": "Zwischensumme",
       "vatAmount": "MwSt.-Betrag",
       "total": "Gesamt"

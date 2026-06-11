@@ -769,9 +769,13 @@
       "issuedAt": "Issued At",
       "commissionVat": "Commission & VAT",
       "commissionRate": "Commission Rate",
+      "fixedCommission": "Fixed Commission",
       "commissionCap": "Commission Cap",
       "vatRate": "VAT Rate",
       "totals": "Totals",
+      "subscriptionFee": "Monthly Subscription Fee",
+      "transactionFee": "Transaction Fee",
+      "paidOrdersCount": "{count} paid order(s) in billing period",
       "subtotal": "Subtotal",
       "vatAmount": "VAT Amount",
       "total": "Total"
