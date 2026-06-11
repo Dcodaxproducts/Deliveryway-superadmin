@@ -24,7 +24,7 @@ type SubscriptionsTableProps = {
   total: number;
   pageSize: number;
   onPageChange: (page: number) => void;
-  onEdit: (subscription: PackageSubscription) => void;
+  onEdit?: (subscription: PackageSubscription) => void;
   onViewInvoice: (subscription: PackageSubscription) => void;
   onDownloadInvoice: (subscriptionId: string) => void;
   onSendInvoiceEmail: (subscription: PackageSubscription) => void;
@@ -344,14 +344,16 @@ export function SubscriptionsTable({
                             <Mail size={16} />
                           )}
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => onEdit(item)}
-                          className="inline-flex size-8 items-center justify-center rounded-lg text-gray transition hover:bg-red-50 hover:text-primary"
-                          title={pricingModel("actions.updateSubscription")}
-                        >
-                          <Pencil size={16} />
-                        </button>
+                        {onEdit ? (
+                          <button
+                            type="button"
+                            onClick={() => onEdit(item)}
+                            className="inline-flex size-8 items-center justify-center rounded-lg text-gray transition hover:bg-red-50 hover:text-primary"
+                            title={pricingModel("actions.updateSubscription")}
+                          >
+                            <Pencil size={16} />
+                          </button>
+                        ) : null}
                       </div>
                     </td>
                   </tr>

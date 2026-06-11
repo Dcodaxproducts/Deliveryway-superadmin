@@ -25,7 +25,9 @@ type InvoicingHeaderProps = {
   billingCycle: string;
   billingCycleOptions: BillingCycleOption[];
   onBillingCycleChange: (value: string) => void;
-  onGenerateClick: () => void;
+  onGenerateClick?: () => void;
+  generateDisabled?: boolean;
+  generateLabel?: string;
 };
 
 export function InvoicingHeader({
@@ -35,6 +37,8 @@ export function InvoicingHeader({
   billingCycleOptions,
   onBillingCycleChange,
   onGenerateClick,
+  generateDisabled,
+  generateLabel,
 }: InvoicingHeaderProps) {
   const invoicing = useTranslations("invoicing");
 
@@ -63,15 +67,18 @@ export function InvoicingHeader({
           </Select>
         </div>
 
-        <Button
-          type="button"
-          variant="primary"
-          onClick={onGenerateClick}
-          className="h-[44px] w-full sm:w-auto"
-        >
-          <PlusCircle size={17} className="mr-2" />
-          {invoicing("generateInvoice")}
-        </Button>
+        {onGenerateClick ? (
+          <Button
+            type="button"
+            variant="primary"
+            onClick={onGenerateClick}
+            disabled={generateDisabled}
+            className="h-[44px] w-full sm:w-auto"
+          >
+            <PlusCircle size={17} className="mr-2" />
+            {generateLabel || invoicing("generateInvoice")}
+          </Button>
+        ) : null}
       </div>
     </div>
   );

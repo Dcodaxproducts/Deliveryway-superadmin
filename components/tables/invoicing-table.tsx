@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -29,6 +30,10 @@ type InvoicingTableProps = {
   onViewInvoice?: (invoice: AdminInvoice) => void;
   onDownloadInvoice?: (invoice: AdminInvoice) => void;
   onSendInvoice?: (invoice: AdminInvoice) => void;
+  selectedInvoiceIds?: string[];
+  onToggleInvoice?: (orderId: string) => void;
+  onToggleAllVisible?: () => void;
+  onGenerateInvoice?: (invoice: AdminInvoice) => void;
 };
 
 const getInitials = (name?: string) => {
@@ -116,9 +121,9 @@ const getOrderStatusClass = (status?: string) => {
   }
 };
 
-const SkeletonRow = () => (
+const SkeletonRow = ({ selectable }: { selectable: boolean }) => (
   <TableRow className="border-none h-[70px]">
-    <TableCell colSpan={8}>
+    <TableCell colSpan={selectable ? 9 : 8}>
       <div className="flex animate-pulse items-center gap-4">
         <div className="h-10 w-10 rounded-full bg-gray-200" />
         <div className="h-4 w-[180px] rounded bg-gray-200" />
@@ -136,12 +141,24 @@ export function InvoicingTable({
   onViewInvoice,
   onDownloadInvoice,
   onSendInvoice,
+  selectedInvoiceIds = [],
+  onToggleInvoice,
+  onToggleAllVisible,
+  onGenerateInvoice,
 }: InvoicingTableProps) {
   const invoicing = useTranslations("invoicing");
   const common = useTranslations("common");
   const loading = isLoading || (isFetching && invoices.length === 0);
 
   const [sendingOrderId, setSendingOrderId] = useState<string | null>(null);
+  const selectable = Boolean(onToggleInvoice);
+  const selectedSet = new Set(selectedInvoiceIds);
+  const allVisibleSelected =
+    selectable &&
+    invoices.length > 0 &&
+    invoices.every((invoice) => selectedSet.has(invoice.orderId));
+  const someVisibleSelected =
+    selectable && invoices.some((invoice) => selectedSet.has(invoice.orderId));
 
   const { mutate: sendInvoiceEmail, isPending: isSendingInvoiceEmail } =
     useSendAdminInvoiceEmail();
@@ -173,6 +190,21 @@ export function InvoicingTable({
       <Table>
         <TableHeader>
           <TableRow className="border-none">
+            {selectable ? (
+              <TableHead className="w-[52px]">
+                <Checkbox
+                  checked={
+                    allVisibleSelected
+                      ? true
+                      : someVisibleSelected
+                      ? "indeterminate"
+                      : false
+                  }
+                  onCheckedChange={onToggleAllVisible}
+                  aria-label={invoicing("selectAll")}
+                />
+              </TableHead>
+            ) : null}
             <TableHead className="min-w-[230px] font-normal">
               {invoicing("invoiceRestaurant")}
             </TableHead>
@@ -191,11 +223,11 @@ export function InvoicingTable({
         <TableBody>
           {loading ? (
             Array.from({ length: 5 }).map((_, index) => (
-              <SkeletonRow key={index} />
+              <SkeletonRow key={index} selectable={selectable} />
             ))
           ) : invoices.length === 0 ? (
             <TableRow className="border-none">
-              <TableCell colSpan={8}>
+              <TableCell colSpan={selectable ? 9 : 8}>
                 <div className="flex min-h-[260px] flex-col items-center justify-center text-center">
                   <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
                     <ReceiptText size={26} />
@@ -224,6 +256,7 @@ export function InvoicingTable({
                 "-";
 
               const isPaid = invoice.paymentStatus === "PAID";
+              const isSelected = selectedSet.has(invoice.orderId);
               const isCurrentInvoiceSending =
                 sendingOrderId === invoice.orderId && isSendingInvoiceEmail;
 
@@ -232,6 +265,16 @@ export function InvoicingTable({
                   key={invoice.orderId}
                   className="h-[74px] border-none hover:bg-gray-50"
                 >
+                  {selectable ? (
+                    <TableCell>
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => onToggleInvoice?.(invoice.orderId)}
+                        aria-label={invoicing("selectInvoice")}
+                      />
+                    </TableCell>
+                  ) : null}
+
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
@@ -326,6 +369,17 @@ export function InvoicingTable({
                           )}
                         </button>
                       )}
+
+                      {onGenerateInvoice ? (
+                        <button
+                          type="button"
+                          className="rounded-full p-2 transition hover:bg-gray-100 hover:text-primary"
+                          onClick={() => onGenerateInvoice(invoice)}
+                          title={invoicing("previewInvoice")}
+                        >
+                          <ReceiptText size={18} />
+                        </button>
+                      ) : null}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -335,7 +389,7 @@ export function InvoicingTable({
 
           {isFetching && invoices.length > 0 ? (
             <TableRow className="border-none">
-              <TableCell colSpan={8}>
+              <TableCell colSpan={selectable ? 9 : 8}>
                 <div className="flex items-center justify-center gap-2 py-4 text-sm text-gray-400">
                   <Loader2 size={16} className="animate-spin" />
                   {invoicing("refreshingInvoices")}
