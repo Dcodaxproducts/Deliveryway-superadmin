@@ -42,9 +42,20 @@ export const useCreateRestaurant = () => {
   });
 };
 
-export const useGetRestaurants = (params?: { page?: number; search?: string; includeInactive?: boolean }) => {
+export const useGetRestaurants = (params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  includeInactive?: boolean;
+}) => {
   return useQuery({
-    queryKey: ["restaurants", params?.page, params?.search, params?.includeInactive],
+    queryKey: [
+      "restaurants",
+      params?.page,
+      params?.limit,
+      params?.search,
+      params?.includeInactive,
+    ],
     queryFn: () => getRestaurants(params),
   });
 };

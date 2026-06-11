@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Download, Loader2, Mail, ReceiptText, Search } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { Download, Loader2, Mail, ReceiptText } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import AsyncSelect from "@/components/ui/AsyncSelect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,7 +12,7 @@ import {
   useFetchWeeklyPayoutInvoice,
   useSendWeeklyPayoutInvoiceEmail,
 } from "@/hooks/usePackagePlans";
-import { useGetRestaurants } from "@/hooks/useRestaurant";
+import { getRestaurants } from "@/services/restaurant";
 import type {
   WeeklyPayoutInvoice,
   WeeklyPayoutInvoiceParams,
@@ -23,32 +24,6 @@ type RestaurantOption = {
   email?: string | null;
   billingEmail?: string | null;
   restaurantName?: string | null;
-};
-
-type ListResponse<T> = {
-  data?: T[] | { data?: T[]; items?: T[] };
-  items?: T[];
-};
-
-const normalizeListResponse = <T,>(response: unknown): T[] => {
-  if (Array.isArray(response)) return response as T[];
-  if (!response || typeof response !== "object") return [];
-
-  const record = response as ListResponse<T>;
-
-  if (Array.isArray(record.data)) return record.data;
-  if (Array.isArray(record.items)) return record.items;
-
-  if (
-    record.data &&
-    typeof record.data === "object" &&
-    !Array.isArray(record.data)
-  ) {
-    if (Array.isArray(record.data.data)) return record.data.data;
-    if (Array.isArray(record.data.items)) return record.data.items;
-  }
-
-  return [];
 };
 
 const formatInputDate = (date: Date) => {
@@ -149,31 +124,31 @@ export function WeeklyPayoutInvoicePanel() {
   const invoicing = useTranslations("invoicing");
   const range = useMemo(() => getDefaultRange(), []);
   const [restaurantId, setRestaurantId] = useState("");
-  const [restaurantSearch, setRestaurantSearch] = useState("");
+  const [selectedRestaurant, setSelectedRestaurant] =
+    useState<RestaurantOption | null>(null);
   const [fromDate, setFromDate] = useState(range.fromDate);
   const [toDate, setToDate] = useState(range.toDate);
   const [email, setEmail] = useState("");
 
-  const restaurantsQuery = useGetRestaurants({
-    page: 1,
-    search: restaurantSearch.trim() || undefined,
-    includeInactive: false,
-  });
   const fetchInvoice = useFetchWeeklyPayoutInvoice();
   const downloadInvoice = useDownloadWeeklyPayoutInvoicePdf();
   const sendInvoiceEmail = useSendWeeklyPayoutInvoiceEmail();
 
-  const restaurants = useMemo(() => {
-    return normalizeListResponse<RestaurantOption>(restaurantsQuery.data);
-  }, [restaurantsQuery.data]);
-
-  const selectedRestaurant = restaurants.find(
-    (restaurant) => restaurant.id === restaurantId
-  );
-
   const invoice = fetchInvoice.data?.data;
   const currency = invoice?.totals?.currency || "EUR";
   const canSubmit = Boolean(restaurantId && fromDate && toDate);
+
+  const fetchRestaurantOptions = useCallback(
+    async ({ search, page }: { search: string; page: number }) => {
+      return getRestaurants({
+        page,
+        limit: 10,
+        search: search.trim() || undefined,
+        includeInactive: false,
+      });
+    },
+    []
+  );
 
   const buildParams = (): WeeklyPayoutInvoiceParams | null => {
     const fromDateIso = toStartOfDayIso(fromDate);
@@ -245,32 +220,27 @@ export function WeeklyPayoutInvoicePanel() {
             <label className="mb-1.5 block text-xs font-semibold text-gray-700">
               {invoicing("restaurant")}
             </label>
-            <div className="mb-2 flex h-11 items-center gap-2 rounded-xl border border-gray-100 bg-white px-3">
-              <Search size={16} className="text-gray-400" />
-              <input
-                value={restaurantSearch}
-                onChange={(event) => setRestaurantSearch(event.target.value)}
-                placeholder={invoicing("searchRestaurant")}
-                className="h-full min-w-0 flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400"
-              />
-            </div>
-            <select
-              value={restaurantId}
-              onChange={(event) => setRestaurantId(event.target.value)}
-              className="h-11 w-full rounded-xl border border-gray-100 bg-white px-3 text-sm text-gray-900 outline-none transition focus:border-primary"
-            >
-              <option value="">{invoicing("selectRestaurant")}</option>
-              {restaurants.map((restaurant) => (
-                <option key={restaurant.id} value={restaurant.id}>
-                  {getRestaurantLabel(restaurant)}
-                </option>
-              ))}
-            </select>
-            {restaurantsQuery.isFetching ? (
-              <p className="mt-1 text-xs text-gray-400">
-                {invoicing("loadingRestaurants")}
-              </p>
-            ) : null}
+            <AsyncSelect
+              value={selectedRestaurant}
+              onChange={(restaurant: RestaurantOption | null) => {
+                setSelectedRestaurant(restaurant);
+                setRestaurantId(restaurant?.id || "");
+              }}
+              placeholder={invoicing("selectRestaurant")}
+              searchPlaceholder={invoicing("searchRestaurant")}
+              fetchOptions={fetchRestaurantOptions}
+              getOptionLabel={getRestaurantLabel}
+              renderOption={(restaurant: RestaurantOption) => (
+                <div className="min-w-0">
+                  <p className="truncate font-semibold">
+                    {getRestaurantLabel(restaurant)}
+                  </p>
+                  <p className="mt-0.5 truncate text-xs text-gray-400">
+                    {restaurant.billingEmail || restaurant.email || restaurant.id}
+                  </p>
+                </div>
+              )}
+            />
           </div>
 
           <div>
