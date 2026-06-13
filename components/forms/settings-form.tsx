@@ -16,7 +16,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { CreditCard, Info } from "lucide-react";
+import {
+  Banknote,
+  CreditCard,
+  Globe2,
+  Info,
+  Landmark,
+  Smartphone,
+  WalletCards,
+} from "lucide-react";
 
 import {
   useGetGlobalSettings,
@@ -29,10 +37,7 @@ import {
   useGlobalPaymentMethodsQuery,
   useUpdateGlobalPaymentMethodsMutation,
 } from "@/hooks/useGlobalPaymentMethods";
-import type {
-  GlobalPaymentMethod,
-  PaymentMethodCode,
-} from "@/types/global-settings";
+import type { GlobalPaymentMethod } from "@/types/global-settings";
 
 type SelectOption = {
   label: string;
@@ -83,19 +88,6 @@ const FONT_OPTIONS: SelectOption[] = [
   { label: "Manrope", value: "Manrope" },
 ];
 
-const PAYMENT_METHOD_CODES: PaymentMethodCode[] = [
-  "COD",
-  "STRIPE",
-  "EASYPAISA",
-  "JAZZCASH",
-  "BANK_TRANSFER",
-  "WALLET",
-];
-
-const isPaymentMethodCode = (code: string): code is PaymentMethodCode => {
-  return PAYMENT_METHOD_CODES.includes(code as PaymentMethodCode);
-};
-
 const CURRENCY_OPTIONS: Array<SelectOption & { symbol: string }> = [
   { label: "EUR", value: "EUR", symbol: "€" },
   { label: "USD", value: "USD", symbol: "$" },
@@ -109,8 +101,68 @@ const getCurrencySymbol = (currency: string) => {
   );
 };
 
-const formatPaymentMethodCode = (code: PaymentMethodCode) => {
+const formatPaymentMethodCode = (code: string) => {
   return code.replaceAll("_", " ");
+};
+
+const PAYMENT_METHOD_VISUALS: Record<
+  string,
+  {
+    icon: typeof CreditCard;
+    accent: string;
+    surface: string;
+  }
+> = {
+  COD: {
+    icon: Banknote,
+    accent: "text-emerald-700",
+    surface: "bg-emerald-50",
+  },
+  CARD_ON_DELIVERY: {
+    icon: CreditCard,
+    accent: "text-sky-700",
+    surface: "bg-sky-50",
+  },
+  STRIPE: {
+    icon: CreditCard,
+    accent: "text-violet-700",
+    surface: "bg-violet-50",
+  },
+  PAYPAL: {
+    icon: Globe2,
+    accent: "text-blue-700",
+    surface: "bg-blue-50",
+  },
+  EASYPAISA: {
+    icon: Smartphone,
+    accent: "text-lime-700",
+    surface: "bg-lime-50",
+  },
+  JAZZCASH: {
+    icon: Smartphone,
+    accent: "text-rose-700",
+    surface: "bg-rose-50",
+  },
+  BANK_TRANSFER: {
+    icon: Landmark,
+    accent: "text-slate-700",
+    surface: "bg-slate-100",
+  },
+  WALLET: {
+    icon: WalletCards,
+    accent: "text-amber-700",
+    surface: "bg-amber-50",
+  },
+};
+
+const DEFAULT_PAYMENT_METHOD_VISUAL = {
+  icon: CreditCard,
+  accent: "text-primary",
+  surface: "bg-primary/10",
+};
+
+const getPaymentMethodVisual = (code: string) => {
+  return PAYMENT_METHOD_VISUALS[code.toUpperCase()] ?? DEFAULT_PAYMENT_METHOD_VISUAL;
 };
 
 export function SettingsForm() {
@@ -205,11 +257,7 @@ export function SettingsForm() {
   useEffect(() => {
     const loadedMethods = paymentMethodsResponse?.data ?? [];
 
-    const validMethods = loadedMethods.filter((method) =>
-      isPaymentMethodCode(method.code)
-    );
-
-    setPaymentMethods(validMethods);
+    setPaymentMethods(loadedMethods);
   }, [paymentMethodsResponse]);
 
   const updateField = <Key extends keyof SettingsFormValues>(
@@ -266,7 +314,7 @@ export function SettingsForm() {
   };
 
   const updatePaymentMethod = (
-    code: PaymentMethodCode,
+    code: string,
     value: Partial<Omit<GlobalPaymentMethod, "code">>
   ) => {
     setPaymentMethods((prev) =>
@@ -282,20 +330,12 @@ export function SettingsForm() {
   };
 
   const handlePaymentMethodsSave = () => {
-    const validMethods = paymentMethods.filter((method) =>
-      isPaymentMethodCode(method.code)
-    );
-
-    if (validMethods.length !== paymentMethods.length) {
-      return;
-    }
-
     if (hasDuplicatePaymentMethods()) {
       return;
     }
 
     updatePaymentMethods({
-      paymentMethods: validMethods.map((method) => ({
+      paymentMethods: paymentMethods.map((method) => ({
         code: method.code,
         label: method.label,
         isActive: method.isActive,
@@ -584,7 +624,7 @@ export function SettingsForm() {
               {activePaymentMethodsCount}
             </span>
             {globalSettings("activeCount", {
-              total: paymentMethods.length || PAYMENT_METHOD_CODES.length,
+              total: paymentMethods.length,
             })}
           </div>
         </div>
@@ -604,77 +644,89 @@ export function SettingsForm() {
             {globalSettings("noPaymentMethods")}
           </div>
         ) : (
-          <div className="grid gap-4 xl:grid-cols-2">
-            {paymentMethods.map((method) => (
-              <div
-                key={method.code}
-                className={`rounded-[12px] border p-4 transition-colors ${
-                  method.isActive
-                    ? "border-primary/35 bg-primary/[0.03]"
-                    : "border-[#E5E7EB] bg-[#F9FAFB]"
-                }`}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex min-w-0 items-start gap-3">
-                    <div
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] ${
-                        method.isActive
-                          ? "bg-primary/10 text-primary"
-                          : "bg-white text-gray"
-                      }`}
-                    >
-                      <CreditCard size={18} />
-                    </div>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {paymentMethods.map((method) => {
+              const visual = getPaymentMethodVisual(method.code);
+              const MethodIcon = visual.icon;
 
-                    <div className="min-w-0 space-y-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge
-                          variant="outline"
-                          className="rounded-[8px] border-[#D1D5DB] bg-white px-2.5 py-1 text-[11px] tracking-normal text-dark"
-                        >
-                          {formatPaymentMethodCode(method.code)}
-                        </Badge>
-                        <span
-                          className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                            method.isActive
-                              ? "bg-green/10 text-green"
-                              : "bg-gray-100 text-gray"
-                          }`}
-                        >
-                          {method.isActive ? common("active") : common("inactive")}
-                        </span>
+              return (
+                <div
+                  key={method.code}
+                  className={`group relative overflow-hidden rounded-[12px] border p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(15,23,42,0.08)] ${
+                    method.isActive
+                      ? "border-primary/30 bg-white shadow-[0_12px_28px_rgba(255,107,0,0.08)]"
+                      : "border-[#E5E7EB] bg-[#FAFAFB]"
+                  }`}
+                >
+                  <div
+                    className={`absolute inset-x-0 top-0 h-1 ${
+                      method.isActive ? "bg-primary" : "bg-[#E5E7EB]"
+                    }`}
+                  />
+
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-start gap-3">
+                      <div
+                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[12px] ${visual.surface} ${visual.accent} ring-1 ring-black/[0.04]`}
+                      >
+                        <MethodIcon size={19} />
                       </div>
 
-                      <p className="text-xs text-gray">
-                        {globalSettings("apiManagedCode")}
-                      </p>
+                      <div className="min-w-0 space-y-2">
+                        <p className="truncate text-sm font-semibold text-dark">
+                          {method.label || formatPaymentMethodCode(method.code)}
+                        </p>
+                        <Badge
+                          variant="outline"
+                          className="max-w-full rounded-[8px] border-[#D1D5DB] bg-white px-2 py-1 text-[10px] font-semibold tracking-normal text-[#4B5563]"
+                        >
+                          <span className="truncate">
+                            {formatPaymentMethodCode(method.code)}
+                          </span>
+                        </Badge>
+                      </div>
                     </div>
+
+                    <Switch
+                      checked={method.isActive}
+                      onCheckedChange={(checked) =>
+                        updatePaymentMethod(method.code, {
+                          isActive: checked,
+                        })
+                      }
+                    />
                   </div>
 
-                  <Switch
-                    checked={method.isActive}
-                    onCheckedChange={(checked) =>
-                      updatePaymentMethod(method.code, {
-                        isActive: checked,
-                      })
-                    }
-                  />
-                </div>
+                  <div className="mt-5 flex items-center justify-between gap-3 rounded-[10px] border border-[#EEF0F4] bg-[#F8FAFC] px-3 py-2">
+                    <span className="text-xs font-medium text-gray">
+                      {globalSettings("apiManagedCode")}
+                    </span>
+                    <span
+                      className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                        method.isActive
+                          ? "bg-emerald-50 text-emerald-700"
+                          : "bg-slate-100 text-slate-500"
+                      }`}
+                    >
+                      {method.isActive ? common("active") : common("inactive")}
+                    </span>
+                  </div>
 
-                <div className="mt-4 space-y-[6px]">
-                  <Label>{globalSettings("displayLabel")}</Label>
-                  <Input
-                    value={method.label}
-                    onChange={(event) =>
-                      updatePaymentMethod(method.code, {
-                        label: event.target.value,
-                      })
-                    }
-                    className="h-[48px] border-[#BBBBBB] bg-white focus:border-primary"
-                  />
+                  <div className="mt-4 space-y-[6px]">
+                    <Label>{globalSettings("displayLabel")}</Label>
+                    <Input
+                      value={method.label}
+                      onChange={(event) =>
+                        updatePaymentMethod(method.code, {
+                          label: event.target.value,
+                        })
+                      }
+                      className="h-[46px] rounded-[10px] border-[#D6DAE2] bg-white focus:border-primary"
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

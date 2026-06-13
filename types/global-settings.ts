@@ -1,13 +1,5 @@
-export type PaymentMethodCode =
-  | "COD"
-  | "STRIPE"
-  | "EASYPAISA"
-  | "JAZZCASH"
-  | "BANK_TRANSFER"
-  | "WALLET";
-
 export interface GlobalPaymentMethod {
-  code: PaymentMethodCode;
+  code: string;
   label: string;
   isActive: boolean;
 }
