@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PremiumImageDropzone } from "@/components/forms/PremiumImageDropzone";
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -39,7 +40,7 @@ export default function EmployeeInvitationModal({
   const employeeSettings = useTranslations("employeeSettings");
   const validation = useTranslations("validation");
   const toasts = useTranslations("toasts");
-  const { uploadFile, uploading } = useFileUpload();
+  const { uploadFile, uploading, progress } = useFileUpload();
 
   const createMutation = useCreateStaff();
   const updateMutation = useUpdateStaff();
@@ -104,8 +105,7 @@ export default function EmployeeInvitationModal({
   };
 
   /* ---------- Upload ---------- */
-  const handleFile = async (e: any) => {
-    const file = e.target.files?.[0];
+  const handleFile = async (file: File) => {
     if (!file) return;
 
     const url = await uploadFile(file);
@@ -250,21 +250,19 @@ transition-all duration-200"
           {/* Avatar Upload */}
           <div>
             <label className="text-sm font-medium">{employeeSettings("avatar")}</label>
-            <Input
-              type="file"
-              onChange={handleFile}
-             className="mt-1 h-[40px] pt-1 rounded-lg border border-gray-400 
-focus-visible:outline-none 
-focus-visible:ring-2 
-focus-visible:ring-red-500 
-focus-visible:border-red-500 
-transition-all duration-200"
+            <PremiumImageDropzone
+              alt={employeeSettings("avatar")}
+              emptyHint={employeeSettings("avatar")}
+              emptyTitle={employeeSettings("avatar")}
+              onFileSelect={handleFile}
+              onRemove={() => handleChange("avatarUrl", "")}
+              preview={form.avatarUrl}
+              progress={progress}
+              selectedText={employeeSettings("avatar")}
+              uploading={uploading}
+              uploadText={employeeSettings("uploading")}
+              variant="avatar"
             />
-            {uploading && (
-              <p className="text-xs text-gray-400 mt-1">
-                {employeeSettings("uploading")}
-              </p>
-            )}
           </div>
 
           <FormField

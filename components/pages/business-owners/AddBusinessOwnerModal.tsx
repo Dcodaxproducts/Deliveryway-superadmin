@@ -9,9 +9,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PremiumImageDropzone } from "@/components/forms/PremiumImageDropzone";
 
 import { useEffect, useState } from "react";
-import type { ChangeEvent } from "react";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
@@ -70,6 +70,8 @@ type FormValues = {
   isActive: boolean;
 };
 
+type UploadTarget = "avatar" | "tenantLogo" | null;
+
 type ApiErrorResponse = {
   message?: string;
 };
@@ -99,7 +101,7 @@ export function AddBusinessOwnerModal({
   const businessOwners = useTranslations("businessOwners");
   const validation = useTranslations("validation");
   const toasts = useTranslations("toasts");
-  const { uploadFile, uploading } = useFileUpload();
+  const { uploadFile, uploading, progress } = useFileUpload();
   const registerTenantSchema = createRegisterTenantSchema(validation);
   const updateTenantSchema = createUpdateTenantSchema(validation);
 
@@ -107,6 +109,7 @@ export function AddBusinessOwnerModal({
   const updateMutation = useUpdateTenant();
 
   const [loading, setLoading] = useState(false);
+  const [uploadingTarget, setUploadingTarget] = useState<UploadTarget>(null);
 
   const isEdit = !!initialData;
 
@@ -177,20 +180,28 @@ export function AddBusinessOwnerModal({
   };
 
   /* ---------- Upload ---------- */
-  const handleAvatarFile = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleAvatarFile = async (file: File) => {
     if (!file) return;
 
-    const url = await uploadFile(file);
-    if (url) handleChange("avatarUrl", url);
+    try {
+      setUploadingTarget("avatar");
+      const url = await uploadFile(file);
+      if (url) handleChange("avatarUrl", url);
+    } finally {
+      setUploadingTarget(null);
+    }
   };
 
-  const handleTenantLogoFile = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleTenantLogoFile = async (file: File) => {
     if (!file) return;
 
-    const url = await uploadFile(file);
-    if (url) handleChange("tenantLogoUrl", url);
+    try {
+      setUploadingTarget("tenantLogo");
+      const url = await uploadFile(file);
+      if (url) handleChange("tenantLogoUrl", url);
+    } finally {
+      setUploadingTarget(null);
+    }
   };
 
   /* ---------- Submit ---------- */
@@ -383,35 +394,37 @@ export function AddBusinessOwnerModal({
 
           <div>
             <label className="text-sm font-medium">{businessOwners("ownerAvatar")}</label>
-            <Input
-              type="file"
-              onChange={handleAvatarFile}
+            <PremiumImageDropzone
+              alt={businessOwners("ownerAvatar")}
               disabled={isEdit}
-              className="mt-1 h-[40px] rounded-lg border border-gray-400 pt-1 transition-all duration-200
-focus-visible:border-red-500
-focus-visible:outline-none
-focus-visible:ring-2
-focus-visible:ring-red-500"
+              emptyHint={businessOwners("uploadHint")}
+              emptyTitle={businessOwners("clickToUpload")}
+              onFileSelect={handleAvatarFile}
+              onRemove={() => handleChange("avatarUrl", "")}
+              preview={form.avatarUrl}
+              progress={uploadingTarget === "avatar" ? progress : 0}
+              selectedText={businessOwners("imageSelected")}
+              uploading={uploading && uploadingTarget === "avatar"}
+              uploadText={businessOwners("uploading")}
+              variant="avatar"
             />
-            {uploading && (
-              <p className="mt-1 text-xs text-gray-400">{businessOwners("uploading")}</p>
-            )}
           </div>
 
           <div>
             <label className="text-sm font-medium">{businessOwners("businessLogo")}</label>
-            <Input
-              type="file"
-              onChange={handleTenantLogoFile}
-              className="mt-1 h-[40px] rounded-lg border border-gray-400 pt-1 transition-all duration-200
-focus-visible:border-red-500
-focus-visible:outline-none
-focus-visible:ring-2
-focus-visible:ring-red-500"
+            <PremiumImageDropzone
+              alt={businessOwners("businessLogo")}
+              emptyHint={businessOwners("uploadHint")}
+              emptyTitle={businessOwners("clickToUpload")}
+              onFileSelect={handleTenantLogoFile}
+              onRemove={() => handleChange("tenantLogoUrl", "")}
+              preview={form.tenantLogoUrl}
+              progress={uploadingTarget === "tenantLogo" ? progress : 0}
+              selectedText={businessOwners("imageSelected")}
+              uploading={uploading && uploadingTarget === "tenantLogo"}
+              uploadText={businessOwners("uploading")}
+              variant="logo"
             />
-            {uploading && (
-              <p className="mt-1 text-xs text-gray-400">{businessOwners("uploading")}</p>
-            )}
           </div>
 
           {!isEdit && (

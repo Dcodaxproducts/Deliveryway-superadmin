@@ -5,10 +5,8 @@ import {
   useMemo,
   useRef,
   useState,
-  type ChangeEvent,
   type KeyboardEvent,
   type ReactNode,
-  type RefObject,
 } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,7 +16,6 @@ import {
   Copy,
   Crosshair,
   Info,
-  Image as ImageIcon,
   Loader2,
   MapPin,
   Maximize2,
@@ -26,7 +23,6 @@ import {
   Search,
   Trash2,
   Undo2,
-  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
@@ -41,8 +37,8 @@ import {
 } from "@/validations/tenants";
 import { useRegisterTenant, useUpdateTenant } from "@/hooks/useTenants";
 import { useFileUpload } from "@/hooks/useFileUpload";
-import MyImage from "../MyImage";
 import { useRouter } from "next/navigation";
+import { PremiumImageDropzone } from "@/components/forms/PremiumImageDropzone";
 
 interface BusinessOwnerFormProps {
   mode?: "create" | "edit";
@@ -332,7 +328,7 @@ export default function BusinessOwnerForm({
   const restaurants = useTranslations("restaurants");
   const validation = useTranslations("validation");
   const toasts = useTranslations("toasts");
-  const { uploadFile, uploading } = useFileUpload();
+  const { uploadFile, uploading, progress } = useFileUpload();
 
   const createMutation = useRegisterTenant();
   const updateMutation = useUpdateTenant();
@@ -342,14 +338,8 @@ export default function BusinessOwnerForm({
   const registerTenantSchema = createRegisterTenantSchema(validation);
   const updateTenantSchema = createUpdateTenantSchema(validation);
 
-  const ownerAvatarRef = useRef<HTMLInputElement>(null);
-  const tenantLogoRef = useRef<HTMLInputElement>(null);
-  const restaurantLogoRef = useRef<HTMLInputElement>(null);
-  const restaurantCoverRef = useRef<HTMLInputElement>(null);
-  const branchLogoRef = useRef<HTMLInputElement>(null);
-  const branchCoverRef = useRef<HTMLInputElement>(null);
-
   const [previews, setPreviews] = useState<Record<string, string>>({});
+  const [uploadingField, setUploadingField] = useState<UploadField | null>(null);
 
   const {
     register,
@@ -461,6 +451,7 @@ export default function BusinessOwnerForm({
     clickToUpload: businessOwners("clickToUpload"),
     orDragDrop: businessOwners("orDragDrop"),
     uploadHint: businessOwners("uploadHint"),
+    uploading: businessOwners("uploading"),
   };
 
   const [mapsReady, setMapsReady] = useState(false);
@@ -499,18 +490,22 @@ export default function BusinessOwnerForm({
 
   const zoneMapCenter = selectedZoneCenter || branchCoordinates || DEFAULT_MAP_CENTER;
 
-  const handleUpload = async (event: ChangeEvent<HTMLInputElement>, field: UploadField) => {
-    const file = event.target.files?.[0];
+  const handleUpload = async (file: File, field: UploadField) => {
     if (!file) return;
 
     const blobUrl = URL.createObjectURL(file);
     setPreviews((prev) => ({ ...prev, [field]: blobUrl }));
 
-    const fileUrl = await uploadFile(file);
+    try {
+      setUploadingField(field);
+      const fileUrl = await uploadFile(file);
 
-    if (fileUrl) {
-      setValue(field, fileUrl, { shouldValidate: true });
-      toast.success(toasts("imageUploaded"));
+      if (fileUrl) {
+        setValue(field, fileUrl, { shouldValidate: true });
+        toast.success(toasts("imageUploaded"));
+      }
+    } finally {
+      setUploadingField(null);
     }
   };
 
@@ -1395,16 +1390,17 @@ export default function BusinessOwnerForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapsReady, deliveryMode]);
 
-  const removeImage = (field: UploadField, ref?: RefObject<HTMLInputElement | null>) => {
+  const removeImage = (field: UploadField) => {
     setValue(field, "", { shouldValidate: true });
 
     setPreviews((prev) => {
       const copy = { ...prev };
+      if (copy[field]?.startsWith("blob:")) {
+        URL.revokeObjectURL(copy[field]);
+      }
       delete copy[field];
       return copy;
     });
-
-    if (ref?.current) ref.current.value = "";
   };
 
   const addZone = () => {
@@ -1653,22 +1649,16 @@ export default function BusinessOwnerForm({
 
           <div className="space-y-[6px]">
             <Label>{businessOwners("ownerAvatar")}</Label>
-            <input
-              type="file"
-              className="hidden"
-              ref={ownerAvatarRef}
-              onChange={(event) => handleUpload(event, "user.avatarUrl")}
-              accept="image/*"
+            <UploadBox
+              preview={previews["user.avatarUrl"] || ownerAvatar}
               disabled={isEdit}
+              labels={uploadLabels}
+              onFileSelect={(file) => handleUpload(file, "user.avatarUrl")}
+              onRemove={() => removeImage("user.avatarUrl")}
+              progress={uploadingField === "user.avatarUrl" ? progress : 0}
+              uploading={uploading && uploadingField === "user.avatarUrl"}
+              variant="avatar"
             />
-            <div onClick={() => !isEdit && ownerAvatarRef.current?.click()}>
-              <UploadBox
-                preview={previews["user.avatarUrl"] || ownerAvatar}
-                disabled={isEdit}
-                labels={uploadLabels}
-                onRemove={() => removeImage("user.avatarUrl", ownerAvatarRef)}
-              />
-            </div>
           </div>
         </FormSection>
       )}
@@ -1749,30 +1739,29 @@ export default function BusinessOwnerForm({
 
         <div className="space-y-[6px]">
           <Label>{businessOwners("businessLogo")}</Label>
-          <input
-            type="file"
-            className="hidden"
-            ref={tenantLogoRef}
-            onChange={(event) =>
-              handleUpload(event, isEdit ? "logoUrl" : "tenant.logoUrl")
+          <UploadBox
+            preview={
+              previews[isEdit ? "logoUrl" : "tenant.logoUrl"] ||
+              (isEdit ? watch("logoUrl") : tenantLogo)
             }
-            accept="image/*"
+            labels={uploadLabels}
+            onFileSelect={(file) =>
+              handleUpload(file, isEdit ? "logoUrl" : "tenant.logoUrl")
+            }
+            onRemove={() =>
+              removeImage(isEdit ? "logoUrl" : "tenant.logoUrl")
+            }
+            progress={
+              uploadingField === (isEdit ? "logoUrl" : "tenant.logoUrl")
+                ? progress
+                : 0
+            }
+            uploading={
+              uploading &&
+              uploadingField === (isEdit ? "logoUrl" : "tenant.logoUrl")
+            }
+            variant="logo"
           />
-          <div onClick={() => tenantLogoRef.current?.click()}>
-            <UploadBox
-              preview={
-                previews[isEdit ? "logoUrl" : "tenant.logoUrl"] ||
-                (isEdit ? watch("logoUrl") : tenantLogo)
-              }
-              labels={uploadLabels}
-              onRemove={() =>
-                removeImage(
-                  isEdit ? "logoUrl" : "tenant.logoUrl",
-                  tenantLogoRef
-                )
-              }
-            />
-          </div>
         </div>
 
         {!isEdit && (
@@ -1852,42 +1841,40 @@ export default function BusinessOwnerForm({
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
               <div className="space-y-[6px]">
                 <Label>{restaurants("restaurantLogo")}</Label>
-                <input
-                  type="file"
-                  className="hidden"
-                  ref={restaurantLogoRef}
-                  onChange={(event) => handleUpload(event, "restaurant.logoUrl")}
-                  accept="image/*"
+                <UploadBox
+                  preview={previews["restaurant.logoUrl"] || restaurantLogo}
+                  labels={uploadLabels}
+                  onFileSelect={(file) =>
+                    handleUpload(file, "restaurant.logoUrl")
+                  }
+                  onRemove={() => removeImage("restaurant.logoUrl")}
+                  progress={
+                    uploadingField === "restaurant.logoUrl" ? progress : 0
+                  }
+                  uploading={
+                    uploading && uploadingField === "restaurant.logoUrl"
+                  }
+                  variant="logo"
                 />
-                <div onClick={() => restaurantLogoRef.current?.click()}>
-                  <UploadBox
-                    preview={previews["restaurant.logoUrl"] || restaurantLogo}
-                    labels={uploadLabels}
-                    onRemove={() =>
-                      removeImage("restaurant.logoUrl", restaurantLogoRef)
-                    }
-                  />
-                </div>
               </div>
 
               <div className="space-y-[6px]">
                 <Label>{restaurants("coverImage")}</Label>
-                <input
-                  type="file"
-                  className="hidden"
-                  ref={restaurantCoverRef}
-                  onChange={(event) => handleUpload(event, "restaurant.coverImage")}
-                  accept="image/*"
+                <UploadBox
+                  preview={previews["restaurant.coverImage"] || restaurantCover}
+                  labels={uploadLabels}
+                  onFileSelect={(file) =>
+                    handleUpload(file, "restaurant.coverImage")
+                  }
+                  onRemove={() => removeImage("restaurant.coverImage")}
+                  progress={
+                    uploadingField === "restaurant.coverImage" ? progress : 0
+                  }
+                  uploading={
+                    uploading && uploadingField === "restaurant.coverImage"
+                  }
+                  variant="cover"
                 />
-                <div onClick={() => restaurantCoverRef.current?.click()}>
-                  <UploadBox
-                    preview={previews["restaurant.coverImage"] || restaurantCover}
-                    labels={uploadLabels}
-                    onRemove={() =>
-                      removeImage("restaurant.coverImage", restaurantCoverRef)
-                    }
-                  />
-                </div>
               </div>
             </div>
           </FormSection>
@@ -1964,40 +1951,30 @@ export default function BusinessOwnerForm({
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
               <div className="space-y-[6px]">
                 <Label>{businessOwners("branchLogo")}</Label>
-                <input
-                  type="file"
-                  className="hidden"
-                  ref={branchLogoRef}
-                  onChange={(event) => handleUpload(event, "branch.logoUrl")}
-                  accept="image/*"
+                <UploadBox
+                  preview={previews["branch.logoUrl"] || branchLogo}
+                  labels={uploadLabels}
+                  onFileSelect={(file) => handleUpload(file, "branch.logoUrl")}
+                  onRemove={() => removeImage("branch.logoUrl")}
+                  progress={uploadingField === "branch.logoUrl" ? progress : 0}
+                  uploading={uploading && uploadingField === "branch.logoUrl"}
+                  variant="logo"
                 />
-                <div onClick={() => branchLogoRef.current?.click()}>
-                  <UploadBox
-                    preview={previews["branch.logoUrl"] || branchLogo}
-                    labels={uploadLabels}
-                    onRemove={() => removeImage("branch.logoUrl", branchLogoRef)}
-                  />
-                </div>
               </div>
 
               <div className="space-y-[6px]">
                 <Label>{branches("branchCover")}</Label>
-                <input
-                  type="file"
-                  className="hidden"
-                  ref={branchCoverRef}
-                  onChange={(event) => handleUpload(event, "branch.coverImage")}
-                  accept="image/*"
+                <UploadBox
+                  preview={previews["branch.coverImage"] || branchCover}
+                  labels={uploadLabels}
+                  onFileSelect={(file) => handleUpload(file, "branch.coverImage")}
+                  onRemove={() => removeImage("branch.coverImage")}
+                  progress={
+                    uploadingField === "branch.coverImage" ? progress : 0
+                  }
+                  uploading={uploading && uploadingField === "branch.coverImage"}
+                  variant="cover"
                 />
-                <div onClick={() => branchCoverRef.current?.click()}>
-                  <UploadBox
-                    preview={previews["branch.coverImage"] || branchCover}
-                    labels={uploadLabels}
-                    onRemove={() =>
-                      removeImage("branch.coverImage", branchCoverRef)
-                    }
-                  />
-                </div>
               </div>
             </div>
           </FormSection>
@@ -2858,6 +2835,10 @@ function UploadBox({
   onRemove,
   disabled = false,
   labels,
+  onFileSelect,
+  progress,
+  uploading,
+  variant = "card",
 }: {
   preview?: string;
   onRemove: () => void;
@@ -2868,45 +2849,28 @@ function UploadBox({
     clickToUpload: string;
     orDragDrop: string;
     uploadHint: string;
+    uploading: string;
   };
+  onFileSelect: (file: File) => void;
+  progress: number;
+  uploading: boolean;
+  variant?: "avatar" | "logo" | "cover" | "card";
 }) {
   return (
-    <div
-      className={`group relative flex min-h-[180px] flex-col items-center justify-center rounded-[12px] border-2 border-gray-200 bg-gray-100 p-20 transition-colors ${
-        disabled ? "cursor-not-allowed opacity-70" : "cursor-pointer hover:bg-gray-50"
-      }`}
-    >
-      {preview ? (
-        <div className="relative flex w-full flex-col items-center">
-          <div>
-            <MyImage src={preview} alt={labels.preview} width={96} height={96} />
-          </div>
-
-          {!disabled ? (
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                onRemove();
-              }}
-              className="absolute -right-16 -top-16 rounded-full bg-red-100 p-2 text-red-600 transition-colors hover:bg-red-200"
-            >
-              <X size={16} />
-            </button>
-          ) : null}
-
-          <p className="mt-4 text-sm text-gray-500">{labels.imageSelected}</p>
-        </div>
-      ) : (
-        <>
-          <ImageIcon size={40} className="mb-[21.5px] text-gray-300" />
-          <p className="mb-[3px] text-lg font-semibold text-gray">
-            <span className="text-primary">{labels.clickToUpload}</span> {labels.orDragDrop}
-          </p>
-          <p className="text-[16.5px] text-gray">{labels.uploadHint}</p>
-        </>
-      )}
-    </div>
+    <PremiumImageDropzone
+      alt={labels.preview}
+      disabled={disabled}
+      emptyHint={`${labels.orDragDrop} - ${labels.uploadHint}`}
+      emptyTitle={labels.clickToUpload}
+      onFileSelect={onFileSelect}
+      onRemove={onRemove}
+      preview={preview}
+      progress={progress}
+      selectedText={labels.imageSelected}
+      uploading={uploading}
+      uploadText={labels.uploading}
+      variant={variant}
+    />
   );
 }
 

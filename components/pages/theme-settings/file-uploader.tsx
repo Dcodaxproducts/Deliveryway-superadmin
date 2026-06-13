@@ -1,7 +1,8 @@
 "use client";
 
-import { Upload } from 'lucide-react';
+import { useEffect, useState } from "react";
 import { useTranslations } from 'next-intl';
+import { PremiumImageDropzone } from "@/components/forms/PremiumImageDropzone";
 
 interface FileUploaderProps {
     title: string;
@@ -11,20 +12,47 @@ interface FileUploaderProps {
 
 const FileUploader: React.FC<FileUploaderProps> = ({ title, recommendation, fileTypes }) => {
     const themeSettings = useTranslations("themeSettings");
+    const [preview, setPreview] = useState("");
+
+    const handleFileSelect = (file: File) => {
+        if (preview.startsWith("blob:")) {
+            URL.revokeObjectURL(preview);
+        }
+
+        setPreview(URL.createObjectURL(file));
+    };
+
+    const removePreview = () => {
+        if (preview.startsWith("blob:")) {
+            URL.revokeObjectURL(preview);
+        }
+
+        setPreview("");
+    };
+
+    useEffect(() => {
+        return () => {
+            if (preview.startsWith("blob:")) {
+                URL.revokeObjectURL(preview);
+            }
+        };
+    }, [preview]);
 
     return (
         <div className="space-y-[4px]">
             <h4 className="text-base text-dark">{title}</h4>
             <p className="text-sm text-gray max-w-[368px]">{recommendation}</p>
-            <div className="border-2 border-gray-200 rounded-lg p-8 text-center cursor-pointer">
-                <div className="flex flex-col items-center justify-center">
-                    <div className="w-[54px] h-[54px] rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                        <Upload className="text-primary" />
-                    </div>
-                    <p className="text-base text-dark font-semibold">{themeSettings("clickToUpload")}</p>
-                    <p className="text-sm text-gray">{fileTypes}</p>
-                </div>
-            </div>
+            <PremiumImageDropzone
+                accept={fileTypes}
+                alt={title}
+                emptyHint={fileTypes}
+                emptyTitle={themeSettings("clickToUpload")}
+                onFileSelect={handleFileSelect}
+                onRemove={removePreview}
+                preview={preview}
+                selectedText={themeSettings("clickToUpload")}
+                variant="card"
+            />
         </div>
     );
 };

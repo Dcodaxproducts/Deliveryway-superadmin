@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Info, Image as ImageIcon, X, Loader2 } from "lucide-react"
+import { Info } from "lucide-react"
 import { HexColorPicker } from "react-colorful"
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label"
 import { createRestaurantSchema, type RestaurantValues } from "@/validations/restaurant"
 import { useCreateRestaurant, useUpdateRestaurant } from "@/hooks/useRestaurant"
 import { useFileUpload } from '@/hooks/useFileUpload'
+import { PremiumImageDropzone } from "@/components/forms/PremiumImageDropzone"
 
 interface RestaurantFormProps {
   mode?: 'create' | 'edit'
@@ -36,9 +37,6 @@ export default function RestaurantForm({
   const restaurantSchema = createRestaurantSchema(validation)
   const createMutation = useCreateRestaurant()
   const updateMutation = useUpdateRestaurant()
-
-  const logoInputRef = useRef<HTMLInputElement>(null)
-  const coverInputRef = useRef<HTMLInputElement>(null)
 
   const { uploadFile, uploading, progress } = useFileUpload()
   const [uploadingTarget, setUploadingTarget] = useState<UploadTarget>(null)
@@ -101,8 +99,7 @@ const coverPreview = coverPreviewBlob || coverImageUrl
     mutate(data)
   }
 
-const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0]
+const handleLogoChange = async (file: File) => {
   if (!file) return
 
   if (logoPreviewBlob?.startsWith("blob:")) {
@@ -124,8 +121,7 @@ const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   }
 }
 
-const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0]
+const handleCoverChange = async (file: File) => {
   if (!file) return
 
   if (coverPreviewBlob?.startsWith("blob:")) {
@@ -146,30 +142,22 @@ const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setUploadingTarget(null)
   }
 }
-const removeLogo = (e: React.MouseEvent) => {
-  e.stopPropagation()
-
+const removeLogo = () => {
   if (logoPreviewBlob?.startsWith("blob:")) {
     URL.revokeObjectURL(logoPreviewBlob)
   }
 
   setLogoPreviewBlob("")
   setValue("logoUrl", "", { shouldValidate: true, shouldDirty: true })
-
-  if (logoInputRef.current) logoInputRef.current.value = ""
 }
 
-const removeCover = (e: React.MouseEvent) => {
-  e.stopPropagation()
-
+const removeCover = () => {
   if (coverPreviewBlob?.startsWith("blob:")) {
     URL.revokeObjectURL(coverPreviewBlob)
   }
 
   setCoverPreviewBlob("")
   setValue("coverImage", "", { shouldValidate: true, shouldDirty: true })
-
-  if (coverInputRef.current) coverInputRef.current.value = ""
 }
 
   return (
@@ -202,32 +190,19 @@ const removeCover = (e: React.MouseEvent) => {
 
   <div className="space-y-[6px]">
   <Label>{restaurants("logoUpload")} *</Label>
-  <input
-    type="file"
-    className="hidden"
-    ref={logoInputRef}
-    onChange={handleLogoChange}
-    accept="image/*"
+  <PremiumImageDropzone
+    alt={restaurants("logoSelected")}
+    emptyHint={restaurants("uploadLogoHint")}
+    emptyTitle={restaurants("uploadLogo")}
+    onFileSelect={handleLogoChange}
+    onRemove={removeLogo}
+    preview={logoPreview}
+    progress={uploadingTarget === "logo" ? progress : 0}
+    selectedText={restaurants("logoSelected")}
+    uploading={uploading && uploadingTarget === "logo"}
+    uploadText={restaurants("uploadingLogo")}
+    variant="logo"
   />
-
-  <div onClick={() => !uploading && logoInputRef.current?.click()}>
-    <UploadBox
-    type="logo"
-      preview={logoPreview}
-      onRemove={removeLogo}
-      selectedText={restaurants("logoSelected")}
-      emptyTitle={restaurants("uploadLogo")}
-      emptyHint={restaurants("uploadLogoHint")}
-      previewHeight="h-[240px]"
-    />
-  </div>
-
-  {uploading && uploadingTarget === 'logo' && (
-    <p className="text-sm text-gray-500 flex items-center gap-2">
-      <Loader2 className="size-4 animate-spin" />
-      {restaurants("uploadingLogo")} {progress > 0 ? `${progress}%` : ""}
-    </p>
-  )}
 
   {errors.logoUrl && (
     <p className="text-sm text-red-500 mt-1">{errors.logoUrl.message}</p>
@@ -238,32 +213,19 @@ const removeCover = (e: React.MouseEvent) => {
 
 <div className="space-y-[6px]">
   <Label>{restaurants("coverImage")}</Label>
-  <input
-    type="file"
-    className="hidden"
-    ref={coverInputRef}
-    onChange={handleCoverChange}
-    accept="image/*"
+  <PremiumImageDropzone
+    alt={restaurants("coverSelected")}
+    emptyHint={restaurants("uploadCoverHint")}
+    emptyTitle={restaurants("uploadCover")}
+    onFileSelect={handleCoverChange}
+    onRemove={removeCover}
+    preview={coverPreview}
+    progress={uploadingTarget === "cover" ? progress : 0}
+    selectedText={restaurants("coverSelected")}
+    uploading={uploading && uploadingTarget === "cover"}
+    uploadText={restaurants("uploadingCover")}
+    variant="cover"
   />
-
-  <div onClick={() => !uploading && coverInputRef.current?.click()}>
-    <UploadBox
-     type="cover"
-      preview={coverPreview}
-      onRemove={removeCover}
-      selectedText={restaurants("coverSelected")}
-      emptyTitle={restaurants("uploadCover")}
-      emptyHint={restaurants("uploadCoverHint")}
-      previewHeight="h-[260px]"
-    />
-  </div>
-
-  {uploading && uploadingTarget === 'cover' && (
-    <p className="text-sm text-gray-500 flex items-center gap-2">
-      <Loader2 className="size-4 animate-spin" />
-      {restaurants("uploadingCover")} {progress > 0 ? `${progress}%` : ""}
-    </p>
-  )}
 
   {errors.coverImage && (
     <p className="text-sm text-red-500 mt-1">{errors.coverImage.message}</p>
@@ -476,93 +438,3 @@ function FormGroup({
 }
 
 
-
-function UploadBox({
-  preview,
-  onRemove,
-  selectedText,
-  emptyTitle,
-  emptyHint,
-  previewHeight = "h-[220px]",
-  type = "cover",
-}: {
-  preview?: string;
-  onRemove: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  selectedText: string;
-  emptyTitle: string;
-  emptyHint: string;
-  previewHeight?: string;
-  type?: "logo" | "cover";
-}) {
-  /* ================= LOGO PREVIEW (NO PARENT BOX) ================= */
-  if (type === "logo" && preview) {
-    return (
-      <div className="relative w-[120px] h-[120px] rounded-full bg-white shadow-lg border flex items-center justify-center">
-        <img
-          src={preview}
-          alt={selectedText}
-          className="w-full h-full object-cover rounded-full"
-        />
-
-        <button
-          type="button"
-          onClick={onRemove}
-          className="absolute top-1 right-1 z-10 inline-flex items-center justify-center rounded-full bg-gray-300 p-1.5 text-red-600 shadow hover:bg-white"
-        >
-          <X size={14} />
-        </button>
-      </div>
-    );
-  }
-
-  /* ================= PARENT BOX (ONLY FOR EMPTY OR COVER) ================= */
-  return (
-    <div
-      className={`relative overflow-hidden border-2 border-dashed border-gray-300 rounded-[16px] bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer flex items-center justify-center ${previewHeight}`}
-    >
-      {preview ? (
-        /* ================= COVER PREVIEW ================= */
-        <div className="relative w-full h-full">
-          <img
-            src={preview}
-            alt={selectedText}
-            className="w-full h-full object-cover"
-          />
-
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-4 py-4">
-            <p className="text-sm font-medium text-white">{selectedText}</p>
-          </div>
-
-          <button
-            type="button"
-            onClick={onRemove}
-            className="absolute top-3 right-3 z-10 inline-flex items-center justify-center rounded-full bg-white/90 p-2 text-red-600 shadow hover:bg-white"
-          >
-            <X size={16} />
-          </button>
-        </div>
-      ) : type === "logo" ? (
-        /* ================= LOGO EMPTY ================= */
-        <div className="flex flex-col items-center justify-center text-center">
-          <div className="w-[120px] h-[120px] rounded-full border-2 border-dashed border-gray-300 bg-white flex flex-col items-center justify-center hover:bg-gray-100 transition">
-            <ImageIcon size={26} className="text-gray-300 mb-1" />
-            <p className="text-xs text-gray-500 px-2">{emptyTitle}</p>
-          </div>
-
-          <p className="text-[11px] text-gray-400 mt-2">{emptyHint}</p>
-        </div>
-      ) : (
-        /* ================= COVER EMPTY ================= */
-        <div className="flex h-full w-full flex-col items-center justify-center px-6 text-center">
-          <ImageIcon size={42} className="text-gray-300 mb-4" />
-
-          <p className="text-lg font-semibold text-gray-700 mb-1">
-            <span className="text-primary">{emptyTitle}</span>
-          </p>
-
-          <p className="text-sm text-gray-500">{emptyHint}</p>
-        </div>
-      )}
-    </div>
-  );
-}
