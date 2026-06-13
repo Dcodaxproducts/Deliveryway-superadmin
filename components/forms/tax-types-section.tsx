@@ -185,19 +185,27 @@ export function TaxTypesSection({ canManage }: TaxTypesSectionProps) {
                       {globalSettings("defaultTaxType")}
                     </Badge>
                   ) : null}
+                  <Badge
+                    className={
+                      taxType.isActive
+                        ? "rounded-[8px] bg-primary/10 px-2.5 py-1 text-primary"
+                        : "rounded-[8px] bg-gray-200 px-2.5 py-1 text-gray-600"
+                    }
+                  >
+                    {taxType.isActive ? common("active") : common("inactive")}
+                  </Badge>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-2 text-sm text-gray">
-                    <Switch
-                      checked={taxType.isActive}
-                      disabled={!canManage}
-                      onCheckedChange={(checked) => updateTaxType(index, { isActive: checked })}
-                    />
-                    {taxType.isActive ? common("active") : common("inactive")}
-                  </label>
+                {canManage ? (
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-2 text-sm text-gray">
+                      <Switch
+                        checked={taxType.isActive}
+                        onCheckedChange={(checked) => updateTaxType(index, { isActive: checked })}
+                      />
+                      {taxType.isActive ? common("active") : common("inactive")}
+                    </label>
 
-                  {canManage ? (
                     <Button
                       type="button"
                       variant="outline"
@@ -207,45 +215,62 @@ export function TaxTypesSection({ canManage }: TaxTypesSectionProps) {
                     >
                       <Trash2 size={15} />
                     </Button>
-                  ) : null}
-                </div>
+                  </div>
+                ) : null}
               </div>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_1.5fr_1fr_auto]">
-                <TaxInput
-                  label={globalSettings("taxTypeCode")}
-                  value={taxType.code}
-                  disabled={!canManage}
-                  onChange={(value) => updateTaxType(index, { code: value.toUpperCase() })}
-                />
-                <TaxInput
-                  label={globalSettings("taxTypeLabel")}
-                  value={taxType.label}
-                  disabled={!canManage}
-                  onChange={(value) => updateTaxType(index, { label: value })}
-                />
-                <TaxInput
-                  label={globalSettings("taxTypePercentage")}
-                  value={String(taxType.percentage)}
-                  type="number"
-                  disabled={!canManage}
-                  onChange={(value) => updateTaxType(index, { percentage: Number(value) })}
-                />
+              {canManage ? (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_1.5fr_1fr_auto]">
+                  <TaxInput
+                    label={globalSettings("taxTypeCode")}
+                    value={taxType.code}
+                    disabled={false}
+                    onChange={(value) => updateTaxType(index, { code: value.toUpperCase() })}
+                  />
+                  <TaxInput
+                    label={globalSettings("taxTypeLabel")}
+                    value={taxType.label}
+                    disabled={false}
+                    onChange={(value) => updateTaxType(index, { label: value })}
+                  />
+                  <TaxInput
+                    label={globalSettings("taxTypePercentage")}
+                    value={String(taxType.percentage)}
+                    type="number"
+                    disabled={false}
+                    onChange={(value) => updateTaxType(index, { percentage: Number(value) })}
+                  />
 
-                <div className="flex flex-col justify-end">
-                  <Button
-                    type="button"
-                    variant={taxType.isDefault ? "primary" : "outline"}
-                    className="h-[48px] rounded-[12px] px-4"
-                    disabled={!canManage || taxType.isDefault}
-                    onClick={() => markDefault(index)}
-                  >
-                    {taxType.isDefault
-                      ? globalSettings("defaultTaxType")
-                      : globalSettings("makeDefaultTaxType")}
-                  </Button>
+                  <div className="flex flex-col justify-end">
+                    <Button
+                      type="button"
+                      variant={taxType.isDefault ? "primary" : "outline"}
+                      className="h-[48px] rounded-[12px] px-4"
+                      disabled={taxType.isDefault}
+                      onClick={() => markDefault(index)}
+                    >
+                      {taxType.isDefault
+                        ? globalSettings("defaultTaxType")
+                        : globalSettings("makeDefaultTaxType")}
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  <ReadonlyValue
+                    label={globalSettings("taxTypeCode")}
+                    value={taxType.code || common("notAvailable")}
+                  />
+                  <ReadonlyValue
+                    label={globalSettings("taxTypeLabel")}
+                    value={taxType.label || common("notAvailable")}
+                  />
+                  <ReadonlyValue
+                    label={globalSettings("taxTypePercentage")}
+                    value={`${taxType.percentage}%`}
+                  />
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -280,6 +305,23 @@ export function TaxTypesSection({ canManage }: TaxTypesSectionProps) {
         </div>
       ) : null}
     </section>
+  );
+}
+
+function ReadonlyValue({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="space-y-[6px]">
+      <Label>{label}</Label>
+      <div className="flex h-[48px] items-center rounded-[12px] border border-[#E5E7EB] bg-white px-3 text-sm text-dark">
+        {value}
+      </div>
+    </div>
   );
 }
 
