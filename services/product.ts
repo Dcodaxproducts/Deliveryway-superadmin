@@ -10,6 +10,7 @@ export interface Product {
   imageUrl: string;
   sku: string;
   basePrice: string;
+  taxTypeCode?: string | null;
   prepTimeMinutes: number;
   dietaryFlags: string[];
   allergenFlags: string[];

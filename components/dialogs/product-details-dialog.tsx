@@ -8,6 +8,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { useTranslations } from "next-intl";
+import { useGetGlobalTaxTypes } from "@/hooks/useGlobalSettings";
 
 interface ProductDetailsDialogProps {
     open: boolean;
@@ -18,7 +19,14 @@ interface ProductDetailsDialogProps {
 export default function ProductDetailsDialog({ open, onOpenChange, product }: ProductDetailsDialogProps) {
     const common = useTranslations("common");
     const products = useTranslations("products");
+    const { data: taxTypesResponse } = useGetGlobalTaxTypes();
     if (!product) return null;
+
+    const activeTaxTypes = taxTypesResponse?.data?.filter((taxType) => taxType.isActive) ?? [];
+    const selectedTaxType = activeTaxTypes.find((taxType) => taxType.code === product.taxTypeCode);
+    const taxTypeLabel = selectedTaxType
+        ? `${selectedTaxType.label} (${selectedTaxType.percentage}%)`
+        : product.taxTypeCode || common("notAvailable");
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -48,6 +56,7 @@ export default function ProductDetailsDialog({ open, onOpenChange, product }: Pr
                         <div className="w-full space-y-4 pt-4 border-t border-gray-100">
                             <InfoRow label={products("restaurantName")} value={product.restaurant.name || common("notAvailable")} />
                             <InfoRow label={products("category")} value={product.category?.name || common("notAvailable")} />
+                            <InfoRow label={products("taxType")} value={taxTypeLabel} />
                             <InfoRow label={products("prepTime")} value={products("minsValue", { count: product.prepTimeMinutes || 0 })} />
                             <InfoRow label={common("status")} value={product.isActive ? common("active") : common("inactive")} />
                         </div>

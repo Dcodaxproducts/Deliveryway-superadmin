@@ -22,6 +22,9 @@ import {
   useGetGlobalSettings,
   useUpdateGlobalSettings,
 } from "@/hooks/useGlobalSettings";
+import { useUser } from "@/hooks/useAuth";
+import { isSuperAdmin } from "@/lib/auth-role";
+import { TaxTypesSection } from "@/components/forms/tax-types-section";
 import {
   useGlobalPaymentMethodsQuery,
   useUpdateGlobalPaymentMethodsMutation,
@@ -114,6 +117,7 @@ export function SettingsForm() {
   const globalSettings = useTranslations("globalSettings");
   const common = useTranslations("common");
   const { data } = useGetGlobalSettings();
+  const { data: user } = useUser();
   const { mutate, isPending } = useUpdateGlobalSettings();
   const {
     data: paymentMethodsResponse,
@@ -305,6 +309,7 @@ export function SettingsForm() {
   const activePaymentMethodsCount = paymentMethods.filter(
     (method) => method.isActive
   ).length;
+  const canManageTaxTypes = isSuperAdmin(user);
 
   return (
     <div className="space-y-6">
@@ -699,6 +704,8 @@ export function SettingsForm() {
           </Button>
         </div>
       </section>
+
+      <TaxTypesSection canManage={canManageTaxTypes} />
     </div>
   );
 }

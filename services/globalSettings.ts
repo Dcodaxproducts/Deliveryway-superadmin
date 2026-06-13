@@ -1,6 +1,9 @@
 import api from "@/lib/axios";
 import type {
   GetPaymentMethodsResponse,
+  GetTaxTypesResponse,
+  UpdateTaxTypesPayload,
+  UpdateTaxTypesResponse,
   UpdatePaymentMethodsPayload,
   UpdatePaymentMethodsResponse,
 } from "@/types/global-settings";
@@ -75,6 +78,25 @@ export const updateGlobalPaymentMethods = async (
 ): Promise<UpdatePaymentMethodsResponse> => {
   const { data } = await api.patch<UpdatePaymentMethodsResponse>(
     "/admin/global-settings/payment-methods",
+    payload
+  );
+
+  return data;
+};
+
+export const getGlobalTaxTypes = async (): Promise<GetTaxTypesResponse> => {
+  const { data } = await api.get<GetTaxTypesResponse>(
+    "/admin/global-settings/tax-types"
+  );
+
+  return data;
+};
+
+export const updateGlobalTaxTypes = async (
+  payload: UpdateTaxTypesPayload
+): Promise<UpdateTaxTypesResponse> => {
+  const { data } = await api.patch<UpdateTaxTypesResponse>(
+    "/admin/global-settings/tax-types",
     payload
   );
 

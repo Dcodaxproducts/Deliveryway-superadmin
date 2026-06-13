@@ -25,3 +25,25 @@ export interface UpdatePaymentMethodsResponse {
   data?: GlobalPaymentMethod[];
   message?: string;
 }
+
+export interface TaxType {
+  code: string;
+  label: string;
+  percentage: number;
+  isActive: boolean;
+  isDefault: boolean;
+}
+
+export interface GetTaxTypesResponse {
+  data: TaxType[];
+  message?: string;
+}
+
+export interface UpdateTaxTypesPayload {
+  taxTypes: TaxType[];
+}
+
+export interface UpdateTaxTypesResponse {
+  data?: TaxType[];
+  message?: string;
+}

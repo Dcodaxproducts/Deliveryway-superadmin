@@ -45,6 +45,11 @@ export interface BranchSettings {
   taxation: {
     taxPercentage: number;
   };
+  serviceCharge?: {
+    isEnabled: boolean;
+    type: "PERCENTAGE" | "AMOUNT";
+    value: number;
+  };
   automation: {
     autoAcceptOrders: boolean;
     estimatedPrepTime: number;

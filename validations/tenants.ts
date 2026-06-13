@@ -84,6 +84,15 @@ const taxationSchema = z
   .partial()
   .optional();
 
+const serviceChargeSchema = z
+  .object({
+    isEnabled: z.boolean().optional(),
+    type: z.enum(["PERCENTAGE", "AMOUNT"]).optional(),
+    value: z.coerce.number().min(0).optional(),
+  })
+  .partial()
+  .optional();
+
 /**
  * ==============================
  * Register Tenant Schema
@@ -148,6 +157,7 @@ export const createRegisterTenantSchema = (t: TranslationFunction) => z.object({
         deliveryConfig: deliveryConfigSchema,
         automation: automationSchema,
         taxation: taxationSchema,
+        serviceCharge: serviceChargeSchema,
         contact: branchContactSchema,
       })
       .partial()
