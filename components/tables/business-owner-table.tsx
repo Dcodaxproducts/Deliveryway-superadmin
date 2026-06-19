@@ -308,6 +308,8 @@ export default function BusinessOwnerTable({
                 const status = getOverallStatus(item);
                 const isActiveUpdating = activeUpdatingId === item.id;
                 const isApprovalUpdating = approvalUpdatingId === item.id;
+                const isApprovedAndVerified =
+                  Boolean(item?.isApproved) && Boolean(item?.isVerified);
                 const isActionMenuOpen = openActionId === item.id;
 
                 return (
@@ -441,19 +443,19 @@ export default function BusinessOwnerTable({
                             <button
                               type="button"
                               onClick={() => handleApproveOwner(item)}
-                              disabled={Boolean(item?.isApproved) || !item?.ownerId || isApprovalUpdating}
+                              disabled={isApprovedAndVerified || !item?.ownerId || isApprovalUpdating}
                               className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
                             >
                               {isApprovalUpdating ? (
                                 <Loader2 size={15} className="animate-spin" />
-                              ) : item?.isApproved ? (
+                              ) : isApprovedAndVerified ? (
                                 <CheckCircle2 size={15} />
                               ) : (
                                 <ShieldCheck size={15} />
                               )}
                               {isApprovalUpdating
                                 ? businessOwnersText("approving")
-                                : item?.isApproved
+                                : isApprovedAndVerified
                                   ? businessOwnersText("alreadyApproved")
                                   : businessOwnersText("approve")}
                             </button>
