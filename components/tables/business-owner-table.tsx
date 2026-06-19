@@ -18,7 +18,6 @@ import {
   Trash2,
   UserCheck,
   UserX,
-  XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -41,6 +40,9 @@ type RequirementBadgeProps = {
   value: string;
   tone: RequirementTone;
   icon: React.ReactNode;
+  disabled?: boolean;
+  onClick?: () => void;
+  title?: string;
 };
 
 type BusinessOwnerRow = {
@@ -64,13 +66,25 @@ const getToneClasses = (tone: RequirementTone) => {
   return tones[tone];
 };
 
-function RequirementBadge({ label, value, tone, icon }: RequirementBadgeProps) {
-  return (
-    <div
-      className={`inline-flex min-w-[118px] items-center gap-2 rounded-xl border px-2.5 py-2 ${getToneClasses(
-        tone,
-      )}`}
-    >
+function RequirementBadge({
+  label,
+  value,
+  tone,
+  icon,
+  disabled,
+  onClick,
+  title,
+}: RequirementBadgeProps) {
+  const className = `inline-flex min-w-[118px] items-center gap-2 rounded-xl border px-2.5 py-2 text-left transition ${getToneClasses(
+    tone,
+  )} ${
+    onClick
+      ? "cursor-pointer hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-65 disabled:shadow-none"
+      : ""
+  }`;
+
+  const content = (
+    <>
       <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white/70">
         {icon}
       </span>
@@ -83,7 +97,23 @@ function RequirementBadge({ label, value, tone, icon }: RequirementBadgeProps) {
           {value}
         </span>
       </span>
-    </div>
+    </>
+  );
+
+  if (!onClick) {
+    return <div className={className}>{content}</div>;
+  }
+
+  return (
+    <button
+      type="button"
+      className={className}
+      disabled={disabled}
+      onClick={onClick}
+      title={title}
+    >
+      {content}
+    </button>
   );
 }
 
@@ -260,11 +290,6 @@ export default function BusinessOwnerTable({
     });
   };
 
-  const handleActionActiveToggle = (item: BusinessOwnerRow) => {
-    handleActiveToggle(item, !item?.isActive);
-    setOpenActionId(null);
-  };
-
   const handleEdit = (item: BusinessOwnerRow) => {
     setOpenActionId(null);
     router.push(`/business-owners/${item.id}/edit`);
@@ -322,6 +347,9 @@ export default function BusinessOwnerTable({
                 const canClickApprove =
                   Boolean(item?.ownerId) &&
                   (!item?.isApproved || !item?.isVerified);
+                const approveActionTitle = isApprovedAndVerified
+                  ? businessOwnersText("alreadyApproved")
+                  : businessOwnersText("approve");
                 const isActionMenuOpen = openActionId === item.id;
 
                 return (
@@ -385,8 +413,17 @@ export default function BusinessOwnerTable({
                             label={businessOwnersText("twoFactor")}
                             value={item?.isVerified ? businessOwnersText("verified") : businessOwnersText("pending")}
                             tone={item?.isVerified ? "success" : "warning"}
+                            disabled={!canClickApprove || isApprovalUpdating}
+                            onClick={
+                              canClickApprove
+                                ? () => handleApproveOwner(item)
+                                : undefined
+                            }
+                            title={approveActionTitle}
                             icon={
-                              item?.isVerified ? (
+                              isApprovalUpdating ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : item?.isVerified ? (
                                 <ShieldCheck size={14} />
                               ) : (
                                 <Clock3 size={14} />
@@ -398,8 +435,17 @@ export default function BusinessOwnerTable({
                             label={businessOwnersText("approval")}
                             value={item?.isApproved ? businessOwnersText("approved") : businessOwnersText("required")}
                             tone={item?.isApproved ? "success" : "primary"}
+                            disabled={!canClickApprove || isApprovalUpdating}
+                            onClick={
+                              canClickApprove
+                                ? () => handleApproveOwner(item)
+                                : undefined
+                            }
+                            title={approveActionTitle}
                             icon={
-                              item?.isApproved ? (
+                              isApprovalUpdating ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : item?.isApproved ? (
                                 <UserCheck size={14} />
                               ) : (
                                 <ShieldCheck size={14} />
@@ -411,8 +457,17 @@ export default function BusinessOwnerTable({
                             label={businessOwnersText("access")}
                             value={item?.isActive ? common("active") : common("disabled")}
                             tone={item?.isActive ? "success" : "danger"}
+                            disabled={isActiveUpdating}
+                            onClick={() => handleActiveToggle(item, !item?.isActive)}
+                            title={
+                              item?.isActive
+                                ? businessOwnersText("disablePlatformAccess")
+                                : businessOwnersText("enablePlatformAccess")
+                            }
                             icon={
-                              item?.isActive ? (
+                              isActiveUpdating ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : item?.isActive ? (
                                 <CheckCircle2 size={14} />
                               ) : (
                                 <UserX size={14} />
@@ -450,46 +505,6 @@ export default function BusinessOwnerTable({
                             >
                               <Pencil size={15} />
                               {businessOwnersText("editBusinessOwner")}
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => handleApproveOwner(item)}
-                              disabled={!canClickApprove || isApprovalUpdating}
-                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                              {isApprovalUpdating ? (
-                                <Loader2 size={15} className="animate-spin" />
-                              ) : isApprovedAndVerified ? (
-                                <CheckCircle2 size={15} />
-                              ) : (
-                                <ShieldCheck size={15} />
-                              )}
-                              {isApprovalUpdating
-                                ? businessOwnersText("approving")
-                                : isApprovedAndVerified
-                                  ? businessOwnersText("alreadyApproved")
-                                  : businessOwnersText("approve")}
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => handleActionActiveToggle(item)}
-                              disabled={isActiveUpdating}
-                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                              {isActiveUpdating ? (
-                                <Loader2 size={15} className="animate-spin" />
-                              ) : item?.isActive ? (
-                                <UserX size={15} />
-                              ) : (
-                                <UserCheck size={15} />
-                              )}
-                              {isActiveUpdating
-                                ? businessOwnersText("updatingAccess")
-                                : item?.isActive
-                                  ? businessOwnersText("disablePlatformAccess")
-                                  : businessOwnersText("enablePlatformAccess")}
                             </button>
 
                             <div className="my-1 h-px bg-gray-100" />
