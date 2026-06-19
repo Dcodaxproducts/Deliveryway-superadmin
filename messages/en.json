@@ -335,15 +335,15 @@
     "uploadHint": "JPG, JPEG, PNG less than 1MB",
     "status": {
       "accessGranted": "Access granted",
-      "accessGrantedDescription": "2FA verified, approved, and active",
-      "accessDisabled": "Access disabled",
-      "accessDisabledDescription": "Super admin has disabled platform access",
+      "accessGrantedDescription": "Verified, approved, and active",
+      "accessDisabled": "Disabled",
+      "accessDisabledDescription": "Business admin login is blocked because access is inactive",
       "approvalTwoFactorPending": "Approval & 2FA pending",
-      "approvalTwoFactorPendingDescription": "User must verify 2FA and be approved",
+      "approvalTwoFactorPendingDescription": "Approve this business owner to verify and approve access",
       "pendingApproval": "Pending approval",
       "pendingApprovalDescription": "Waiting for super admin approval",
       "twoFactorPending": "2FA pending",
-      "twoFactorPendingDescription": "User has not completed registration verification"
+      "twoFactorPendingDescription": "Already approved but verification needs repair. Click Approve again."
     },
     "maps": {
       "selectValidAddress": "Please select a valid Google Maps address.",

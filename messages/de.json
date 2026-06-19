@@ -335,15 +335,15 @@
     "uploadHint": "JPG, JPEG, PNG kleiner als 1 MB",
     "status": {
       "accessGranted": "Zugriff gewährt",
-      "accessGrantedDescription": "2FA verifiziert, freigegeben und aktiv",
-      "accessDisabled": "Zugriff deaktiviert",
-      "accessDisabledDescription": "Super Admin hat den Plattformzugriff deaktiviert",
+      "accessGrantedDescription": "Verifiziert, freigegeben und aktiv",
+      "accessDisabled": "Deaktiviert",
+      "accessDisabledDescription": "Business-Admin-Anmeldung ist blockiert, weil der Zugriff inaktiv ist",
       "approvalTwoFactorPending": "Freigabe & 2FA ausstehend",
-      "approvalTwoFactorPendingDescription": "Benutzer muss 2FA verifizieren und freigegeben werden",
+      "approvalTwoFactorPendingDescription": "Geben Sie diesen Geschäftsinhaber frei, um den Zugriff zu verifizieren und freizugeben",
       "pendingApproval": "Freigabe ausstehend",
       "pendingApprovalDescription": "Wartet auf Freigabe durch Super Admin",
       "twoFactorPending": "2FA ausstehend",
-      "twoFactorPendingDescription": "Benutzer hat die Registrierungsverifizierung nicht abgeschlossen"
+      "twoFactorPendingDescription": "Bereits freigegeben, aber die Verifizierung muss repariert werden. Klicken Sie erneut auf Freigeben."
     },
     "maps": {
       "selectValidAddress": "Bitte wählen Sie eine gültige Google-Maps-Adresse aus.",

@@ -105,9 +105,9 @@ export const useApproveBusinessAdmin = () => {
 
   return useMutation({
     mutationFn: approveBusinessAdmin,
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["tenants"] });
-      toast.success(toasts("businessAdminApproved"));
+      toast.success(data?.message || toasts("businessAdminApproved"));
     },
     onError: (err: any) => {
       toast.error(

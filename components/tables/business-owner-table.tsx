@@ -43,6 +43,15 @@ type RequirementBadgeProps = {
   icon: React.ReactNode;
 };
 
+type BusinessOwnerRow = {
+  id: string;
+  ownerId?: string;
+  isVerified: boolean;
+  isApproved: boolean;
+  isActive: boolean;
+  [key: string]: any;
+};
+
 const getToneClasses = (tone: RequirementTone) => {
   const tones: Record<RequirementTone, string> = {
     success: "border-green-100 bg-green-50 text-green-700",
@@ -78,25 +87,16 @@ function RequirementBadge({ label, value, tone, icon }: RequirementBadgeProps) {
   );
 }
 
-const getOverallStatus = (item: any) => {
+const getOverallStatus = (item: BusinessOwnerRow) => {
   const isActive = Boolean(item?.isActive);
   const isApproved = Boolean(item?.isApproved);
   const isVerified = Boolean(item?.isVerified);
-
-  if (isActive && isApproved && isVerified) {
-    return {
-      labelKey: "status.accessGranted",
-      descriptionKey: "status.accessGrantedDescription",
-      className: "bg-green-50 text-green-700 ring-green-100",
-      icon: <CheckCircle2 size={14} />,
-    };
-  }
 
   if (!isActive) {
     return {
       labelKey: "status.accessDisabled",
       descriptionKey: "status.accessDisabledDescription",
-      className: "bg-gray-100 text-gray-600 ring-gray-200",
+      className: "bg-red-50 text-red-700 ring-red-100",
       icon: <UserX size={14} />,
     };
   }
@@ -114,16 +114,25 @@ const getOverallStatus = (item: any) => {
     return {
       labelKey: "status.pendingApproval",
       descriptionKey: "status.pendingApprovalDescription",
-      className: "bg-primary/5 text-primary ring-primary/10",
+      className: "bg-amber-50 text-amber-700 ring-amber-100",
       icon: <ShieldCheck size={14} />,
     };
   }
 
+  if (!isVerified) {
+    return {
+      labelKey: "status.twoFactorPending",
+      descriptionKey: "status.twoFactorPendingDescription",
+      className: "bg-amber-50 text-amber-700 ring-amber-100",
+      icon: <Clock3 size={14} />,
+    };
+  }
+
   return {
-    labelKey: "status.twoFactorPending",
-    descriptionKey: "status.twoFactorPendingDescription",
-    className: "bg-amber-50 text-amber-700 ring-amber-100",
-    icon: <Clock3 size={14} />,
+    labelKey: "status.accessGranted",
+    descriptionKey: "status.accessGrantedDescription",
+    className: "bg-green-50 text-green-700 ring-green-100",
+    icon: <CheckCircle2 size={14} />,
   };
 };
 
@@ -212,7 +221,7 @@ export default function BusinessOwnerTable({
     });
   };
 
-  const handleActiveToggle = (item: any, nextValue: boolean) => {
+  const handleActiveToggle = (item: BusinessOwnerRow, nextValue: boolean) => {
     if (!item?.id) return;
 
     setActiveUpdatingId(item.id);
@@ -235,7 +244,7 @@ export default function BusinessOwnerTable({
     );
   };
 
-  const handleApproveOwner = (item: any) => {
+  const handleApproveOwner = (item: BusinessOwnerRow) => {
     if (!item?.ownerId || approvalUpdatingId === item?.id) return;
 
     setApprovalUpdatingId(item.id);
@@ -251,17 +260,17 @@ export default function BusinessOwnerTable({
     });
   };
 
-  const handleActionActiveToggle = (item: any) => {
+  const handleActionActiveToggle = (item: BusinessOwnerRow) => {
     handleActiveToggle(item, !item?.isActive);
     setOpenActionId(null);
   };
 
-  const handleEdit = (item: any) => {
+  const handleEdit = (item: BusinessOwnerRow) => {
     setOpenActionId(null);
     router.push(`/business-owners/${item.id}/edit`);
   };
 
-  const handleDeleteClick = (item: any) => {
+  const handleDeleteClick = (item: BusinessOwnerRow) => {
     setOpenActionId(null);
     setDeleteId(item.id);
   };
@@ -293,7 +302,7 @@ export default function BusinessOwnerTable({
                   </TableCell>
                 </TableRow>
               ))
-            : businessOwners.map((item: any, i: number) => {
+            : businessOwners.map((item: BusinessOwnerRow, i: number) => {
                 const businessOwnerName = item.name || "N/A";
                 const businessName = item.name || "-";
                 const businessSlug = item.slug || "-";
@@ -310,6 +319,9 @@ export default function BusinessOwnerTable({
                 const isApprovalUpdating = approvalUpdatingId === item.id;
                 const isApprovedAndVerified =
                   Boolean(item?.isApproved) && Boolean(item?.isVerified);
+                const canClickApprove =
+                  Boolean(item?.ownerId) &&
+                  (!item?.isApproved || !item?.isVerified);
                 const isActionMenuOpen = openActionId === item.id;
 
                 return (
@@ -443,7 +455,7 @@ export default function BusinessOwnerTable({
                             <button
                               type="button"
                               onClick={() => handleApproveOwner(item)}
-                              disabled={isApprovedAndVerified || !item?.ownerId || isApprovalUpdating}
+                              disabled={!canClickApprove || isApprovalUpdating}
                               className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
                             >
                               {isApprovalUpdating ? (

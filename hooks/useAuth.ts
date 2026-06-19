@@ -15,12 +15,24 @@ interface ApiError {
   message?: string;
 }
 
+const clearAuthTokens = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  sessionStorage.removeItem("token");
+  sessionStorage.removeItem("accessToken");
+  sessionStorage.removeItem("refreshToken");
+};
+
 export const useLogin = () => {
   const router = useRouter();
   const toasts = useTranslations("toasts");
 
   return useMutation({
     mutationFn: login,
+    onMutate: () => {
+      clearAuthTokens();
+    },
     onSuccess: async (data) => {
       localStorage.setItem("token", data.accessToken)
       toast.success(toasts("loginSuccessful"))
@@ -29,6 +41,7 @@ export const useLogin = () => {
     },
 
     onError: (err: ApiError) => {
+      clearAuthTokens();
       const message = err.response?.data?.message || toasts("somethingWentWrong");
       toast.error(message);
     },
@@ -41,4 +54,3 @@ export const useUser = () => {
     queryFn: getUser,
   });
 };
-

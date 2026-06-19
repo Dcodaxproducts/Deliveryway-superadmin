@@ -5,6 +5,42 @@ import {
   TenantListFilterValues,
 } from "@/validations/tenants";
 
+type TenantListRecord = Record<string, any>;
+
+const getFirstString = (...values: unknown[]) =>
+  values.find((value): value is string => typeof value === "string" && value.length > 0);
+
+const getFirstBoolean = (...values: unknown[]) => {
+  const value = values.find((item) => typeof item === "boolean");
+
+  return typeof value === "boolean" ? value : false;
+};
+
+const normalizeBusinessOwnerRow = (tenant: TenantListRecord) => {
+  const owner =
+    tenant.owner ??
+    tenant.user ??
+    tenant.businessAdmin ??
+    tenant.businessOwner ??
+    tenant.adminUser ??
+    {};
+
+  return {
+    ...tenant,
+    ownerId: getFirstString(
+      tenant.ownerId,
+      tenant.businessAdminId,
+      tenant.businessOwnerId,
+      tenant.userId,
+      owner.id,
+      owner.userId,
+    ),
+    isVerified: getFirstBoolean(tenant.isVerified, owner.isVerified),
+    isApproved: getFirstBoolean(tenant.isApproved, owner.isApproved),
+    isActive: getFirstBoolean(tenant.isActive, owner.isActive),
+  };
+};
+
 /**
  * ==============================
  * TENANT APIS
@@ -21,7 +57,15 @@ export const getTenants = async (
   }
 ) => {
   const { data } = await api.get("/tenants", { params });
-  return data;
+
+  if (!Array.isArray(data?.data)) {
+    return data;
+  }
+
+  return {
+    ...data,
+    data: data.data.map(normalizeBusinessOwnerRow),
+  };
 };
 /**
  * POST /auth/register-tenant
