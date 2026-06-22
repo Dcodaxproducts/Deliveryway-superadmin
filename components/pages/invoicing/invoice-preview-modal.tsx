@@ -15,6 +15,8 @@ import {
 import { Button } from "@/components/ui/button";
 import type { InvoiceGenerationPayload } from "./generate-invoice-modal";
 import type { AdminInvoice } from "@/services/reports";
+import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
+import { formatMoney } from "@/lib/currency";
 
 type InvoicePreviewModalProps = {
   open: boolean;
@@ -22,25 +24,6 @@ type InvoicePreviewModalProps = {
   onOpenChange: (open: boolean) => void;
   onBack: () => void;
   onGenerate: () => void;
-};
-
-const getCurrency = () => {
-  return "PKR";
-};
-
-const formatMoney = (value: number, currency = "PKR") => {
-  const numeric = Number(value || 0);
-
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(numeric);
-  } catch {
-    return `${currency} ${numeric.toFixed(2)}`;
-  }
 };
 
 const formatAmountPlain = (value: number) => {
@@ -113,8 +96,7 @@ const getCustomerName = (invoice: AdminInvoice) => {
   );
 };
 
-const buildInvoiceText = (payload: InvoiceGenerationPayload) => {
-  const currency = getCurrency();
+const buildInvoiceText = (payload: InvoiceGenerationPayload, currency: string) => {
   const baseTotalAmount = getPayloadBaseTotal(payload);
   const additionalCharges = Number(payload.additionalCharges || 0);
   const finalTotalAmount = Number(
@@ -227,7 +209,7 @@ const buildInvoiceText = (payload: InvoiceGenerationPayload) => {
   return lines.join("\n");
 };
 
-const buildInvoicePdf = (payload: InvoiceGenerationPayload) => {
+const buildInvoicePdf = (payload: InvoiceGenerationPayload, currency: string) => {
   const doc = new jsPDF({
     orientation: "portrait",
     unit: "pt",
@@ -235,7 +217,7 @@ const buildInvoicePdf = (payload: InvoiceGenerationPayload) => {
     compress: true,
   });
 
-  const invoiceText = buildInvoiceText(payload);
+  const invoiceText = buildInvoiceText(payload, currency);
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
 
@@ -316,11 +298,10 @@ export function InvoicePreviewModal({
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isSharingPdf, setIsSharingPdf] = useState(false);
 
+  const currency = useGlobalCurrency();
   const invoiceText = useMemo(() => {
-    return payload ? buildInvoiceText(payload) : "";
-  }, [payload]);
-
-  const currency = getCurrency();
+    return payload ? buildInvoiceText(payload, currency) : "";
+  }, [currency, payload]);
   const baseTotalAmount = payload ? getPayloadBaseTotal(payload) : 0;
   const additionalCharges = Number(payload?.additionalCharges || 0);
   const finalTotalAmount = Number(
@@ -333,7 +314,7 @@ export function InvoicePreviewModal({
     try {
       setIsGeneratingPdf(true);
 
-      const doc = buildInvoicePdf(payload);
+      const doc = buildInvoicePdf(payload, currency);
       doc.save(getInvoicePdfFileName(payload));
 
       onGenerate();
@@ -348,7 +329,7 @@ export function InvoicePreviewModal({
     try {
       setIsSharingPdf(true);
 
-      const doc = buildInvoicePdf(payload);
+      const doc = buildInvoicePdf(payload, currency);
       const blob = doc.output("blob");
       const fileName = getInvoicePdfFileName(payload);
       const file = new File([blob], fileName, {

@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/dialog";
 import { useTranslations } from "next-intl";
 import { useGetGlobalTaxTypes } from "@/hooks/useGlobalSettings";
+import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
+import { formatMoney } from "@/lib/currency";
 
 interface ProductDetailsDialogProps {
     open: boolean;
@@ -19,6 +21,7 @@ interface ProductDetailsDialogProps {
 export default function ProductDetailsDialog({ open, onOpenChange, product }: ProductDetailsDialogProps) {
     const common = useTranslations("common");
     const products = useTranslations("products");
+    const currency = useGlobalCurrency();
     const { data: taxTypesResponse } = useGetGlobalTaxTypes();
     if (!product) return null;
 
@@ -49,7 +52,7 @@ export default function ProductDetailsDialog({ open, onOpenChange, product }: Pr
 
                         <div className="text-center space-y-[12px]">
                             <h2 className="text-2xl font-bold text-dark capitalize">{product.name}</h2>
-                            <p className="text-2xl font-semibold text-green">${product.basePrice}</p>
+                            <p className="text-2xl font-semibold text-green">{formatMoney(product.basePrice, currency)}</p>
                         </div>
 
                         {/* Info List */}

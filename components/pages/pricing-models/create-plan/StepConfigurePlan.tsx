@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { DEFAULT_DISPLAY_CURRENCY } from "@/lib/currency";
 
 type PricingModelOption = "HYBRID" | "PLAN" | "COMMISSION";
 type BillingInterval = "MONTHLY" | "YEARLY" | "WEEKLY" | "DAILY";
@@ -249,7 +250,7 @@ export function StepConfigurePlan({
                 />
 
                 <div className="flex h-full min-w-14 items-center justify-center border-l px-4 text-sm font-semibold text-slate-400">
-                  {isFixedCommission ? form.currency || "PKR" : "%"}
+                  {isFixedCommission ? form.currency || DEFAULT_DISPLAY_CURRENCY : "%"}
                 </div>
               </div>
 

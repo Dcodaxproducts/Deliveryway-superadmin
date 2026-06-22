@@ -19,6 +19,7 @@ import {
   useUpdatePackagePlan,
 } from "@/hooks/usePackagePlans";
 import { useGetGlobalSettings } from "@/hooks/useGlobalSettings";
+import { DEFAULT_DISPLAY_CURRENCY } from "@/lib/currency";
 
 import type {
   CreatePackagePlanPayload,
@@ -142,7 +143,7 @@ const defaultForm: PlanFormState = {
   pricingModel: "HYBRID",
   name: "",
   description: "",
-  currency: "PKR",
+  currency: DEFAULT_DISPLAY_CURRENCY,
   planPrice: "0",
   billingInterval: "MONTHLY",
 
@@ -254,7 +255,7 @@ const mapPackagePlanToForm = (plan: PackagePlanDetail): PlanFormState => {
     pricingModel: normalizePricingModel(plan.billingModel),
     name: toSafeString(plan.name),
     description: toSafeString(plan.description),
-    currency: toSafeString(plan.currency, "PKR"),
+    currency: toSafeString(plan.currency, DEFAULT_DISPLAY_CURRENCY),
     planPrice: toSafeString(plan.planPrice, "0"),
     billingInterval: normalizeBillingInterval(plan.billingInterval),
 
@@ -323,7 +324,7 @@ function CreatePackagePlanContent() {
 
   useEffect(() => {
     const defaultCurrency = globalSettingsQuery.data?.defaultCurrency;
-    if (!isEditMode && defaultCurrency && form.currency === "PKR") {
+    if (!isEditMode && defaultCurrency && form.currency === DEFAULT_DISPLAY_CURRENCY) {
       setForm((current) => ({ ...current, currency: defaultCurrency }));
     }
   }, [form.currency, globalSettingsQuery.data?.defaultCurrency, isEditMode]);
@@ -400,7 +401,10 @@ function CreatePackagePlanContent() {
       vatPercentage: form.vatEnabled ? toNumber(form.vatPercentage) : 0,
       payoutCycle: form.payoutCycle,
       termsDocumentUrl: form.termsDocumentUrl,
-      currency: form.currency || globalSettingsQuery.data?.defaultCurrency || "PKR",
+      currency:
+        form.currency ||
+        globalSettingsQuery.data?.defaultCurrency ||
+        DEFAULT_DISPLAY_CURRENCY,
       trialDays: toNumber(form.trialDays),
       features: form.features,
       isActive,

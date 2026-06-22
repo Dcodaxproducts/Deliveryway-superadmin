@@ -11,30 +11,13 @@ import {
 } from "@/components/ui/dialog";
 import { useGetAdminReportInvoiceDetails } from "@/hooks/useReports";
 import type { AdminInvoice } from "@/services/reports";
+import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
+import { formatMoney } from "@/lib/currency";
 
 type InvoiceDetailsModalProps = {
   open: boolean;
   invoice: AdminInvoice | null;
   onOpenChange: (open: boolean) => void;
-};
-
-const getCurrency = () => {
-  return "PKR";
-};
-
-const formatMoney = (value: number, currency = "PKR") => {
-  const numeric = Number(value || 0);
-
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(numeric);
-  } catch {
-    return `${currency} ${numeric.toFixed(2)}`;
-  }
 };
 
 const formatDateTime = (value?: string | null) => {
@@ -68,6 +51,7 @@ export function InvoiceDetailsModal({
   onOpenChange,
 }: InvoiceDetailsModalProps) {
   const invoicing = useTranslations("invoicing");
+  const currency = useGlobalCurrency();
   const { data, isLoading, isFetching } = useGetAdminReportInvoiceDetails(
     open && invoice
       ? {
@@ -79,7 +63,6 @@ export function InvoiceDetailsModal({
   );
 
   const details = data?.data || invoice;
-  const currency = getCurrency();
   const loading = isLoading || isFetching;
 
   return (

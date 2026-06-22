@@ -21,11 +21,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import MyImage from "@/components/MyImage";
 import { Label } from "@/components/ui/label";
 import { useTranslations } from "next-intl";
+import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
+import { formatMoney } from "@/lib/currency";
 
 export default function BranchDetailsPage() {
   const common = useTranslations("common");
   const branches = useTranslations("branches");
   const profile = useTranslations("profile");
+  const currency = useGlobalCurrency();
   const params = useParams();
   const branchId = params.id as string;
 
@@ -161,13 +164,13 @@ export default function BranchDetailsPage() {
                 </Card>
                 <Card className="border-2 border-gray-50 rounded-[14px] p-6">
                   <Label className="font-medium">{branches("deliveryFee")}</Label>
-                  <p className="text-2xl font-semibold text-gray">${branch.settings?.deliveryConfig?.deliveryFee ?? 0}</p>
+                  <p className="text-2xl font-semibold text-gray">{formatMoney(branch.settings?.deliveryConfig?.deliveryFee, currency)}</p>
                 </Card>
                 <Card className="border-2 border-gray-50 rounded-[14px] p-6 col-span-1 md:col-span-2">
                   <div className="flex justify-between items-start gap-2">
                     <div>
                       <Label className="font-medium mb-2">{branches("freeDeliveryThreshold")}</Label>
-                      <p className="text-xl font-semibold text-gray">${branch.settings?.deliveryConfig?.freeDeliveryThreshold ?? 0}</p>
+                      <p className="text-xl font-semibold text-gray">{formatMoney(branch.settings?.deliveryConfig?.freeDeliveryThreshold, currency)}</p>
                     </div>
                     <Badge className={cn(
                       "border-none",

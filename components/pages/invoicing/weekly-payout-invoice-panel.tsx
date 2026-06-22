@@ -17,6 +17,8 @@ import type {
   WeeklyPayoutInvoice,
   WeeklyPayoutInvoiceParams,
 } from "@/services/packagePlans";
+import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
+import { formatMoney } from "@/lib/currency";
 
 type RestaurantOption = {
   id: string;
@@ -55,21 +57,6 @@ const numberValue = (value?: string | number | null) => {
   const numeric = Number(value ?? 0);
 
   return Number.isFinite(numeric) ? numeric : 0;
-};
-
-const formatMoney = (value?: string | number | null, currency = "PKR") => {
-  const numeric = numberValue(value);
-
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(numeric);
-  } catch {
-    return `${currency} ${numeric.toFixed(2)}`;
-  }
 };
 
 const formatDate = (value?: string | null) => {
@@ -122,6 +109,7 @@ const getErrorMessage = (error: unknown) => {
 
 export function WeeklyPayoutInvoicePanel() {
   const invoicing = useTranslations("invoicing");
+  const globalCurrency = useGlobalCurrency();
   const range = useMemo(() => getDefaultRange(), []);
   const [restaurantId, setRestaurantId] = useState("");
   const [selectedRestaurant, setSelectedRestaurant] =
@@ -135,7 +123,7 @@ export function WeeklyPayoutInvoicePanel() {
   const sendInvoiceEmail = useSendWeeklyPayoutInvoiceEmail();
 
   const invoice = fetchInvoice.data?.data;
-  const currency = invoice?.totals?.currency || "PKR";
+  const currency = globalCurrency;
   const canSubmit = Boolean(restaurantId && fromDate && toDate);
 
   const fetchRestaurantOptions = useCallback(

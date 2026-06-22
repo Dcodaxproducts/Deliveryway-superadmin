@@ -11,6 +11,8 @@ import TopPerformingRestaurants from "../models/top-restaurants-section";
 import { AnalyticsFilter } from "@/components/pages/analytics/filter";
 import { useGetOrdersReport } from "@/hooks/useReports";
 import { StatItem } from "@/types/stats";
+import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
+import { formatMoney } from "@/lib/currency";
 
 type DateRangeValue =
   | "all-time"
@@ -100,26 +102,9 @@ const getDateRangeParams = (
   };
 };
 
-const formatCurrency = (
-  value: number | string | null | undefined,
-  currency: string
-) => {
-  const numeric = Number(value ?? 0);
-
-  if (Number.isNaN(numeric)) {
-    return `${currency} 0.00`;
-  }
-
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(numeric);
-};
-
 const AnalyticsPage = () => {
   const analytics = useTranslations("analytics");
+  const globalCurrency = useGlobalCurrency();
   const [dateRange, setDateRange] = useState<DateRangeValue>("all-time");
 
   const [customFromDate, setCustomFromDate] = useState("");
@@ -143,7 +128,7 @@ const AnalyticsPage = () => {
   } = useGetOrdersReport(reportParams);
 
   const report = ordersReportResponse?.data;
-  const reportCurrency = report?.currency || "PKR";
+  const reportCurrency = globalCurrency;
 
   const statsData: StatItem[] = useMemo(() => {
     const paidCount =
@@ -179,14 +164,14 @@ const AnalyticsPage = () => {
       {
         _id: "total-revenue",
         title: analytics("totalRevenue"),
-        value: formatCurrency(report?.totalRevenue, reportCurrency),
+        value: formatMoney(report?.totalRevenue, reportCurrency),
         footerType: "plain",
         description: analytics("revenueFromAllOrders"),
       },
       {
         _id: "average-order-value",
         title: analytics("averageOrderValue"),
-        value: formatCurrency(report?.averageOrderValue, reportCurrency),
+        value: formatMoney(report?.averageOrderValue, reportCurrency),
         footerType: "plain",
         description: analytics("averageRevenuePerOrder"),
       },

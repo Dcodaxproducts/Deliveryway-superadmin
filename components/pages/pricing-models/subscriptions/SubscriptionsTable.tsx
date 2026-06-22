@@ -15,6 +15,8 @@ import {
 import { useTranslations } from "next-intl";
 
 import type { PackageSubscription } from "@/services/packagePlans";
+import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
+import { formatMoney } from "@/lib/currency";
 
 type SubscriptionsTableProps = {
   subscriptions: PackageSubscription[];
@@ -43,18 +45,6 @@ const formatDate = (value?: string | null) => {
     month: "short",
     year: "numeric",
   }).format(date);
-};
-
-const formatMoney = (value?: string | number, currency?: string | null) => {
-  const amount = Number(value || 0);
-
-  if (!Number.isFinite(amount)) return null;
-
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency || "PKR",
-    maximumFractionDigits: 2,
-  }).format(amount);
 };
 
 const statusLabelKeys: Record<string, string> = {
@@ -152,6 +142,7 @@ export function SubscriptionsTable({
   const pricingModel = useTranslations("pricingModel");
   const common = useTranslations("common");
   const tables = useTranslations("tables");
+  const currency = useGlobalCurrency();
   const safeTotalPages = Math.max(totalPages, 1);
   const from = total === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const to = Math.min(currentPage * pageSize, total);
@@ -240,7 +231,7 @@ export function SubscriptionsTable({
 
                         <div>
                           <p className="text-sm font-semibold text-dark">
-                            {formatMoney(plan?.planPrice, plan?.currency) ||
+                            {formatMoney(plan?.planPrice, currency) ||
                               pricingModel("display.custom")}
                           </p>
                           <p className="text-xs text-gray">

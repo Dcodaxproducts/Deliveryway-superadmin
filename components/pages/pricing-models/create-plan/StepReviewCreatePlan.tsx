@@ -1,6 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
+import { formatMoney } from "@/lib/currency";
 
 type PricingModelOption = "HYBRID" | "PLAN" | "COMMISSION";
 type BillingInterval = "MONTHLY" | "YEARLY" | "WEEKLY" | "DAILY";
@@ -66,20 +68,11 @@ const featureLabelKeys: Record<string, string> = {
   adminDelivery: "features.adminDelivery",
 };
 
-const formatMoney = (value: string, currency: string) => {
-  const amount = Number(value || 0);
-
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency || "PKR",
-    maximumFractionDigits: 2,
-  }).format(Number.isFinite(amount) ? amount : 0);
-};
-
 export function StepReviewCreatePlan({
   form,
 }: StepReviewCreatePlanProps) {
   const pricingModel = useTranslations("pricingModel");
+  const currency = useGlobalCurrency();
   const selectedFeatures = Object.entries(form.features)
     .filter(([, enabled]) => enabled)
     .map(([key]) => key);
@@ -106,7 +99,7 @@ export function StepReviewCreatePlan({
 
         <ReviewRow
           label={pricingModel("fields.planPrice")}
-          value={formatMoney(form.planPrice, form.currency)}
+          value={formatMoney(form.planPrice, currency)}
         />
 
         {form.pricingModel !== "PLAN" && (
@@ -126,7 +119,7 @@ export function StepReviewCreatePlan({
                   ? pricingModel("review.amountPerInterval", {
                       amount: formatMoney(
                         form.commissionCapAmount,
-                        form.currency
+                        currency
                       ),
                       interval: pricingModel(
                         billingIntervalLabelKeys[form.billingInterval]

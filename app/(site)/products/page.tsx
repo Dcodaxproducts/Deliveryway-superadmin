@@ -19,12 +19,15 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { sortData } from "@/utils/sort-data";
 import { Product } from "@/services/product";
 import { useTranslations } from "next-intl";
+import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
+import { formatMoney } from "@/lib/currency";
 
 type SortKey = "name" | "sku" | "restaurantId" | "isActive" | "basePrice";
 
 const ProductsPage = () => {
     const common = useTranslations("common");
     const productsText = useTranslations("products");
+    const currency = useGlobalCurrency();
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
     const [sortKey, setSortKey] = useState<SortKey | null>(null);
@@ -88,7 +91,7 @@ const ProductsPage = () => {
                                 <TableCell className={`${product.isActive ? "text-green" : "text-primary"}`}>
                                         {product.isActive ? common("active") : common("inactive")}
                                 </TableCell>
-                                <TableCell className="text-green">${product.basePrice}</TableCell>
+                                <TableCell className="text-green">{formatMoney(product.basePrice, currency)}</TableCell>
                                 <TableCell className="text-center">
                                     <div className="flex justify-center">
                                         <Switch

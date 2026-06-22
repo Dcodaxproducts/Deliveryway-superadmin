@@ -11,27 +11,14 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import type { InvoiceGenerationPayload } from "./generate-invoice-modal";
+import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
+import { formatMoney } from "@/lib/currency";
 
 type InvoiceSuccessModalProps = {
   open: boolean;
   payload: InvoiceGenerationPayload | null;
   onOpenChange: (open: boolean) => void;
   onGenerateMore: () => void;
-};
-
-const formatMoney = (value: number, currency = "PKR") => {
-  const numeric = Number(value || 0);
-
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(numeric);
-  } catch {
-    return `${currency} ${numeric.toFixed(2)}`;
-  }
 };
 
 const formatDate = (value?: string) => {
@@ -55,8 +42,7 @@ export function InvoiceSuccessModal({
   onGenerateMore,
 }: InvoiceSuccessModalProps) {
   const invoicing = useTranslations("invoicing");
-
-  const currency = "PKR";
+  const currency = useGlobalCurrency();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange} modal>

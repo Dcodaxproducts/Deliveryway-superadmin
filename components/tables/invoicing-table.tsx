@@ -22,6 +22,8 @@ import {
 import { cn } from "@/lib/utils";
 import type { AdminInvoice } from "@/services/reports";
 import { useSendAdminInvoiceEmail } from "@/hooks/useReports";
+import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
+import { formatMoney } from "@/lib/currency";
 
 type InvoicingTableProps = {
   invoices: AdminInvoice[];
@@ -44,25 +46,6 @@ const getInitials = (name?: string) => {
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
 
   return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-};
-
-const getTransactionCurrency = () => {
-  return "PKR";
-};
-
-const formatMoney = (value: number, currency = "PKR") => {
-  const numeric = Number(value || 0);
-
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(numeric);
-  } catch {
-    return `${currency} ${numeric.toFixed(2)}`;
-  }
 };
 
 const formatDate = (value?: string | null) => {
@@ -148,6 +131,7 @@ export function InvoicingTable({
 }: InvoicingTableProps) {
   const invoicing = useTranslations("invoicing");
   const common = useTranslations("common");
+  const globalCurrency = useGlobalCurrency();
   const loading = isLoading || (isFetching && invoices.length === 0);
 
   const [sendingOrderId, setSendingOrderId] = useState<string | null>(null);
@@ -245,7 +229,7 @@ export function InvoicingTable({
             </TableRow>
           ) : (
             invoices.map((invoice) => {
-              const currency = getTransactionCurrency();
+              const currency = globalCurrency;
               const restaurantName = invoice.restaurant?.name || "-";
               const branchName = invoice.branch?.name || "-";
               const customerName =

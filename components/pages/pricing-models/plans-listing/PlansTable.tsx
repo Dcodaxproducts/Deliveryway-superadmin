@@ -9,6 +9,8 @@ import {
   Trash2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
+import { formatMoney } from "@/lib/currency";
 
 type PackagePlanRow = {
   id: string;
@@ -53,18 +55,6 @@ const billingIntervalLabelKeys: Record<string, string> = {
   DAILY: "display.billingIntervals.daily",
 };
 
-const formatMoney = (value: string | number, currency?: string | null) => {
-  const amount = Number(value || 0);
-
-  if (!Number.isFinite(amount)) return null;
-
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency || "PKR",
-    maximumFractionDigits: 2,
-  }).format(amount);
-};
-
 const countEnabledFeatures = (features?: Record<string, boolean>) => {
   if (!features) return 0;
   return Object.values(features).filter(Boolean).length;
@@ -88,7 +78,8 @@ const getPlanAvatarClass = (index: number) => {
 
 const getCommissionRule = (
   plan: PackagePlanRow,
-  pricingModel: ReturnType<typeof useTranslations<"pricingModel">>
+  pricingModel: ReturnType<typeof useTranslations<"pricingModel">>,
+  currency: string
 ) => {
   if (plan.billingModel === "PLAN") {
     return {
@@ -107,7 +98,7 @@ const getCommissionRule = (
         cap > 0
           ? pricingModel("plansListing.capAmount", {
               amount:
-                formatMoney(cap, plan.currency) ||
+                formatMoney(cap, currency) ||
                 pricingModel("display.custom"),
             })
           : pricingModel("review.noCap"),
@@ -147,6 +138,7 @@ export function PlansTable({
 }: PlansTableProps) {
   const pricingModel = useTranslations("pricingModel");
   const tables = useTranslations("tables");
+  const currency = useGlobalCurrency();
   const common = useTranslations("common");
   const safeTotalPages = Math.max(totalPages, 1);
   const from = total === 0 ? 0 : (currentPage - 1) * pageSize + 1;
@@ -189,7 +181,7 @@ export function PlansTable({
 
             {!loading &&
               plans.map((plan, index) => {
-                const commissionRule = getCommissionRule(plan, pricingModel);
+                const commissionRule = getCommissionRule(plan, pricingModel, currency);
                 const enabledFeaturesCount = countEnabledFeatures(plan.features);
                 const isArchived = !plan.isActive || Boolean(plan.deletedAt);
 
@@ -252,7 +244,7 @@ export function PlansTable({
 
                     <td className="px-6 py-5">
                       <p className="text-base font-bold text-dark">
-                        {formatMoney(plan.planPrice, plan.currency) ||
+                        {formatMoney(plan.planPrice, currency) ||
                           pricingModel("display.custom")}
                       </p>
                     </td>

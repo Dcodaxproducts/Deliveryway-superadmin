@@ -43,6 +43,8 @@ import {
 import { useGetAdminReportInvoices } from "@/hooks/useReports";
 import type { AdminInvoice, AdminInvoicesParams } from "@/services/reports";
 import type { PackageSubscription } from "@/services/packagePlans";
+import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
+import { formatMoney, formatSignedMoney } from "@/lib/currency";
 
 type InvoiceWorkspaceTab = "orders" | "subscriptions";
 type InvoiceTab = "active" | "archive";
@@ -114,28 +116,6 @@ const parseAdjustmentAmount = (value: string) => {
   const numeric = Number(trimmed);
 
   return Number.isFinite(numeric) ? numeric : 0;
-};
-
-const formatMoney = (value: number, currency = "PKR") => {
-  const numeric = Number(value || 0);
-
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(numeric);
-  } catch {
-    return `${currency} ${numeric.toFixed(2)}`;
-  }
-};
-
-const formatSignedMoney = (value: number, currency = "PKR") => {
-  if (value > 0) return `+${formatMoney(value, currency)}`;
-  if (value < 0) return `-${formatMoney(Math.abs(value), currency)}`;
-
-  return formatMoney(0, currency);
 };
 
 const createBillingCycleOptions = (): BillingCycleOption[] => {
@@ -772,6 +752,7 @@ function InvoiceGenerationPanel({
   onPreview: () => void;
 }) {
   const invoicing = useTranslations("invoicing");
+  const currency = useGlobalCurrency();
 
   return (
     <div className="grid gap-4 px-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] lg:px-0">
@@ -879,17 +860,17 @@ function InvoiceGenerationPanel({
         <div className="mt-5 space-y-2 text-sm text-green-800">
           <div className="flex justify-between">
             <span>{invoicing("base")}</span>
-            <span className="font-semibold">{formatMoney(baseTotalAmount)}</span>
+            <span className="font-semibold">{formatMoney(baseTotalAmount, currency)}</span>
           </div>
           <div className="flex justify-between">
             <span>{invoicing("adjustment")}</span>
             <span className="font-semibold">
-              {formatSignedMoney(additionalCharges)}
+              {formatSignedMoney(additionalCharges, currency)}
             </span>
           </div>
           <div className="flex justify-between border-t border-green-200 pt-3 text-base">
             <span className="font-semibold">{invoicing("finalTotal")}</span>
-            <span className="font-bold">{formatMoney(finalTotalAmount)}</span>
+            <span className="font-bold">{formatMoney(finalTotalAmount, currency)}</span>
           </div>
         </div>
 

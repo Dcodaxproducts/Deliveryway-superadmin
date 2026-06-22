@@ -28,6 +28,8 @@ import {
 } from "@/components/ui/select";
 import type { AdminInvoice } from "@/services/reports";
 import type { BillingCycleOption } from "./header";
+import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
+import { formatMoney, formatSignedMoney } from "@/lib/currency";
 
 export type InvoiceGenerationPayload = {
   billingCycle: string;
@@ -64,39 +66,6 @@ const getDefaultDueDate = () => {
   date.setDate(date.getDate() + 14);
 
   return formatInputDate(date);
-};
-
-const getCurrency = () => {
-  return "PKR";
-};
-
-const formatMoney = (value: number, currency = "PKR") => {
-  const numeric = Number(value || 0);
-
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(numeric);
-  } catch {
-    return `${currency} ${numeric.toFixed(2)}`;
-  }
-};
-
-const formatSignedMoney = (value: number, currency = "PKR") => {
-  const numeric = Number(value || 0);
-
-  if (numeric > 0) {
-    return `+${formatMoney(numeric, currency)}`;
-  }
-
-  if (numeric < 0) {
-    return `-${formatMoney(Math.abs(numeric), currency)}`;
-  }
-
-  return formatMoney(0, currency);
 };
 
 const parseAdjustmentAmount = (value: string) => {
@@ -148,6 +117,7 @@ export function GenerateInvoiceModal({
 }: GenerateInvoiceModalProps) {
   const invoicing = useTranslations("invoicing");
   const common = useTranslations("common");
+  const currency = useGlobalCurrency();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [invoiceDate, setInvoiceDate] = useState(formatInputDate(new Date()));
   const [dueDate, setDueDate] = useState(getDefaultDueDate());
@@ -194,8 +164,6 @@ export function GenerateInvoiceModal({
       selectedIds.includes(invoice.orderId)
     );
   }, [visibleInvoices, selectedIds]);
-
-  const currency = getCurrency();
 
   useEffect(() => {
     if (!open) return;
@@ -434,7 +402,7 @@ export function GenerateInvoiceModal({
                   {visibleInvoices.map((invoice) => {
                     const selected = selectedIds.includes(invoice.orderId);
                     const deduction = calculateDeductions(invoice);
-                    const invoiceCurrency = getCurrency();
+                    const invoiceCurrency = currency;
 
                     return (
                       <button

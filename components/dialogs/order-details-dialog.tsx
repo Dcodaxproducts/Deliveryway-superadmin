@@ -12,6 +12,8 @@ import MyImage from "@/components/MyImage";
 import { useGetOrder } from "@/hooks/useOrder";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
+import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
+import { formatMoney } from "@/lib/currency";
 
 interface Props {
     open: boolean;
@@ -23,6 +25,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Prop
     const common = useTranslations("common");
     const orders = useTranslations("orders");
     const products = useTranslations("products");
+    const currency = useGlobalCurrency();
     const { data: order, isLoading } = useGetOrder(orderId as string);
 
     return (
@@ -87,7 +90,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Prop
 
                                         <span className="font-semibold text-dark">{item.quantity}x</span>
 
-                                        <span className="text-sm text-gray-400 font-medium">${item.unitPrice}</span>
+                                        <span className="text-sm text-gray-400 font-medium">{formatMoney(item.unitPrice, currency)}</span>
 
                                     </div>
                                 ))}
@@ -95,7 +98,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Prop
 
                             <div className="flex justify-between items-center py-6">
                                 <span className="text-lg font-semibold text-dark">{orders("totalAmount")}</span>
-                                <span className="text-xl font-semibold text-green">${order?.totalAmount || "0.00"}</span>
+                                <span className="text-xl font-semibold text-green">{formatMoney(order?.totalAmount, currency)}</span>
                             </div>
 
                             {/* Info Rows */}

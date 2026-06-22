@@ -20,6 +20,8 @@ import { Eye } from "lucide-react";
 import OrderDetailsDialog from "@/components/dialogs/order-details-dialog";
 import { StatItem } from "@/types/stats";
 import { useTranslations } from "next-intl";
+import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
+import { formatMoney } from "@/lib/currency";
 
 type SortKey =
   | "id"
@@ -115,21 +117,6 @@ const formatStatus = (status: string | undefined, filters: (key: string) => stri
   return key ? filters(key) : status.replaceAll("_", " ");
 };
 
-const formatCurrency = (value: any, currency: string) => {
-  const numeric = Number(value ?? 0);
-
-  if (Number.isNaN(numeric)) {
-    return `${currency} 0.00`;
-  }
-
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(numeric);
-};
-
 const getCustomerName = (order: any) => {
   return (
     order?.customer?.fullName ||
@@ -167,6 +154,7 @@ const OrdersPage = () => {
   const ordersText = useTranslations("orders");
   const customersText = useTranslations("customers");
   const filters = useTranslations("filters");
+  const globalCurrency = useGlobalCurrency();
   const [page, setPage] = useState(1);
   const [limit] = useState(PAGE_LIMIT);
 
@@ -252,7 +240,7 @@ const OrdersPage = () => {
   );
 
   const report = ordersReportResponse?.data;
-  const reportCurrency = report?.currency || "PKR";
+  const reportCurrency = globalCurrency;
 
   const stats: StatItem[] = useMemo(() => {
     const paidCount =
@@ -292,10 +280,10 @@ const OrdersPage = () => {
       {
         _id: "total-revenue",
         titleKey: "orders.totalRevenue",
-        value: formatCurrency(report?.totalRevenue ?? 0, reportCurrency),
+        value: formatMoney(report?.totalRevenue ?? 0, reportCurrency),
         footerType: "plain",
         description: ordersText("avgPerOrder", {
-          amount: formatCurrency(report?.averageOrderValue ?? 0, reportCurrency),
+          amount: formatMoney(report?.averageOrderValue ?? 0, reportCurrency),
         }),
       },
       {
@@ -315,7 +303,7 @@ const OrdersPage = () => {
         value: topItem?.menuItemName || "-",
         footerType: "plain",
         description: topItem
-          ? `${topItem.quantity} sold | ${formatCurrency(
+          ? `${topItem.quantity} sold | ${formatMoney(
               topItem.revenue ?? 0,
               reportCurrency
             )}`
@@ -518,10 +506,7 @@ const OrdersPage = () => {
                 <TableCell>{formatStatus((order as any).orderType, filters)}</TableCell>
 
                 <TableCell className="text-green">
-                  {formatCurrency(
-                    (order as any).totalAmount,
-                    (order as any).currency || reportCurrency
-                  )}
+                  {formatMoney((order as any).totalAmount, reportCurrency)}
                 </TableCell>
 
                 <TableCell className="text-center">

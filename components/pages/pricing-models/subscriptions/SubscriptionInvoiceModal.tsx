@@ -17,6 +17,8 @@ import type {
   PackageSubscription,
   PackageSubscriptionInvoice,
 } from "@/services/packagePlans";
+import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
+import { formatMoney } from "@/lib/currency";
 
 type SubscriptionInvoiceModalProps = {
   open: boolean;
@@ -57,21 +59,6 @@ const numberValue = (value?: string | number | null) => {
   return Number.isFinite(numeric) ? numeric : 0;
 };
 
-const formatMoney = (value?: string | number | null, currency = "PKR") => {
-  const numeric = numberValue(value);
-
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(numeric);
-  } catch {
-    return `${currency} ${numeric.toFixed(2)}`;
-  }
-};
-
 const formatPercent = (value?: string | number | null) => {
   if (value === undefined || value === null || value === "") return "-";
 
@@ -96,6 +83,7 @@ export function SubscriptionInvoiceModal({
   onSendEmail,
 }: SubscriptionInvoiceModalProps) {
   const pricingModel = useTranslations("pricingModel");
+  const currency = useGlobalCurrency();
   const [email, setEmail] = useState("");
 
   const { data, isLoading, isFetching } = useGetPackageSubscriptionInvoice(
@@ -108,7 +96,6 @@ export function SubscriptionInvoiceModal({
   const tenant = invoice?.tenant || subscription?.tenant || null;
   const totals = invoice?.totals;
   const transactionFee = invoice?.transactionFee;
-  const currency = totals?.currency || invoice?.currency || plan?.currency || "PKR";
   const loading = isLoading || isFetching;
   const subscriptionFeeAmount = valueOrFallback(
     totals?.subscriptionFeeAmount,

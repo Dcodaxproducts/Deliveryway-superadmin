@@ -9,6 +9,8 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
+import { formatMoney } from "@/lib/currency";
 import {
   Select,
   SelectContent,
@@ -41,7 +43,7 @@ type PdfColumn = {
   keys: string[];
   width?: number;
   align?: "left" | "center" | "right";
-  formatter?: (value: string, row: CsvRecord) => string;
+  formatter?: (value: string, row: CsvRecord, currency: string) => string;
 };
 
 interface AnalyticsFilterProps {
@@ -137,7 +139,7 @@ const PDF_COLUMNS: Record<ExportType, PdfColumn[]> = {
       keys: ["totalAmount"],
       width: 58,
       align: "right",
-      formatter: (value) => formatAmount(value),
+      formatter: (value, _row, currency) => formatAmount(value, currency),
     },
     {
       header: "Created",
@@ -239,7 +241,7 @@ const PDF_COLUMNS: Record<ExportType, PdfColumn[]> = {
       keys: ["basePrice"],
       width: 62,
       align: "right",
-      formatter: (value) => formatAmount(value),
+      formatter: (value, _row, currency) => formatAmount(value, currency),
     },
     {
       header: "Variations",
@@ -401,17 +403,14 @@ const formatBoolean = (value: string) => {
   return value || "-";
 };
 
-const formatAmount = (value: string) => {
+const formatAmount = (value: string, currency: string) => {
   if (value === undefined || value === null || value === "") return "-";
 
   const numeric = Number(value);
 
   if (Number.isNaN(numeric)) return value;
 
-  return numeric.toLocaleString("en-US", {
-    minimumFractionDigits: numeric % 1 === 0 ? 0 : 2,
-    maximumFractionDigits: 2,
-  });
+  return formatMoney(numeric, currency);
 };
 
 const formatPdfDate = (value: string) => {
@@ -460,7 +459,11 @@ const csvRowsToRecords = (rows: string[][]) => {
   });
 };
 
-const buildPdfTable = (rows: string[][], exportType: ExportType) => {
+const buildPdfTable = (
+  rows: string[][],
+  exportType: ExportType,
+  currency: string
+) => {
   const records = csvRowsToRecords(rows);
   const columns = PDF_COLUMNS[exportType];
 
@@ -470,7 +473,7 @@ const buildPdfTable = (rows: string[][], exportType: ExportType) => {
     return columns.map((column) => {
       const rawValue = getRecordValue(record, column.keys);
       const formattedValue = column.formatter
-        ? column.formatter(rawValue, record)
+        ? column.formatter(rawValue, record, currency)
         : rawValue || "-";
 
       return truncateText(formattedValue, exportType === "orders" ? 42 : 48);
@@ -554,6 +557,7 @@ const drawPdfFooter = (doc: jsPDF, generatedLabel: string, pageLabel: (page: num
 const downloadPdf = (
   response: CsvExportResponse,
   exportType: ExportType,
+  currency: string,
   labels: {
     noExportData: string;
     rowsExported: (rowCount: number) => string;
@@ -571,7 +575,11 @@ const downloadPdf = (
     return;
   }
 
-  const { headers, body, columnStyles } = buildPdfTable(rows, exportType);
+  const { headers, body, columnStyles } = buildPdfTable(
+    rows,
+    exportType,
+    currency
+  );
 
   const doc = new jsPDF({
     orientation: "landscape",
@@ -663,6 +671,7 @@ export function AnalyticsFilter({
 }: AnalyticsFilterProps) {
   const analytics = useTranslations("analytics");
   const toasts = useTranslations("toasts");
+  const currency = useGlobalCurrency();
   const [exportingFormat, setExportingFormat] =
     useState<ExportFormat | null>(null);
 
@@ -691,7 +700,7 @@ export function AnalyticsFilter({
       if (format === "csv") {
         downloadCsv(response, exportType);
       } else {
-        downloadPdf(response, exportType, {
+        downloadPdf(response, exportType, currency, {
           noExportData: toasts("noExportData"),
           rowsExported: (rowCount) => toasts("rowsExported", { count: rowCount }),
           generated: analytics("generated"),

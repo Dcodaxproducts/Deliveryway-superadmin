@@ -32,6 +32,7 @@ import {
 } from "@/hooks/useGlobalSettings";
 import { useUser } from "@/hooks/useAuth";
 import { isSuperAdmin } from "@/lib/auth-role";
+import { DEFAULT_DISPLAY_CURRENCY } from "@/lib/currency";
 import { TaxTypesSection } from "@/components/forms/tax-types-section";
 import {
   useGlobalPaymentMethodsQuery,
@@ -97,7 +98,7 @@ const CURRENCY_OPTIONS: Array<SelectOption & { symbol: string }> = [
 
 const getCurrencySymbol = (currency: string) => {
   return (
-    CURRENCY_OPTIONS.find((item) => item.value === currency)?.symbol || "₨"
+    CURRENCY_OPTIONS.find((item) => item.value === currency)?.symbol || "€"
   );
 };
 
@@ -186,7 +187,7 @@ export function SettingsForm() {
     vatHandlingRule: "EXCLUSIVE",
     defaultCommissionPercentage: "",
     defaultHybridFeePercentage: "",
-    defaultCurrency: "PKR",
+    defaultCurrency: DEFAULT_DISPLAY_CURRENCY,
     currencyDisplayFormat: "AMOUNT_CODE",
     defaultLanguage: "de",
     dateFormat: "DD_MM_YYYY",
@@ -226,7 +227,7 @@ export function SettingsForm() {
       isLocalizationEnforced: Boolean(
         rest.isLocalizationEnforced ?? form.isLocalizationEnforced
       ),
-      defaultCurrency: rest.defaultCurrency || "PKR",
+      defaultCurrency: rest.defaultCurrency || DEFAULT_DISPLAY_CURRENCY,
       defaultLanguage: rest.defaultLanguage || "de",
       timezone: rest.timezone || "Europe/Berlin",
       fontFamily: rest.fontFamily || "Inter",

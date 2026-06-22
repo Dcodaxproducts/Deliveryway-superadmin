@@ -15,6 +15,7 @@ import {
   useUpdateRestaurantStripeAccount,
 } from "@/hooks/useStripeAccounts";
 import { useGetGlobalSettings } from "@/hooks/useGlobalSettings";
+import { DEFAULT_DISPLAY_CURRENCY } from "@/lib/currency";
 
 type StripeAccountPanelProps = {
   restaurantId?: string | null;
@@ -32,7 +33,7 @@ export function StripeAccountPanel({ restaurantId }: StripeAccountPanelProps) {
   const [payoutsEnabled, setPayoutsEnabled] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
   const [amount, setAmount] = useState("");
-  const [currency, setCurrency] = useState("PKR");
+  const [currency, setCurrency] = useState(DEFAULT_DISPLAY_CURRENCY);
   const [description, setDescription] = useState("");
   const stripe = accountQuery.data?.data.stripe;
   const parsedAmount = Number(amount);
@@ -56,7 +57,7 @@ export function StripeAccountPanel({ restaurantId }: StripeAccountPanelProps) {
 
   useEffect(() => {
     const defaultCurrency = globalSettingsQuery.data?.defaultCurrency;
-    if (defaultCurrency && currency === "PKR") {
+    if (defaultCurrency && currency === DEFAULT_DISPLAY_CURRENCY) {
       setCurrency(defaultCurrency);
     }
   }, [currency, globalSettingsQuery.data?.defaultCurrency]);
@@ -220,7 +221,10 @@ export function StripeAccountPanel({ restaurantId }: StripeAccountPanelProps) {
                   onChange={(event) =>
                     setCurrency(event.target.value.toUpperCase())
                   }
-                  placeholder={globalSettingsQuery.data?.defaultCurrency || "PKR"}
+                  placeholder={
+                    globalSettingsQuery.data?.defaultCurrency ||
+                    DEFAULT_DISPLAY_CURRENCY
+                  }
                 />
               </Field>
             </div>

@@ -13,12 +13,15 @@ import {
 import { Card } from "@/components/ui/card";
 import { useGetRevenueTrend } from "@/hooks/useDashboard";
 import { useTranslations } from "next-intl";
+import { formatMoney } from "@/lib/currency";
+import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
 
 type TrendRange = "daily" | "weekly" | "monthly";
 
 const RevenueGraph = ({ type = "home" }: { type?: string }) => {
   const common = useTranslations("common");
   const dashboard = useTranslations("dashboard");
+  const globalCurrency = useGlobalCurrency();
   const [range, setRange] = useState<TrendRange>("daily");
 
   const {
@@ -43,30 +46,15 @@ const RevenueGraph = ({ type = "home" }: { type?: string }) => {
     );
   }, [trendData]);
 
-  const currency = trendData?.currency || "PKR";
+  const currency = globalCurrency;
   const totalRevenueInRange = trendData?.totalRevenueInRange ?? 0;
   const loading = isLoading || isFetching;
 
-  const formatCurrency = (value: number) => {
-    try {
-      return new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency,
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(value);
-    } catch {
-      return `${currency} ${Number(value).toLocaleString()}`;
-    }
-  };
-
   const formatCompactCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
+    return formatMoney(value, currency, {
       notation: "compact",
       maximumFractionDigits: 1,
-    }).format(value);
+    });
   };
 
   return (
@@ -81,7 +69,7 @@ const RevenueGraph = ({ type = "home" }: { type?: string }) => {
             <h3 className="text-base font-medium text-dark">{dashboard("revenueTrend")}</h3>
 
             <div className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              {loading ? common("loading") : formatCurrency(totalRevenueInRange)}
+              {loading ? common("loading") : formatMoney(totalRevenueInRange, currency)}
             </div>
           </div>
 
@@ -193,7 +181,7 @@ const RevenueGraph = ({ type = "home" }: { type?: string }) => {
                 }}
                 cursor={{ fill: "transparent" }}
                 formatter={(value: number) => [
-                  formatCurrency(value),
+                  formatMoney(value, currency),
                   dashboard("revenue"),
                 ]}
                 labelFormatter={(label) =>
