@@ -115,16 +115,16 @@ const formatStatus = (status: string | undefined, filters: (key: string) => stri
   return key ? filters(key) : status.replaceAll("_", " ");
 };
 
-const formatCurrency = (value: any) => {
+const formatCurrency = (value: any, currency: string) => {
   const numeric = Number(value ?? 0);
 
   if (Number.isNaN(numeric)) {
-    return "€0.00";
+    return `${currency} 0.00`;
   }
 
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "EUR",
+    currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(numeric);
@@ -252,6 +252,7 @@ const OrdersPage = () => {
   );
 
   const report = ordersReportResponse?.data;
+  const reportCurrency = report?.currency || "PKR";
 
   const stats: StatItem[] = useMemo(() => {
     const paidCount =
@@ -291,10 +292,10 @@ const OrdersPage = () => {
       {
         _id: "total-revenue",
         titleKey: "orders.totalRevenue",
-        value: formatCurrency(report?.totalRevenue ?? 0),
+        value: formatCurrency(report?.totalRevenue ?? 0, reportCurrency),
         footerType: "plain",
         description: ordersText("avgPerOrder", {
-          amount: formatCurrency(report?.averageOrderValue ?? 0),
+          amount: formatCurrency(report?.averageOrderValue ?? 0, reportCurrency),
         }),
       },
       {
@@ -314,11 +315,14 @@ const OrdersPage = () => {
         value: topItem?.menuItemName || "-",
         footerType: "plain",
         description: topItem
-          ? `${topItem.quantity} sold | ${formatCurrency(topItem.revenue ?? 0)}`
+          ? `${topItem.quantity} sold | ${formatCurrency(
+              topItem.revenue ?? 0,
+              reportCurrency
+            )}`
           : ordersText("noItemSalesYet"),
       },
     ];
-  }, [ordersText, report]);
+  }, [ordersText, report, reportCurrency]);
 
   const orders = useMemo(() => extractOrders(data), [data]);
   const rawMeta = useMemo(() => extractMeta(data), [data]);
@@ -514,7 +518,10 @@ const OrdersPage = () => {
                 <TableCell>{formatStatus((order as any).orderType, filters)}</TableCell>
 
                 <TableCell className="text-green">
-                  {formatCurrency((order as any).totalAmount)}
+                  {formatCurrency(
+                    (order as any).totalAmount,
+                    (order as any).currency || reportCurrency
+                  )}
                 </TableCell>
 
                 <TableCell className="text-center">

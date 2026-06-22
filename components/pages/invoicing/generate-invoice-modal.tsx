@@ -67,10 +67,10 @@ const getDefaultDueDate = () => {
 };
 
 const getCurrency = () => {
-  return "EUR";
+  return "PKR";
 };
 
-const formatMoney = (value: number, currency = "EUR") => {
+const formatMoney = (value: number, currency = "PKR") => {
   const numeric = Number(value || 0);
 
   try {
@@ -85,7 +85,7 @@ const formatMoney = (value: number, currency = "EUR") => {
   }
 };
 
-const formatSignedMoney = (value: number, currency = "EUR") => {
+const formatSignedMoney = (value: number, currency = "PKR") => {
   const numeric = Number(value || 0);
 
   if (numeric > 0) {

@@ -97,7 +97,7 @@ const CURRENCY_OPTIONS: Array<SelectOption & { symbol: string }> = [
 
 const getCurrencySymbol = (currency: string) => {
   return (
-    CURRENCY_OPTIONS.find((item) => item.value === currency)?.symbol || "€"
+    CURRENCY_OPTIONS.find((item) => item.value === currency)?.symbol || "₨"
   );
 };
 
@@ -186,7 +186,7 @@ export function SettingsForm() {
     vatHandlingRule: "EXCLUSIVE",
     defaultCommissionPercentage: "",
     defaultHybridFeePercentage: "",
-    defaultCurrency: "EUR",
+    defaultCurrency: "PKR",
     currencyDisplayFormat: "AMOUNT_CODE",
     defaultLanguage: "de",
     dateFormat: "DD_MM_YYYY",
@@ -226,7 +226,7 @@ export function SettingsForm() {
       isLocalizationEnforced: Boolean(
         rest.isLocalizationEnforced ?? form.isLocalizationEnforced
       ),
-      defaultCurrency: rest.defaultCurrency || "EUR",
+      defaultCurrency: rest.defaultCurrency || "PKR",
       defaultLanguage: rest.defaultLanguage || "de",
       timezone: rest.timezone || "Europe/Berlin",
       fontFamily: rest.fontFamily || "Inter",

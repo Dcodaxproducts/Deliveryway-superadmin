@@ -57,7 +57,7 @@ const numberValue = (value?: string | number | null) => {
   return Number.isFinite(numeric) ? numeric : 0;
 };
 
-const formatMoney = (value?: string | number | null, currency = "EUR") => {
+const formatMoney = (value?: string | number | null, currency = "PKR") => {
   const numeric = numberValue(value);
 
   try {
@@ -108,7 +108,7 @@ export function SubscriptionInvoiceModal({
   const tenant = invoice?.tenant || subscription?.tenant || null;
   const totals = invoice?.totals;
   const transactionFee = invoice?.transactionFee;
-  const currency = totals?.currency || invoice?.currency || plan?.currency || "EUR";
+  const currency = totals?.currency || invoice?.currency || plan?.currency || "PKR";
   const loading = isLoading || isFetching;
   const subscriptionFeeAmount = valueOrFallback(
     totals?.subscriptionFeeAmount,

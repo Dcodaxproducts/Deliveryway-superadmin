@@ -43,7 +43,7 @@ const RevenueGraph = ({ type = "home" }: { type?: string }) => {
     );
   }, [trendData]);
 
-  const currency = "EUR";
+  const currency = trendData?.currency || "PKR";
   const totalRevenueInRange = trendData?.totalRevenueInRange ?? 0;
   const loading = isLoading || isFetching;
 

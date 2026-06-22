@@ -57,7 +57,7 @@ const numberValue = (value?: string | number | null) => {
   return Number.isFinite(numeric) ? numeric : 0;
 };
 
-const formatMoney = (value?: string | number | null, currency = "EUR") => {
+const formatMoney = (value?: string | number | null, currency = "PKR") => {
   const numeric = numberValue(value);
 
   try {
@@ -135,7 +135,7 @@ export function WeeklyPayoutInvoicePanel() {
   const sendInvoiceEmail = useSendWeeklyPayoutInvoiceEmail();
 
   const invoice = fetchInvoice.data?.data;
-  const currency = invoice?.totals?.currency || "EUR";
+  const currency = invoice?.totals?.currency || "PKR";
   const canSubmit = Boolean(restaurantId && fromDate && toDate);
 
   const fetchRestaurantOptions = useCallback(

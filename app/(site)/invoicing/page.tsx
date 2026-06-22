@@ -116,7 +116,7 @@ const parseAdjustmentAmount = (value: string) => {
   return Number.isFinite(numeric) ? numeric : 0;
 };
 
-const formatMoney = (value: number, currency = "EUR") => {
+const formatMoney = (value: number, currency = "PKR") => {
   const numeric = Number(value || 0);
 
   try {
@@ -131,7 +131,7 @@ const formatMoney = (value: number, currency = "EUR") => {
   }
 };
 
-const formatSignedMoney = (value: number, currency = "EUR") => {
+const formatSignedMoney = (value: number, currency = "PKR") => {
   if (value > 0) return `+${formatMoney(value, currency)}`;
   if (value < 0) return `-${formatMoney(Math.abs(value), currency)}`;
 

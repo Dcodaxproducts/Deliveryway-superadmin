@@ -100,16 +100,19 @@ const getDateRangeParams = (
   };
 };
 
-const formatCurrency = (value: number | string | null | undefined) => {
+const formatCurrency = (
+  value: number | string | null | undefined,
+  currency: string
+) => {
   const numeric = Number(value ?? 0);
 
   if (Number.isNaN(numeric)) {
-    return "€0.00";
+    return `${currency} 0.00`;
   }
 
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "EUR",
+    currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(numeric);
@@ -140,6 +143,7 @@ const AnalyticsPage = () => {
   } = useGetOrdersReport(reportParams);
 
   const report = ordersReportResponse?.data;
+  const reportCurrency = report?.currency || "PKR";
 
   const statsData: StatItem[] = useMemo(() => {
     const paidCount =
@@ -175,14 +179,14 @@ const AnalyticsPage = () => {
       {
         _id: "total-revenue",
         title: analytics("totalRevenue"),
-        value: formatCurrency(report?.totalRevenue),
+        value: formatCurrency(report?.totalRevenue, reportCurrency),
         footerType: "plain",
         description: analytics("revenueFromAllOrders"),
       },
       {
         _id: "average-order-value",
         title: analytics("averageOrderValue"),
-        value: formatCurrency(report?.averageOrderValue),
+        value: formatCurrency(report?.averageOrderValue, reportCurrency),
         footerType: "plain",
         description: analytics("averageRevenuePerOrder"),
       },
@@ -198,7 +202,7 @@ const AnalyticsPage = () => {
         },
       },
     ];
-  }, [analytics, report]);
+  }, [analytics, report, reportCurrency]);
 
   return (
     <Container>

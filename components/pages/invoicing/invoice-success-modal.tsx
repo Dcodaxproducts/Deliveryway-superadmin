@@ -19,7 +19,7 @@ type InvoiceSuccessModalProps = {
   onGenerateMore: () => void;
 };
 
-const formatMoney = (value: number, currency = "EUR") => {
+const formatMoney = (value: number, currency = "PKR") => {
   const numeric = Number(value || 0);
 
   try {
@@ -56,7 +56,7 @@ export function InvoiceSuccessModal({
 }: InvoiceSuccessModalProps) {
   const invoicing = useTranslations("invoicing");
 
-  const currency = "EUR";
+  const currency = "PKR";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange} modal>

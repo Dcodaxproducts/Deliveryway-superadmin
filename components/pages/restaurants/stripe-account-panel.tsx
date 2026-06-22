@@ -14,6 +14,7 @@ import {
   useRestaurantStripeAccount,
   useUpdateRestaurantStripeAccount,
 } from "@/hooks/useStripeAccounts";
+import { useGetGlobalSettings } from "@/hooks/useGlobalSettings";
 
 type StripeAccountPanelProps = {
   restaurantId?: string | null;
@@ -21,6 +22,7 @@ type StripeAccountPanelProps = {
 
 export function StripeAccountPanel({ restaurantId }: StripeAccountPanelProps) {
   const accountQuery = useRestaurantStripeAccount(restaurantId);
+  const globalSettingsQuery = useGetGlobalSettings();
   const updateAccount = useUpdateRestaurantStripeAccount();
   const createTransfer = useCreateRestaurantStripeTransfer();
   const [accountId, setAccountId] = useState("");
@@ -30,7 +32,7 @@ export function StripeAccountPanel({ restaurantId }: StripeAccountPanelProps) {
   const [payoutsEnabled, setPayoutsEnabled] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
   const [amount, setAmount] = useState("");
-  const [currency, setCurrency] = useState("EUR");
+  const [currency, setCurrency] = useState("PKR");
   const [description, setDescription] = useState("");
   const stripe = accountQuery.data?.data.stripe;
   const parsedAmount = Number(amount);
@@ -51,6 +53,13 @@ export function StripeAccountPanel({ restaurantId }: StripeAccountPanelProps) {
     setPayoutsEnabled(Boolean(stripe.payoutsEnabled));
     setOnboardingComplete(Boolean(stripe.onboardingComplete));
   }, [stripe]);
+
+  useEffect(() => {
+    const defaultCurrency = globalSettingsQuery.data?.defaultCurrency;
+    if (defaultCurrency && currency === "PKR") {
+      setCurrency(defaultCurrency);
+    }
+  }, [currency, globalSettingsQuery.data?.defaultCurrency]);
 
   const saveAccount = () => {
     if (!restaurantId) return;
@@ -211,7 +220,7 @@ export function StripeAccountPanel({ restaurantId }: StripeAccountPanelProps) {
                   onChange={(event) =>
                     setCurrency(event.target.value.toUpperCase())
                   }
-                  placeholder="EUR"
+                  placeholder={globalSettingsQuery.data?.defaultCurrency || "PKR"}
                 />
               </Field>
             </div>

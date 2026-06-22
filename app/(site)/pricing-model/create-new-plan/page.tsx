@@ -18,6 +18,7 @@ import {
   useGetPackagePlanFeatureCatalog,
   useUpdatePackagePlan,
 } from "@/hooks/usePackagePlans";
+import { useGetGlobalSettings } from "@/hooks/useGlobalSettings";
 
 import type {
   CreatePackagePlanPayload,
@@ -141,7 +142,7 @@ const defaultForm: PlanFormState = {
   pricingModel: "HYBRID",
   name: "",
   description: "",
-  currency: "EUR",
+  currency: "PKR",
   planPrice: "0",
   billingInterval: "MONTHLY",
 
@@ -253,7 +254,7 @@ const mapPackagePlanToForm = (plan: PackagePlanDetail): PlanFormState => {
     pricingModel: normalizePricingModel(plan.billingModel),
     name: toSafeString(plan.name),
     description: toSafeString(plan.description),
-    currency: toSafeString(plan.currency, "EUR"),
+    currency: toSafeString(plan.currency, "PKR"),
     planPrice: toSafeString(plan.planPrice, "0"),
     billingInterval: normalizeBillingInterval(plan.billingInterval),
 
@@ -298,6 +299,7 @@ function CreatePackagePlanContent() {
 
   const createPackagePlan = useCreatePackagePlan();
   const updatePackagePlan = useUpdatePackagePlan();
+  const globalSettingsQuery = useGetGlobalSettings();
   const featureCatalogQuery = useGetPackagePlanFeatureCatalog();
   const packagePlanDetailQuery = useGetPackagePlanDetail(planId || undefined);
 
@@ -318,6 +320,13 @@ function CreatePackagePlanContent() {
     setForm(mapPackagePlanToForm(detail));
     setHydratedPlanId(planId);
   }, [hydratedPlanId, isEditMode, packagePlanDetailQuery.data, planId]);
+
+  useEffect(() => {
+    const defaultCurrency = globalSettingsQuery.data?.defaultCurrency;
+    if (!isEditMode && defaultCurrency && form.currency === "PKR") {
+      setForm((current) => ({ ...current, currency: defaultCurrency }));
+    }
+  }, [form.currency, globalSettingsQuery.data?.defaultCurrency, isEditMode]);
 
   useEffect(() => {
     return () => {
@@ -391,7 +400,7 @@ function CreatePackagePlanContent() {
       vatPercentage: form.vatEnabled ? toNumber(form.vatPercentage) : 0,
       payoutCycle: form.payoutCycle,
       termsDocumentUrl: form.termsDocumentUrl,
-      currency: form.currency || "EUR",
+      currency: form.currency || globalSettingsQuery.data?.defaultCurrency || "PKR",
       trialDays: toNumber(form.trialDays),
       features: form.features,
       isActive,
