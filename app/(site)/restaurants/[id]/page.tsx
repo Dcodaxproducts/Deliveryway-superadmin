@@ -5,6 +5,7 @@ import SummarySection from "@/components/pages/profile/address-info"
 import BranchList from "@/components/pages/profile/branch-list-section"
 import Hero from "@/components/pages/profile/hero"
 import Header from "@/components/header"
+import { StripeAccountPanel } from "@/components/pages/restaurants/stripe-account-panel";
 import { useGetRestaurant, useGetRestaurantBranches } from "@/hooks/useRestaurant";
 import { useParams } from "next/navigation";
 import RestaurantDetailsSkeleton from "@/components/skeleton/restaurant-details-skeleton";
@@ -28,6 +29,7 @@ const RestaurantDetailsPage = () => {
             <div className="flex flex-col gap-[32px] w-full bg-white p-4 lg:p-[30px] rounded-[14px]">
                 <Hero data={restaurantData} />
                 <SummarySection data={restaurantData} />
+                <StripeAccountPanel restaurantId={id} />
                 <BranchList branches={branchesData} />
             </div>
         </Container>
