@@ -292,6 +292,25 @@ export const getAdminReportInvoiceDetails = async ({
   return data;
 };
 
+export const downloadAdminReportInvoicePdf = async ({
+  orderId,
+  restaurantId,
+  branchId,
+}: AdminInvoiceDetailsParams) => {
+  const response = await api.get<Blob>(
+    `/admin/reports/invoices/${orderId}/pdf`,
+    {
+      params: cleanParams({
+        restaurantId,
+        branchId,
+      }),
+      responseType: "blob",
+    }
+  );
+
+  return response.data;
+};
+
 /**
  * ==============================
  * EXPORT APIS

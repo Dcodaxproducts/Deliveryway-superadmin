@@ -53,6 +53,14 @@ const toStartOfDayIso = (value: string) => {
   return Number.isNaN(date.getTime()) ? "" : date.toISOString();
 };
 
+const toNextDayStartIso = (value: string) => {
+  const date = new Date(`${value}T00:00:00.000Z`);
+  if (Number.isNaN(date.getTime())) return "";
+
+  date.setUTCDate(date.getUTCDate() + 1);
+  return date.toISOString();
+};
+
 const numberValue = (value?: string | number | null) => {
   const numeric = Number(value ?? 0);
 
@@ -140,7 +148,7 @@ export function WeeklyPayoutInvoicePanel() {
 
   const buildParams = (): WeeklyPayoutInvoiceParams | null => {
     const fromDateIso = toStartOfDayIso(fromDate);
-    const toDateIso = toStartOfDayIso(toDate);
+    const toDateIso = toNextDayStartIso(toDate);
 
     if (!restaurantId || !fromDateIso || !toDateIso) return null;
 

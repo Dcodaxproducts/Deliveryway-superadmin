@@ -36,6 +36,7 @@ type InvoicingTableProps = {
   onToggleInvoice?: (orderId: string) => void;
   onToggleAllVisible?: () => void;
   onGenerateInvoice?: (invoice: AdminInvoice) => void;
+  downloadingInvoiceId?: string | null;
 };
 
 const getInitials = (name?: string) => {
@@ -128,6 +129,7 @@ export function InvoicingTable({
   onToggleInvoice,
   onToggleAllVisible,
   onGenerateInvoice,
+  downloadingInvoiceId,
 }: InvoicingTableProps) {
   const invoicing = useTranslations("invoicing");
   const common = useTranslations("common");
@@ -243,6 +245,8 @@ export function InvoicingTable({
               const isSelected = selectedSet.has(invoice.orderId);
               const isCurrentInvoiceSending =
                 sendingOrderId === invoice.orderId && isSendingInvoiceEmail;
+              const isCurrentInvoiceDownloading =
+                downloadingInvoiceId === invoice.orderId;
 
               return (
                 <TableRow
@@ -339,10 +343,16 @@ export function InvoicingTable({
                           type="button"
                           className="rounded-full p-2 transition hover:bg-gray-100 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
                           onClick={() => onDownloadInvoice?.(invoice)}
-                          disabled={!onDownloadInvoice}
+                          disabled={
+                            !onDownloadInvoice || isCurrentInvoiceDownloading
+                          }
                           title={invoicing("downloadInvoice")}
                         >
-                          <Download size={18} />
+                          {isCurrentInvoiceDownloading ? (
+                            <Loader2 size={18} className="animate-spin" />
+                          ) : (
+                            <Download size={18} />
+                          )}
                         </button>
                       ) : (
                         <button

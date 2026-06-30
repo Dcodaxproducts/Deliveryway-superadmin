@@ -1365,6 +1365,8 @@
     "customersReportExportFailed": "Kundenbericht konnte nicht exportiert werden",
     "invoiceEmailSent": "Rechnungs-E-Mail erfolgreich gesendet",
     "invoiceEmailSendFailed": "Rechnungs-E-Mail konnte nicht gesendet werden",
+    "invoiceDownloaded": "Rechnung erfolgreich heruntergeladen",
+    "invoiceDownloadFailed": "Rechnung konnte nicht heruntergeladen werden",
     "systemHealthOverviewFetchFailed": "Systemzustandsübersicht konnte nicht abgerufen werden",
     "requestMetricsFetchFailed": "Anfragemetriken konnten nicht abgerufen werden",
     "requestLogsFetchFailed": "Anfrageprotokolle konnten nicht abgerufen werden",

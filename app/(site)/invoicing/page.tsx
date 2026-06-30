@@ -40,7 +40,10 @@ import {
   useGetPackageSubscriptions,
   useSendPackageSubscriptionInvoiceEmail,
 } from "@/hooks/usePackagePlans";
-import { useGetAdminReportInvoices } from "@/hooks/useReports";
+import {
+  useDownloadAdminReportInvoicePdf,
+  useGetAdminReportInvoices,
+} from "@/hooks/useReports";
 import type { AdminInvoice, AdminInvoicesParams } from "@/services/reports";
 import type { PackageSubscription } from "@/services/packagePlans";
 import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
@@ -219,6 +222,8 @@ export default function InvoicingPage() {
     useState<string | null>(null);
   const [sendingSubscriptionInvoiceId, setSendingSubscriptionInvoiceId] =
     useState<string | null>(null);
+  const [downloadingOrderInvoiceId, setDownloadingOrderInvoiceId] =
+    useState<string | null>(null);
 
   const [filters, setFilters] = useState<InvoiceFilters>({
     search: "",
@@ -335,6 +340,7 @@ export default function InvoicingPage() {
     useDownloadPackageSubscriptionInvoicePdf();
   const sendSubscriptionInvoiceEmailMutation =
     useSendPackageSubscriptionInvoiceEmail();
+  const downloadOrderInvoiceMutation = useDownloadAdminReportInvoicePdf();
   const subscriptionsResponse = subscriptionsQuery.data as
     | {
         data?: PackageSubscription[];
@@ -451,6 +457,23 @@ export default function InvoicingPage() {
     setSuccessPayload(previewPayload);
     setPreviewOpen(false);
     setSuccessOpen(true);
+  };
+
+  const handleDownloadOrderInvoice = (invoice: AdminInvoice) => {
+    setDownloadingOrderInvoiceId(invoice.orderId);
+
+    downloadOrderInvoiceMutation.mutate(
+      {
+        orderId: invoice.orderId,
+        restaurantId: invoice.restaurant?.id,
+        branchId: invoice.branch?.id,
+      },
+      {
+        onSettled: () => {
+          setDownloadingOrderInvoiceId(null);
+        },
+      }
+    );
   };
 
   const handleSubscriptionStatusChange = (value: SubscriptionStatusFilter) => {
@@ -597,7 +620,9 @@ export default function InvoicingPage() {
                 onToggleInvoice={toggleInvoice}
                 onToggleAllVisible={toggleAllVisibleInvoices}
                 onViewInvoice={(invoice) => setSelectedInvoice(invoice)}
+                onDownloadInvoice={handleDownloadOrderInvoice}
                 onGenerateInvoice={(invoice) => previewInvoices([invoice])}
+                downloadingInvoiceId={downloadingOrderInvoiceId}
               />
             </div>
           </>

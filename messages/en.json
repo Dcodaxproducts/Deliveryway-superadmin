@@ -1365,6 +1365,8 @@
     "customersReportExportFailed": "Failed to export customers report",
     "invoiceEmailSent": "Invoice email sent successfully",
     "invoiceEmailSendFailed": "Failed to send invoice email",
+    "invoiceDownloaded": "Invoice downloaded successfully",
+    "invoiceDownloadFailed": "Failed to download invoice",
     "systemHealthOverviewFetchFailed": "Failed to fetch system health overview",
     "requestMetricsFetchFailed": "Failed to fetch request metrics",
     "requestLogsFetchFailed": "Failed to fetch request logs",

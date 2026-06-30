@@ -18,6 +18,7 @@ import {
   OrdersExportReportParams,
   CustomersExportReportParams,
   CsvExportResponse,
+  downloadAdminReportInvoicePdf,
   SendAdminInvoiceEmailParams,
   sendAdminInvoiceEmail,
 } from "@/services/reports";
@@ -246,6 +247,26 @@ export const useSendAdminInvoiceEmail = () => {
     onError: (err: any) => {
       toast.error(
         err?.response?.data?.message || toasts("invoiceEmailSendFailed")
+      );
+    },
+  });
+};
+
+export const useDownloadAdminReportInvoicePdf = () => {
+  const toasts = useTranslations("toasts");
+
+  return useMutation({
+    mutationFn: (params: AdminInvoiceDetailsParams) =>
+      downloadAdminReportInvoicePdf(params),
+
+    onSuccess: (blob, params) => {
+      downloadBlobFile(blob, `order-invoice-${params.orderId}.pdf`);
+      toast.success(toasts("invoiceDownloaded"));
+    },
+
+    onError: (err: any) => {
+      toast.error(
+        err?.response?.data?.message || toasts("invoiceDownloadFailed")
       );
     },
   });
