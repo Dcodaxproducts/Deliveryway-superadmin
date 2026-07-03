@@ -191,7 +191,7 @@ export default function CuisinesPage() {
               <>
                 <TableHead>{cuisinesText("image")}</TableHead>
                 <TableHead>{cuisinesText("name")}</TableHead>
-                <TableHead>{cuisinesText("slug")}</TableHead>
+                <TableHead>{cuisinesText("descriptionLabel")}</TableHead>
                 <TableHead>{cuisinesText("items")}</TableHead>
                 <TableHead className="text-center">{common("status")}</TableHead>
                 <TableHead className="text-center">{common("actions")}</TableHead>
@@ -204,11 +204,12 @@ export default function CuisinesPage() {
                 </TableCell>
                 <TableCell>
                   <div className="font-semibold text-dark">{cuisine.name}</div>
-                  {cuisine.description ? (
-                    <p className="mt-1 max-w-[280px] truncate text-xs text-gray">{cuisine.description}</p>
-                  ) : null}
                 </TableCell>
-                <TableCell className="text-gray">{cuisine.slug}</TableCell>
+                <TableCell>
+                  <p className="line-clamp-2 max-w-[360px] text-sm leading-5 text-gray">
+                    {cuisine.description || common("notAvailable")}
+                  </p>
+                </TableCell>
                 <TableCell>
                   <Badge className="rounded-[8px] bg-primary/10 px-2.5 py-1 text-primary">
                     {cuisine._count?.itemLinks ?? 0}
