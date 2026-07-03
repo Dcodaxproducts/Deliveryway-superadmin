@@ -9,7 +9,6 @@ export const createCuisineSchema = (messages?: {
     slug: z.string().trim().min(1, messages?.required ?? "Slug is required").max(120),
     description: z.string().trim().optional().or(z.literal("")),
     imageUrl: z.string().trim().optional().or(z.literal("")),
-    sortOrder: z.coerce.number().int().min(0).default(0),
     isActive: z.boolean().default(true),
   });
 

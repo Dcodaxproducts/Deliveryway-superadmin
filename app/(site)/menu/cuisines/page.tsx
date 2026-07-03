@@ -4,17 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import {
-  ArrowDown,
-  ArrowUp,
-  Edit2,
-  Layers3,
-  Plus,
-  Search,
-  Trash2,
-  UploadCloud,
-} from "lucide-react";
+import { Edit2, Layers3, Plus, Search, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import Container from "@/components/container";
@@ -43,11 +33,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import {
-  useBulkCreateCuisines,
   useCreateCuisine,
   useDeleteCuisine,
   useGetCuisines,
-  useReorderCuisines,
   useUpdateCuisine,
 } from "@/hooks/useCuisine";
 import { getImageUrl } from "@/utils/getImageUrl";
@@ -82,28 +70,9 @@ const toCuisinePayload = (values: CuisineFormValues): CuisinePayload => ({
   slug: values.slug.trim(),
   description: values.description?.trim() || undefined,
   imageUrl: values.imageUrl?.trim() || undefined,
-  sortOrder: Number(values.sortOrder) || 0,
   isActive: Boolean(values.isActive),
 });
 
-const parseBulkCuisines = (raw: string): CuisinePayload[] =>
-  raw
-    .split("\n")
-    .map((line, index) => {
-      const parts = line.split("|").map((part) => part.trim());
-      const name = parts[0] || "";
-      const slug = parts[1] || slugify(name);
-      const description = parts[2] || undefined;
-      const sortOrder = parts[3] ? Number(parts[3]) : index;
-      return {
-        name,
-        slug,
-        description,
-        sortOrder: Number.isFinite(sortOrder) && sortOrder >= 0 ? sortOrder : index,
-        isActive: true,
-      };
-    })
-    .filter((item) => item.name && item.slug);
 
 export default function CuisinesPage() {
   const common = useTranslations("common");
@@ -116,7 +85,6 @@ export default function CuisinesPage() {
   const [selectedCuisine, setSelectedCuisine] = useState<Cuisine | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Cuisine | null>(null);
   const [deleteError, setDeleteError] = useState("");
-  const [bulkOpen, setBulkOpen] = useState(false);
 
   const debouncedSearch = useDebounce(search, 500);
   const listParams = useMemo(
@@ -135,7 +103,6 @@ export default function CuisinesPage() {
 
   const { data, isError, isLoading } = useGetCuisines(listParams);
   const deleteMutation = useDeleteCuisine();
-  const reorderMutation = useReorderCuisines();
   const cuisines = data?.data ?? [];
 
   const openCreate = () => {
@@ -164,19 +131,6 @@ export default function CuisinesPage() {
     });
   };
 
-  const handleMove = (index: number, direction: -1 | 1) => {
-    const next = [...cuisines];
-    const swapIndex = index + direction;
-    if (swapIndex < 0 || swapIndex >= next.length) return;
-
-    [next[index], next[swapIndex]] = [next[swapIndex], next[index]];
-    reorderMutation.mutate(
-      next.map((cuisine, currentIndex) => ({
-        id: cuisine.id,
-        sortOrder: currentIndex,
-      }))
-    );
-  };
 
   return (
     <Container>
@@ -217,10 +171,6 @@ export default function CuisinesPage() {
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-            <Button type="button" variant="outline" onClick={() => setBulkOpen(true)}>
-              <UploadCloud size={16} />
-              {cuisinesText("bulkCreate")}
-            </Button>
             <Button type="button" variant="primary" onClick={openCreate}>
               <Plus size={16} />
               {cuisinesText("addCuisine")}
@@ -233,7 +183,7 @@ export default function CuisinesPage() {
             <AlertDescription>{cuisinesText("loadError")}</AlertDescription>
           </Alert>
         ) : isLoading ? (
-          <TableSkeleton cols={8} rows={8} />
+          <TableSkeleton cols={6} rows={8} />
         ) : (
           <DataTable
             data={cuisines}
@@ -243,13 +193,11 @@ export default function CuisinesPage() {
                 <TableHead>{cuisinesText("name")}</TableHead>
                 <TableHead>{cuisinesText("slug")}</TableHead>
                 <TableHead>{cuisinesText("items")}</TableHead>
-                <TableHead>{cuisinesText("sortOrder")}</TableHead>
                 <TableHead className="text-center">{common("status")}</TableHead>
-                <TableHead className="text-center">{cuisinesText("reorder")}</TableHead>
                 <TableHead className="text-center">{common("actions")}</TableHead>
               </>
             }
-            row={(cuisine, index) => (
+            row={(cuisine) => (
               <>
                 <TableCell>
                   <CuisineImage cuisine={cuisine} />
@@ -266,7 +214,6 @@ export default function CuisinesPage() {
                     {cuisine._count?.itemLinks ?? 0}
                   </Badge>
                 </TableCell>
-                <TableCell>{cuisine.sortOrder}</TableCell>
                 <TableCell className="text-center">
                   <Badge
                     className={
@@ -277,30 +224,6 @@ export default function CuisinesPage() {
                   >
                     {cuisine.isActive ? common("active") : common("inactive")}
                   </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex justify-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon-sm"
-                      aria-label={cuisinesText("moveUp")}
-                      disabled={index === 0 || reorderMutation.isPending}
-                      onClick={() => handleMove(index, -1)}
-                    >
-                      <ArrowUp size={15} />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon-sm"
-                      aria-label={cuisinesText("moveDown")}
-                      disabled={index === cuisines.length - 1 || reorderMutation.isPending}
-                      onClick={() => handleMove(index, 1)}
-                    >
-                      <ArrowDown size={15} />
-                    </Button>
-                  </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex justify-center gap-3 text-[#A3A3A3]">
@@ -339,7 +262,6 @@ export default function CuisinesPage() {
         onOpenChange={setFormOpen}
       />
 
-      <BulkCreateDialog open={bulkOpen} onOpenChange={setBulkOpen} />
 
       <DeleteDialog
         open={Boolean(deleteTarget)}
@@ -411,7 +333,6 @@ function CuisineFormDialog({
       slug: "",
       description: "",
       imageUrl: "",
-      sortOrder: 0,
       isActive: true,
     },
   });
@@ -429,7 +350,6 @@ function CuisineFormDialog({
       slug: cuisine?.slug ?? "",
       description: cuisine?.description ?? "",
       imageUrl: cuisine?.imageUrl ?? "",
-      sortOrder: cuisine?.sortOrder ?? 0,
       isActive: cuisine?.isActive ?? true,
     });
     setPreviewBlob("");
@@ -521,10 +441,6 @@ function CuisineFormDialog({
             </FormField>
 
             <div className="space-y-5">
-              <FormField label={cuisinesText("sortOrder")} error={errors.sortOrder?.message}>
-                <Input type="number" min={0} {...register("sortOrder", { valueAsNumber: true })} />
-              </FormField>
-
               <div className="rounded-[14px] border border-[#E5E7EB] bg-[#F9FAFB] p-4">
                 <Label className="mb-3 block">{common("status")}</Label>
                 <label className="flex items-center justify-between gap-3 text-sm text-gray">
@@ -552,67 +468,6 @@ function CuisineFormDialog({
   );
 }
 
-function BulkCreateDialog({
-  open,
-  onOpenChange,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
-  const common = useTranslations("common");
-  const cuisinesText = useTranslations("cuisines");
-  const bulkMutation = useBulkCreateCuisines();
-  const [rawItems, setRawItems] = useState("");
-  const parsedItems = useMemo(() => parseBulkCuisines(rawItems), [rawItems]);
-
-  const handleSubmit = () => {
-    if (parsedItems.length === 0) {
-      toast.error(cuisinesText("bulkEmpty"));
-      return;
-    }
-
-    bulkMutation.mutate(parsedItems, {
-      onSuccess: () => {
-        setRawItems("");
-        onOpenChange(false);
-      },
-    });
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-none bg-[#F5F5F5] p-6 shadow-lg sm:max-w-[640px] lg:p-[40px]">
-        <DialogHeader>
-          <DialogTitle>{cuisinesText("bulkCreate")}</DialogTitle>
-          <DialogDescription>{cuisinesText("bulkDescription")}</DialogDescription>
-        </DialogHeader>
-
-        <div className="mt-[28px] space-y-4 rounded-[14px] bg-white p-5 lg:p-6">
-          <div className="space-y-[6px]">
-            <Label>{cuisinesText("bulkItems")}</Label>
-            <Textarea
-              value={rawItems}
-              onChange={(event) => setRawItems(event.target.value)}
-              placeholder={cuisinesText("bulkPlaceholder")}
-              className="min-h-[220px]"
-            />
-          </div>
-
-          <p className="text-sm text-gray">{cuisinesText("bulkPreview", { count: parsedItems.length })}</p>
-
-          <DialogFooter className="gap-3 pt-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={bulkMutation.isPending}>
-              {common("cancel")}
-            </Button>
-            <Button type="button" variant="primary" onClick={handleSubmit} disabled={bulkMutation.isPending}>
-              {bulkMutation.isPending ? common("saving") : cuisinesText("createBulk")}
-            </Button>
-          </DialogFooter>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 function FormField({
   children,
