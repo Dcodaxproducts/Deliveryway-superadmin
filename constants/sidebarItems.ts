@@ -19,6 +19,7 @@ import {
   FileText,
   Building2,
   Repeat,
+  Utensils,
 } from "lucide-react";
 import { PiUsersThree } from "react-icons/pi";
 
@@ -39,6 +40,7 @@ export const menuItems: SidebarMenuItem[] = [
   { titleKey: "navigation.ordersRevenuePerformance", icon: BarChart3, href: "/orders" },
   { titleKey: "navigation.employeeSettings", icon: PiUsersThree, href: "/employee-settings" },
   { titleKey: "navigation.productOverview", icon: Box, href: "/products" },
+  { titleKey: "navigation.cuisines", icon: Utensils, href: "/menu/cuisines" },
   { titleKey: "navigation.rbac", icon: ShieldCheck, href: "/rbac" },
   // { title: "Business Models", icon: Gift, href: "/models" },
 

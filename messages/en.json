@@ -60,7 +60,8 @@
     "reportsAnalytics": "Reports & Analytics",
     "systemHealthMonitoring": "System Health & Monitoring",
     "notificationSettings": "Notification Setting",
-    "logout": "Logout"
+    "logout": "Logout",
+    "cuisines": "Cuisines"
   },
   "auth": {
     "login": "Login",
@@ -1287,7 +1288,8 @@
     "operationRequired": "At least one operation is required",
     "roleNameRequired": "Role name is required",
     "permissionRequired": "At least one permission is required",
-    "staffRoleRequired": "Staff role is required"
+    "staffRoleRequired": "Staff role is required",
+    "required": "This field is required."
   },
   "toasts": {
     "businessAdminApproveFailed": "Failed to approve business admin",
@@ -1370,7 +1372,17 @@
     "systemHealthOverviewFetchFailed": "Failed to fetch system health overview",
     "requestMetricsFetchFailed": "Failed to fetch request metrics",
     "requestLogsFetchFailed": "Failed to fetch request logs",
-    "integrationLogsFetchFailed": "Failed to fetch integration logs"
+    "integrationLogsFetchFailed": "Failed to fetch integration logs",
+    "cuisineCreated": "Cuisine created successfully.",
+    "cuisineCreateFailed": "Unable to create cuisine.",
+    "cuisineUpdated": "Cuisine updated successfully.",
+    "cuisineUpdateFailed": "Unable to update cuisine.",
+    "cuisineDeleted": "Cuisine deleted successfully.",
+    "cuisineDeleteFailed": "Unable to delete cuisine.",
+    "cuisinesCreated": "Cuisines created successfully.",
+    "cuisinesCreateFailed": "Unable to create cuisines.",
+    "cuisinesReordered": "Cuisines reordered successfully.",
+    "cuisinesReorderFailed": "Unable to reorder cuisines."
   },
   "models": {
     "businessModelComparison": "Business Model Comparison",
@@ -1411,5 +1423,45 @@
     "noTopPerformingRestaurants": "No top performing restaurants found.",
     "customersCount": "{count} customers",
     "noRestaurantData": "No restaurant data available."
+  },
+  "cuisines": {
+    "title": "Cuisine Master Data",
+    "description": "Create and manage global cuisines used across restaurants.",
+    "searchPlaceholder": "Search cuisines by name or slug...",
+    "activeOnly": "Active only",
+    "allCuisines": "All cuisines",
+    "inactiveOnly": "Inactive only",
+    "bulkCreate": "Bulk create",
+    "addCuisine": "Add cuisine",
+    "loadError": "Unable to load cuisines.",
+    "image": "Image",
+    "name": "Name",
+    "slug": "Slug",
+    "items": "Items",
+    "sortOrder": "Sort order",
+    "reorder": "Reorder",
+    "moveUp": "Move cuisine up",
+    "moveDown": "Move cuisine down",
+    "deleteTitle": "Delete cuisine?",
+    "deleteDescription": "Delete {name}? This only succeeds when no menu items are assigned.",
+    "deleteBlocked": "Cuisine cannot be deleted while menu items are assigned.",
+    "editCuisine": "Edit cuisine",
+    "createCuisine": "Create cuisine",
+    "formDescription": "Manage the global cuisine name, slug, image, order, and visibility.",
+    "namePlaceholder": "Italian",
+    "slugPlaceholder": "italian",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Short description for internal and customer-facing lists",
+    "imageUrl": "Cuisine image",
+    "imageSelected": "Cuisine image selected",
+    "uploadImage": "Click or drag to upload cuisine image",
+    "uploadImageHint": "Recommended square image. Uploaded through the platform S3 flow.",
+    "uploadingImage": "Uploading cuisine image...",
+    "bulkDescription": "Paste one cuisine per line. Format: name | slug | description | sortOrder. Slug is generated when omitted.",
+    "bulkItems": "Cuisine rows",
+    "bulkPlaceholder": "Italian | italian | Pasta, pizza, and more | 0\nSushi | sushi | Japanese favorites | 1",
+    "bulkPreview": "{count} valid cuisines ready to create",
+    "bulkEmpty": "Add at least one valid cuisine row.",
+    "createBulk": "Create cuisines"
   }
 }

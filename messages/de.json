@@ -60,7 +60,8 @@
     "reportsAnalytics": "Berichte & Analysen",
     "systemHealthMonitoring": "Systemzustand & Überwachung",
     "notificationSettings": "Benachrichtigungseinstellungen",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "cuisines": "Küchen"
   },
   "auth": {
     "login": "Anmelden",
@@ -1287,7 +1288,8 @@
     "operationRequired": "Mindestens eine Operation ist erforderlich",
     "roleNameRequired": "Rollenname ist erforderlich",
     "permissionRequired": "Mindestens eine Berechtigung ist erforderlich",
-    "staffRoleRequired": "Mitarbeiterrolle ist erforderlich"
+    "staffRoleRequired": "Mitarbeiterrolle ist erforderlich",
+    "required": "Dieses Feld ist erforderlich."
   },
   "toasts": {
     "businessAdminApproveFailed": "Business Admin konnte nicht freigegeben werden",
@@ -1370,7 +1372,17 @@
     "systemHealthOverviewFetchFailed": "Systemzustandsübersicht konnte nicht abgerufen werden",
     "requestMetricsFetchFailed": "Anfragemetriken konnten nicht abgerufen werden",
     "requestLogsFetchFailed": "Anfrageprotokolle konnten nicht abgerufen werden",
-    "integrationLogsFetchFailed": "Integrationsprotokolle konnten nicht abgerufen werden"
+    "integrationLogsFetchFailed": "Integrationsprotokolle konnten nicht abgerufen werden",
+    "cuisineCreated": "Küche erfolgreich erstellt.",
+    "cuisineCreateFailed": "Küche konnte nicht erstellt werden.",
+    "cuisineUpdated": "Küche erfolgreich aktualisiert.",
+    "cuisineUpdateFailed": "Küche konnte nicht aktualisiert werden.",
+    "cuisineDeleted": "Küche erfolgreich gelöscht.",
+    "cuisineDeleteFailed": "Küche konnte nicht gelöscht werden.",
+    "cuisinesCreated": "Küchen erfolgreich erstellt.",
+    "cuisinesCreateFailed": "Küchen konnten nicht erstellt werden.",
+    "cuisinesReordered": "Küchen erfolgreich neu geordnet.",
+    "cuisinesReorderFailed": "Küchen konnten nicht neu geordnet werden."
   },
   "models": {
     "businessModelComparison": "Vergleich der Geschäftsmodelle",
@@ -1411,5 +1423,45 @@
     "noTopPerformingRestaurants": "Keine Top-Restaurants gefunden.",
     "customersCount": "{count} Kunden",
     "noRestaurantData": "Keine Restaurantdaten verfügbar."
+  },
+  "cuisines": {
+    "title": "Küchen-Stammdaten",
+    "description": "Globale Küchen erstellen und verwalten, die restaurantübergreifend genutzt werden.",
+    "searchPlaceholder": "Küchen nach Name oder Slug suchen...",
+    "activeOnly": "Nur aktive",
+    "allCuisines": "Alle Küchen",
+    "inactiveOnly": "Nur inaktive",
+    "bulkCreate": "Mehrfach erstellen",
+    "addCuisine": "Küche hinzufügen",
+    "loadError": "Küchen konnten nicht geladen werden.",
+    "image": "Bild",
+    "name": "Name",
+    "slug": "Slug",
+    "items": "Artikel",
+    "sortOrder": "Sortierung",
+    "reorder": "Neu ordnen",
+    "moveUp": "Küche nach oben verschieben",
+    "moveDown": "Küche nach unten verschieben",
+    "deleteTitle": "Küche löschen?",
+    "deleteDescription": "{name} löschen? Dies ist nur möglich, wenn keine Menüartikel zugeordnet sind.",
+    "deleteBlocked": "Küche kann nicht gelöscht werden, solange Menüartikel zugeordnet sind.",
+    "editCuisine": "Küche bearbeiten",
+    "createCuisine": "Küche erstellen",
+    "formDescription": "Globalen Namen, Slug, Bild, Reihenfolge und Sichtbarkeit verwalten.",
+    "namePlaceholder": "Italienisch",
+    "slugPlaceholder": "italienisch",
+    "descriptionLabel": "Beschreibung",
+    "descriptionPlaceholder": "Kurze Beschreibung für interne und kundenorientierte Listen",
+    "imageUrl": "Küchenbild",
+    "imageSelected": "Küchenbild ausgewählt",
+    "uploadImage": "Klicken oder ziehen, um ein Küchenbild hochzuladen",
+    "uploadImageHint": "Quadratisches Bild empfohlen. Upload über den Plattform-S3-Flow.",
+    "uploadingImage": "Küchenbild wird hochgeladen...",
+    "bulkDescription": "Eine Küche pro Zeile einfügen. Format: Name | Slug | Beschreibung | Sortierung. Slug wird erzeugt, wenn leer.",
+    "bulkItems": "Küchenzeilen",
+    "bulkPlaceholder": "Italienisch | italienisch | Pasta, Pizza und mehr | 0\nSushi | sushi | Japanische Favoriten | 1",
+    "bulkPreview": "{count} gültige Küchen bereit zum Erstellen",
+    "bulkEmpty": "Fügen Sie mindestens eine gültige Küchenzeile hinzu.",
+    "createBulk": "Küchen erstellen"
   }
 }
