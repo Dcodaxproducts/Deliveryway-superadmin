@@ -5,6 +5,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import api from "@/lib/axios";
+import { prepareUploadFile } from "@/lib/prepare-upload-file";
 
 export const useFileUpload = () => {
   const toasts = useTranslations("toasts");
@@ -18,9 +19,11 @@ export const useFileUpload = () => {
       setUploading(true);
       setProgress(0);
 
+      const prepared = await prepareUploadFile(file);
+
       const presignedRes = await api.post("/storage/presigned-upload", {
-        fileName: file.name,
-        contentType: file.type,
+        fileName: prepared.file.name,
+        contentType: prepared.file.type,
       });
 
       const presigned = presignedRes.data?.data;
@@ -31,9 +34,9 @@ export const useFileUpload = () => {
 
       const { uploadUrl, fileUrl, headers } = presigned;
 
-      await axios.put(uploadUrl, file, {
+      await axios.put(uploadUrl, prepared.file, {
         headers: {
-          "Content-Type": file.type,
+          "Content-Type": prepared.file.type,
           ...(headers || {}),
         },
         onUploadProgress: (event) => {
