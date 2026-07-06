@@ -7,6 +7,18 @@ import { useTranslations } from "next-intl";
 import api from "@/lib/axios";
 import { prepareUploadFile } from "@/lib/prepare-upload-file";
 
+export const MAX_UPLOAD_FILE_SIZE_MB = 20;
+export const MAX_UPLOAD_FILE_SIZE_BYTES = MAX_UPLOAD_FILE_SIZE_MB * 1024 * 1024;
+
+const getUploadErrorMessage = (error: unknown, fallback: string) => {
+  if (axios.isAxiosError(error)) {
+    const message = error.response?.data?.message;
+    return typeof message === "string" ? message : fallback;
+  }
+
+  return error instanceof Error ? error.message : fallback;
+};
+
 export const useFileUpload = () => {
   const toasts = useTranslations("toasts");
   const [uploading, setUploading] = useState(false);
@@ -19,11 +31,16 @@ export const useFileUpload = () => {
       setUploading(true);
       setProgress(0);
 
+      if (file.size > MAX_UPLOAD_FILE_SIZE_BYTES) {
+        throw new Error(`File size must be less than or equal to ${MAX_UPLOAD_FILE_SIZE_MB}MB`);
+      }
+
       const prepared = await prepareUploadFile(file);
 
       const presignedRes = await api.post("/storage/presigned-upload", {
         fileName: prepared.file.name,
         contentType: prepared.file.type,
+        fileSize: prepared.file.size,
       });
 
       const presigned = presignedRes.data?.data;
@@ -49,9 +66,8 @@ export const useFileUpload = () => {
       setProgress(100);
       toast.success(toasts("fileUploaded"));
       return fileUrl;
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err?.response?.data?.message || err?.message || toasts("uploadFailed"));
+    } catch (err: unknown) {
+      toast.error(getUploadErrorMessage(err, toasts("uploadFailed")));
       return null;
     } finally {
       setUploading(false);

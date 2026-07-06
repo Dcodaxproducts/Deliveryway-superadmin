@@ -179,7 +179,7 @@
     "uploadingCover": "Titelbild wird hochgeladen...",
     "uploadingLogo": "Logo wird hochgeladen...",
     "uploadLogo": "Logo hochladen",
-    "uploadLogoHint": "JPG, JPEG, PNG kleiner als 1 MB",
+    "uploadLogoHint": "JPG, JPEG, PNG bis 20 MB",
     "whatsapp": "WhatsApp"
   },
   "businessOwners": {
@@ -333,7 +333,7 @@
     "imageSelected": "Bild ausgewählt",
     "clickToUpload": "Zum Hochladen klicken",
     "orDragDrop": "oder ziehen und ablegen",
-    "uploadHint": "JPG, JPEG, PNG kleiner als 1 MB",
+    "uploadHint": "JPG, JPEG, PNG bis 20 MB",
     "status": {
       "accessGranted": "Zugriff gewährt",
       "accessGrantedDescription": "Verifiziert, freigegeben und aktiv",

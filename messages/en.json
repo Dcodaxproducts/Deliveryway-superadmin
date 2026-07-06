@@ -179,7 +179,7 @@
     "uploadingCover": "Uploading cover image...",
     "uploadingLogo": "Uploading logo...",
     "uploadLogo": "Click to upload logo",
-    "uploadLogoHint": "JPG, JPEG, PNG less than 1MB",
+    "uploadLogoHint": "JPG, JPEG, PNG up to 20MB",
     "whatsapp": "WhatsApp"
   },
   "businessOwners": {
@@ -333,7 +333,7 @@
     "imageSelected": "Image selected",
     "clickToUpload": "Click to upload",
     "orDragDrop": "or drag and drop",
-    "uploadHint": "JPG, JPEG, PNG less than 1MB",
+    "uploadHint": "JPG, JPEG, PNG up to 20MB",
     "status": {
       "accessGranted": "Access granted",
       "accessGrantedDescription": "Verified, approved, and active",
