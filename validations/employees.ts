@@ -21,6 +21,8 @@ export const createStaffRoleSchema = (t: TranslationFunction) =>
       .array(createPermissionSchema(t))
       .min(1, t("permissionRequired")),
     description: z.string().max(300).optional(),
+    restaurantIds: z.array(z.string().min(1)).optional(),
+    branchIds: z.array(z.string().min(1)).optional(),
   });
 
 export type StaffRoleValues = z.infer<ReturnType<typeof createStaffRoleSchema>>;
@@ -50,6 +52,9 @@ export const createStaffSchema = (t: TranslationFunction) =>
     //   .optional(),
 
     bio: z.string().max(500, t("bioMax")).optional(),
+
+    restaurantIds: z.array(z.string().min(1)).optional(),
+    branchIds: z.array(z.string().min(1)).optional(),
 
     isActive: z.boolean().default(true),
   });

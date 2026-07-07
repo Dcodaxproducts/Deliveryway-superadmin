@@ -17,43 +17,44 @@ import { Box, Menu, Bike, CircleDollarSign, BarChart3, Settings } from "lucide-r
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useCreateStaffRole } from "@/hooks/useRbac";
+import { parseIdList } from "@/lib/staff-access";
 
 const permissionsModules = [
     {
-        access: "Orders",
+        access: "orders",
         labelKey: "orders",
         icon: Box,
-        operations: [{ value: "View", labelKey: "view" }, { value: "Create/Edit", labelKey: "createEdit" }, { value: "Cancel", labelKey: "cancel" }]
+        operations: [{ value: "read", labelKey: "view" }, { value: "write", labelKey: "createEdit" }, { value: "cancel", labelKey: "cancel" }]
     },
     {
-        access: "Menus",
+        access: "menu",
         labelKey: "menus",
         icon: Menu,
-        operations: [{ value: "View", labelKey: "view" }, { value: "Add/Edit", labelKey: "addEdit" }, { value: "Delete", labelKey: "delete" }]
+        operations: [{ value: "read", labelKey: "view" }, { value: "write", labelKey: "addEdit" }, { value: "delete", labelKey: "delete" }]
     },
     {
-        access: "Drivers",
+        access: "drivers",
         labelKey: "drivers",
         icon: Bike,
-        operations: [{ value: "View", labelKey: "view" }, { value: "Assign", labelKey: "assign" }, { value: "Manage Status", labelKey: "manageStatus" }]
+        operations: [{ value: "read", labelKey: "view" }, { value: "assign", labelKey: "assign" }, { value: "manage", labelKey: "manageStatus" }]
     },
     {
-        access: "Finance",
+        access: "finance",
         labelKey: "finance",
         icon: CircleDollarSign,
-        operations: [{ value: "View", labelKey: "view" }, { value: "Manage Payout", labelKey: "managePayout" }, { value: "Access Invoice", labelKey: "accessInvoice" }]
+        operations: [{ value: "read", labelKey: "view" }, { value: "manage", labelKey: "managePayout" }, { value: "invoice", labelKey: "accessInvoice" }]
     },
     {
-        access: "Reports",
+        access: "reports",
         labelKey: "reports",
         icon: BarChart3,
-        operations: [{ value: "View", labelKey: "view" }, { value: "Export", labelKey: "export" }]
+        operations: [{ value: "read", labelKey: "view" }, { value: "export", labelKey: "export" }]
     },
     {
-        access: "Settings",
+        access: "settings",
         labelKey: "settings",
         icon: Settings,
-        operations: [{ value: "View", labelKey: "view" }, { value: "Manage", labelKey: "manage" }]
+        operations: [{ value: "read", labelKey: "view" }, { value: "manage", labelKey: "manage" }]
     },
 ];
 
@@ -65,6 +66,8 @@ export function CreateRoleDialog() {
     const [roleName, setRoleName] = useState("");
     const [roleDescription, setRoleDescription] = useState("");
     const [selectedPermissions, setSelectedPermissions] = useState<Record<string, string[]>>({});
+    const [restaurantIds, setRestaurantIds] = useState("");
+    const [branchIds, setBranchIds] = useState("");
 
     const handlePermissionChange = (access: string, operation: string, checked: boolean) => {
         setSelectedPermissions(prev => {
@@ -90,6 +93,8 @@ export function CreateRoleDialog() {
         const roleData = {
             name: roleName,
             description: roleDescription,
+            restaurantIds: parseIdList(restaurantIds),
+            branchIds: parseIdList(branchIds),
             permissions
         };
 
@@ -106,6 +111,8 @@ export function CreateRoleDialog() {
     const handleReset = () => {
         setRoleName("");
         setRoleDescription("");
+        setRestaurantIds("");
+        setBranchIds("");
         setSelectedPermissions({});
     };
 
@@ -150,6 +157,26 @@ export function CreateRoleDialog() {
                             placeholder={rbac("roleDescriptionPlaceholder")}
                             value={roleDescription}
                             onChange={(e) => setRoleDescription(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="grid gap-[6px]">
+                        <Label htmlFor="restaurantIds">{rbac("restaurantIds")}</Label>
+                        <Input
+                            id="restaurantIds"
+                            placeholder={rbac("restaurantIdsPlaceholder")}
+                            value={restaurantIds}
+                            onChange={(e) => setRestaurantIds(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="grid gap-[6px]">
+                        <Label htmlFor="branchIds">{rbac("branchIds")}</Label>
+                        <Input
+                            id="branchIds"
+                            placeholder={rbac("branchIdsPlaceholder")}
+                            value={branchIds}
+                            onChange={(e) => setBranchIds(e.target.value)}
                         />
                     </div>
 

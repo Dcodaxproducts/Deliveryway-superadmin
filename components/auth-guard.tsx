@@ -2,11 +2,21 @@
 
 import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
+import { canStaffAccessMenu, isStaffUser } from '@/lib/staff-access'
 
 const publicRoutes = new Set(['/auth/login'])
 
 const getStoredToken = () => {
   return localStorage.getItem('token') || localStorage.getItem('accessToken')
+}
+
+const getStoredUser = () => {
+  try {
+    const user = localStorage.getItem('authUser')
+    return user ? JSON.parse(user) : null
+  } catch {
+    return null
+  }
 }
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -30,6 +40,13 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
     if (!token) {
       router.replace('/auth/login')
+      setLoading(false)
+      return
+    }
+
+    const user = getStoredUser()
+    if (isStaffUser(user) && (pathname.startsWith('/menu') || pathname.startsWith('/products')) && !canStaffAccessMenu(user, 'read')) {
+      router.replace('/')
       setLoading(false)
       return
     }

@@ -543,7 +543,9 @@
     "updating": "Wird aktualisiert...",
     "sending": "Wird gesendet...",
     "updateEmployee": "Mitarbeiter aktualisieren",
-    "sendInvitation": "Einladung senden"
+    "sendInvitation": "Einladung senden",
+    "restaurantIds": "Restaurant-IDs",
+    "branchIds": "Filial-IDs"
   },
   "rbac": {
     "rolesList": "Rollenliste",
@@ -562,6 +564,15 @@
     "create": "Erstellen",
     "orders": "Bestellungen",
     "menus": "Menüs",
+    "restaurantMenus": "Restaurant-Menüs",
+    "menuCategories": "Menü-Kategorien",
+    "menuItems": "Menüartikel",
+    "modifiers": "Modifikatoren",
+    "cuisines": "Küchen",
+    "restaurantIds": "Restaurant-IDs",
+    "restaurantIdsPlaceholder": "restaurant-id-1, restaurant-id-2",
+    "branchIds": "Filial-IDs",
+    "branchIdsPlaceholder": "branch-id-1, branch-id-2",
     "drivers": "Fahrer",
     "finance": "Finanzen",
     "reports": "Berichte",

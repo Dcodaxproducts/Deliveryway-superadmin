@@ -22,6 +22,7 @@ import {
   useGetStaffRoles,
 } from "@/hooks/useEmployees";
 import { useFileUpload } from "@/hooks/useFileUpload";
+import { parseIdList, stringifyIdList } from "@/lib/staff-access";
 
 type Props = {
   open: boolean;
@@ -62,6 +63,8 @@ export default function EmployeeInvitationModal({
     phone: "",
     avatarUrl: "",
     bio: "",
+    restaurantIds: "",
+    branchIds: "",
     isActive: true,
   });
 
@@ -77,6 +80,8 @@ export default function EmployeeInvitationModal({
         phone: initialData.phone || "",
         avatarUrl: initialData.avatarUrl || "",
         bio: initialData.bio || "",
+        restaurantIds: stringifyIdList(initialData.restaurantIds ?? initialData.restaurantAccess?.restaurantIds),
+        branchIds: stringifyIdList(initialData.branchIds ?? initialData.restaurantAccess?.branchIds),
         isActive: initialData.isActive ?? true,
       });
     }
@@ -94,6 +99,8 @@ export default function EmployeeInvitationModal({
         phone: "",
         avatarUrl: "",
         bio: "",
+        restaurantIds: "",
+        branchIds: "",
         isActive: true,
       });
     }
@@ -122,6 +129,8 @@ const handleSubmit = async () => {
      */
     const payload = {
       ...form,
+      restaurantIds: parseIdList(form.restaurantIds),
+      branchIds: parseIdList(form.branchIds),
       ...(isEdit ? {password: form.password} : { password: form.password }),
     };
 
@@ -269,6 +278,18 @@ transition-all duration-200"
             label={employeeSettings("bio")}
             value={form.bio}
             onChange={(v) => handleChange("bio", v)}
+          />
+
+          <FormField
+            label={employeeSettings("restaurantIds")}
+            value={form.restaurantIds}
+            onChange={(v) => handleChange("restaurantIds", v)}
+          />
+
+          <FormField
+            label={employeeSettings("branchIds")}
+            value={form.branchIds}
+            onChange={(v) => handleChange("branchIds", v)}
           />
         </div>
 

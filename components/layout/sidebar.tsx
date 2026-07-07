@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ChevronRight, LogOut } from "lucide-react";
 import { menuItems, type SidebarMenuItem } from "@/constants/sidebarItems";
+import { canStaffAccessMenu, isStaffUser, type AuthUserLike } from "@/lib/staff-access";
 import { Button } from "@/components/ui/button";
 import Logo from "../logo";
 
@@ -147,8 +148,28 @@ export default function Sidebar({ onLinkClick }: SidebarProps) {
   const router = useRouter();
   const t = useTranslations();
 
+  const [authUser, setAuthUser] = useState<AuthUserLike | null>(null);
+
+  useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem("authUser");
+      setAuthUser(storedUser ? JSON.parse(storedUser) : null);
+    } catch {
+      setAuthUser(null);
+    }
+  }, []);
+
+  const visibleMenuItems = menuItems.filter((item) => {
+    if (!isStaffUser(authUser)) return true;
+    const isMenuItem = item.href?.startsWith("/menu") || item.href?.startsWith("/products");
+    return !isMenuItem || canStaffAccessMenu(authUser, "read");
+  });
+
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("authUser");
     router.push("/auth/login");
   };
 
@@ -171,7 +192,7 @@ export default function Sidebar({ onLinkClick }: SidebarProps) {
 
       <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600">
         <nav className="flex flex-col gap-[12px]">
-          {menuItems.map((item) => {
+          {visibleMenuItems.map((item) => {
             const isParentRouteActive = isRouteActive(pathname, item.href);
 
             const isChildRouteActive = Boolean(

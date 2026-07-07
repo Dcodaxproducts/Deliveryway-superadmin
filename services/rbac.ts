@@ -16,7 +16,7 @@ export const createStaffRole = async (roleData: any) => {
 }
 
 export const updateStaffRole = async (id: string, roleData: any) => {
-  const { data } = await api.put(`/staff-roles/${id}`, roleData);
+  const { data } = await api.patch(`/staff-roles/${id}`, roleData);
   return data.data
 }
 

@@ -16,13 +16,45 @@ interface PermissionModule {
   checked?: string[];
 }
 
-const permissionsModules: PermissionModule[] = [
-  { access: "Orders", labelKey: "orders", icon: Box, operations: [{ value: "View", labelKey: "view" }, { value: "Create/Edit", labelKey: "createEdit" }, { value: "Cancel", labelKey: "cancel" }] },
-  { access: "Menus", labelKey: "menus", icon: Menu, operations: [{ value: "View", labelKey: "view" }, { value: "Add/Edit", labelKey: "addEdit" }, { value: "Delete", labelKey: "delete" }] },
-  { access: "Drivers", labelKey: "drivers", icon: Bike, operations: [{ value: "View", labelKey: "view" }, { value: "Assign", labelKey: "assign" }, { value: "Manage Status", labelKey: "manageStatus" }] },
-  { access: "Finance", labelKey: "finance", icon: CircleDollarSign, operations: [{ value: "View", labelKey: "view" }, { value: "Manage Payout", labelKey: "managePayout" }, { value: "Access Invoice", labelKey: "accessInvoice" }] },
-  { access: "Reports", labelKey: "reports", icon: BarChart3, operations: [{ value: "View", labelKey: "view" }, { value: "Export", labelKey: "export" }] },
-  { access: "Settings", labelKey: "settings", icon: Settings, operations: [{ value: "View", labelKey: "view" }, { value: "Manage", labelKey: "manage" }] },
+const normalizePermission = (value?: string) => String(value || "").trim().toLowerCase();
+
+const permissionsModules = [
+    {
+        access: "orders",
+        labelKey: "orders",
+        icon: Box,
+        operations: [{ value: "read", labelKey: "view" }, { value: "write", labelKey: "createEdit" }, { value: "cancel", labelKey: "cancel" }]
+    },
+    {
+        access: "menu",
+        labelKey: "menus",
+        icon: Menu,
+        operations: [{ value: "read", labelKey: "view" }, { value: "write", labelKey: "addEdit" }, { value: "delete", labelKey: "delete" }]
+    },
+    {
+        access: "drivers",
+        labelKey: "drivers",
+        icon: Bike,
+        operations: [{ value: "read", labelKey: "view" }, { value: "assign", labelKey: "assign" }, { value: "manage", labelKey: "manageStatus" }]
+    },
+    {
+        access: "finance",
+        labelKey: "finance",
+        icon: CircleDollarSign,
+        operations: [{ value: "read", labelKey: "view" }, { value: "manage", labelKey: "managePayout" }, { value: "invoice", labelKey: "accessInvoice" }]
+    },
+    {
+        access: "reports",
+        labelKey: "reports",
+        icon: BarChart3,
+        operations: [{ value: "read", labelKey: "view" }, { value: "export", labelKey: "export" }]
+    },
+    {
+        access: "settings",
+        labelKey: "settings",
+        icon: Settings,
+        operations: [{ value: "read", labelKey: "view" }, { value: "manage", labelKey: "manage" }]
+    },
 ];
 
 function RolePermissionsContent() {
@@ -38,7 +70,8 @@ function RolePermissionsContent() {
       const updatedPermissions = permissionsModules.map(module => {
         const rolePermission = role.permissions.find(
           (permission: { access?: string; operations?: string[] }) =>
-            permission.access === module.access
+            normalizePermission(permission.access) === module.access ||
+            (module.access === "menu" && normalizePermission(permission.access) === "menus")
         );
         return {
           ...module,

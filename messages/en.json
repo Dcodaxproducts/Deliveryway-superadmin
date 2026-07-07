@@ -543,7 +543,9 @@
     "updating": "Updating...",
     "sending": "Sending...",
     "updateEmployee": "Update Employee",
-    "sendInvitation": "Send Invitation"
+    "sendInvitation": "Send Invitation",
+    "restaurantIds": "Restaurant IDs",
+    "branchIds": "Branch IDs"
   },
   "rbac": {
     "rolesList": "Roles List",
@@ -562,6 +564,15 @@
     "create": "Create",
     "orders": "Orders",
     "menus": "Menus",
+    "restaurantMenus": "Restaurant Menus",
+    "menuCategories": "Menu Categories",
+    "menuItems": "Menu Items",
+    "modifiers": "Modifiers",
+    "cuisines": "Cuisines",
+    "restaurantIds": "Restaurant IDs",
+    "restaurantIdsPlaceholder": "restaurant-id-1, restaurant-id-2",
+    "branchIds": "Branch IDs",
+    "branchIdsPlaceholder": "branch-id-1, branch-id-2",
     "drivers": "Drivers",
     "finance": "Finance",
     "reports": "Reports",

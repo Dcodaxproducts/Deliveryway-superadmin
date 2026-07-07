@@ -19,6 +19,7 @@ const clearAuthTokens = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
+  localStorage.removeItem("authUser");
   sessionStorage.removeItem("token");
   sessionStorage.removeItem("accessToken");
   sessionStorage.removeItem("refreshToken");
@@ -35,6 +36,17 @@ export const useLogin = () => {
     },
     onSuccess: async (data) => {
       localStorage.setItem("token", data.accessToken)
+      localStorage.setItem("accessToken", data.accessToken)
+      if (data.refreshToken) {
+        localStorage.setItem("refreshToken", data.refreshToken)
+      }
+      if (data.user) {
+        localStorage.setItem("authUser", JSON.stringify({
+          ...data.user,
+          restaurantAccess: data.user.restaurantAccess ?? data.restaurantAccess,
+          staffRole: data.user.staffRole ?? data.staffRole,
+        }))
+      }
       toast.success(toasts("loginSuccessful"))
 
       router.push("/")
