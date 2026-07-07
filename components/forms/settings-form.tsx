@@ -58,6 +58,9 @@ type SettingsFormValues = {
   primaryColor: string;
   secondaryColor: string;
   fontFamily: string;
+  serviceChargeEnabled: boolean;
+  serviceChargeType: "PERCENTAGE" | "AMOUNT";
+  serviceChargeValue: string;
   isTaxEnforced: boolean;
   isCommissionEnforced: boolean;
   isCurrencyEnforced: boolean;
@@ -195,6 +198,9 @@ export function SettingsForm() {
     primaryColor: "#FF6B00",
     secondaryColor: "#1F2937",
     fontFamily: "Inter",
+    serviceChargeEnabled: false,
+    serviceChargeType: "PERCENTAGE",
+    serviceChargeValue: "0",
     isTaxEnforced: false,
     isCommissionEnforced: false,
     isCurrencyEnforced: false,
@@ -231,6 +237,14 @@ export function SettingsForm() {
       defaultLanguage: rest.defaultLanguage || "de",
       timezone: rest.timezone || "Europe/Berlin",
       fontFamily: rest.fontFamily || "Inter",
+      serviceChargeEnabled: Boolean(
+        rest.serviceCharge?.isEnabled ?? rest.serviceChargeEnabled ?? false
+      ),
+      serviceChargeType:
+        rest.serviceCharge?.type ?? rest.serviceChargeType ?? "PERCENTAGE",
+      serviceChargeValue: String(
+        rest.serviceCharge?.value ?? rest.serviceChargeValue ?? 0
+      ),
       dateFormat: rest.dateFormat || "DD_MM_YYYY",
       currencyDisplayFormat: rest.currencyDisplayFormat || "AMOUNT_CODE",
     };
@@ -304,6 +318,9 @@ export function SettingsForm() {
       primaryColor: form.primaryColor,
       secondaryColor: form.secondaryColor,
       fontFamily: form.fontFamily,
+      serviceChargeEnabled: form.serviceChargeEnabled,
+      serviceChargeType: form.serviceChargeType,
+      serviceChargeValue: toNumber(form.serviceChargeValue),
 
       isTaxEnforced: form.isTaxEnforced,
       isCommissionEnforced: form.isCommissionEnforced,
@@ -467,6 +484,62 @@ export function SettingsForm() {
               updateField("defaultHybridFeePercentage", value)
             }
           />
+        </section>
+
+        <section className="space-y-[24px] rounded-[12px] border border-[#EEF0F4] bg-[#F9FAFB] p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-[6px]">
+              <Label>{globalSettings("platformServiceCharge")}</Label>
+              <p className="text-sm text-gray">
+                {globalSettings("platformServiceChargeDescription")}
+              </p>
+            </div>
+            <Switch
+              checked={form.serviceChargeEnabled}
+              onCheckedChange={(checked) =>
+                updateField("serviceChargeEnabled", checked)
+              }
+            />
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-[6px]">
+              <Label>{globalSettings("serviceChargeType")}</Label>
+              <Select
+                value={form.serviceChargeType}
+                onValueChange={(value) =>
+                  updateField(
+                    "serviceChargeType",
+                    value as SettingsFormValues["serviceChargeType"]
+                  )
+                }
+              >
+                <SelectTrigger className="h-[52px] border-[#BBBBBB]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="PERCENTAGE">
+                    {globalSettings("percentage")}
+                  </SelectItem>
+                  <SelectItem value="AMOUNT">
+                    {globalSettings("fixedAmount")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <FormGroup
+              label={globalSettings("serviceChargeValue")}
+              placeholder={
+                form.serviceChargeType === "PERCENTAGE"
+                  ? globalSettings("addPercentage")
+                  : globalSettings("addAmount")
+              }
+              prefix={form.serviceChargeType === "PERCENTAGE" ? "%" : getCurrencySymbol(form.defaultCurrency)}
+              value={form.serviceChargeValue}
+              onChange={(value) => updateField("serviceChargeValue", value)}
+            />
+          </div>
         </section>
 
         <section className="space-y-[24px]">
