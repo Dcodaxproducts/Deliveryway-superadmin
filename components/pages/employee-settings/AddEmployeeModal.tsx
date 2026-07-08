@@ -21,6 +21,7 @@ import {
   useUpdateStaff,
   useGetStaffRoles,
 } from "@/hooks/useEmployees";
+import { useGetRestaurantBranches, useGetRestaurants } from "@/hooks/useRestaurant";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { parseIdList, stringifyIdList } from "@/lib/staff-access";
 
@@ -47,10 +48,12 @@ export default function EmployeeInvitationModal({
   const updateMutation = useUpdateStaff();
 
   const { data: rolesData } = useGetStaffRoles();
+  const restaurantsQuery = useGetRestaurants({ page: 1, limit: 100, includeInactive: false });
 
   const [loading, setLoading] = useState(false);
 
   const roles = rolesData?.data || [];
+  const restaurants = normalizeList(restaurantsQuery.data);
 
   const isEdit = !!initialData;
 
@@ -67,6 +70,13 @@ export default function EmployeeInvitationModal({
     branchIds: "",
     isActive: true,
   });
+  const [restaurantSelectValue, setRestaurantSelectValue] = useState("");
+  const [branchSelectValue, setBranchSelectValue] = useState("");
+  const selectedRestaurantIds = parseIdList(form.restaurantIds);
+  const selectedBranchIds = parseIdList(form.branchIds);
+  const activeBranchRestaurantId = restaurantSelectValue || selectedRestaurantIds[0] || "";
+  const branchesQuery = useGetRestaurantBranches(activeBranchRestaurantId);
+  const branches = normalizeList(branchesQuery.data);
 
   /* ---------- Prefill ---------- */
   useEffect(() => {
@@ -103,12 +113,33 @@ export default function EmployeeInvitationModal({
         branchIds: "",
         isActive: true,
       });
+      setRestaurantSelectValue("");
+      setBranchSelectValue("");
     }
   }, [open]);
 
   /* ---------- Change ---------- */
   const handleChange = (key: string, value: any) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const addListValue = (current: string, value: string) => {
+    const values = parseIdList(current);
+    if (!value || values.includes(value)) return current;
+    return [...values, value].join(", ");
+  };
+
+  const removeListValue = (current: string, value: string) =>
+    parseIdList(current).filter((item) => item !== value).join(", ");
+
+  const getRestaurantLabel = (id: string) => {
+    const item = restaurants.find((restaurant) => restaurant.id === id);
+    return item?.name || item?.restaurantName || id;
+  };
+
+  const getBranchLabel = (id: string) => {
+    const item = branches.find((branch) => branch.id === id);
+    return item?.name || item?.branchName || id;
   };
 
   /* ---------- Upload ---------- */
@@ -280,16 +311,40 @@ transition-all duration-200"
             onChange={(v) => handleChange("bio", v)}
           />
 
-          <FormField
+          <AccessPicker
             label={employeeSettings("restaurantIds")}
-            value={form.restaurantIds}
-            onChange={(v) => handleChange("restaurantIds", v)}
+            placeholder={employeeSettings("selectRestaurant")}
+            value={restaurantSelectValue}
+            options={restaurants.filter((restaurant) => !selectedRestaurantIds.includes(restaurant.id))}
+            getLabel={(item) => item.name || item.restaurantName || item.id}
+            onChange={setRestaurantSelectValue}
+            onAdd={() => {
+              handleChange("restaurantIds", addListValue(form.restaurantIds, restaurantSelectValue));
+              setRestaurantSelectValue("");
+            }}
+            selected={selectedRestaurantIds}
+            getSelectedLabel={getRestaurantLabel}
+            onRemove={(id) => {
+              handleChange("restaurantIds", removeListValue(form.restaurantIds, id));
+              if (restaurantSelectValue === id) setRestaurantSelectValue("");
+            }}
           />
 
-          <FormField
+          <AccessPicker
             label={employeeSettings("branchIds")}
-            value={form.branchIds}
-            onChange={(v) => handleChange("branchIds", v)}
+            placeholder={activeBranchRestaurantId ? employeeSettings("selectBranch") : employeeSettings("selectRestaurantFirst")}
+            value={branchSelectValue}
+            options={branches.filter((branch) => !selectedBranchIds.includes(branch.id))}
+            getLabel={(item) => item.name || item.branchName || item.id}
+            onChange={setBranchSelectValue}
+            onAdd={() => {
+              handleChange("branchIds", addListValue(form.branchIds, branchSelectValue));
+              setBranchSelectValue("");
+            }}
+            selected={selectedBranchIds}
+            getSelectedLabel={getBranchLabel}
+            onRemove={(id) => handleChange("branchIds", removeListValue(form.branchIds, id))}
+            disabled={!activeBranchRestaurantId}
           />
         </div>
 
@@ -335,6 +390,92 @@ focus-visible:ring-red-500
 focus-visible:border-red-500 
 transition-all duration-200"
       />
+    </div>
+  );
+}
+
+type SelectableAccessOption = {
+  id: string;
+  name?: string;
+  restaurantName?: string;
+  branchName?: string;
+};
+
+const normalizeList = (response: unknown): SelectableAccessOption[] => {
+  if (Array.isArray(response)) return response as SelectableAccessOption[];
+  if (!response || typeof response !== "object") return [];
+
+  const record = response as { data?: unknown; items?: unknown };
+  if (Array.isArray(record.data)) return record.data as SelectableAccessOption[];
+  if (Array.isArray(record.items)) return record.items as SelectableAccessOption[];
+
+  if (record.data && typeof record.data === "object") {
+    const dataRecord = record.data as { data?: unknown; items?: unknown };
+    if (Array.isArray(dataRecord.data)) return dataRecord.data as SelectableAccessOption[];
+    if (Array.isArray(dataRecord.items)) return dataRecord.items as SelectableAccessOption[];
+  }
+
+  return [];
+};
+
+function AccessPicker({
+  label,
+  placeholder,
+  value,
+  options,
+  selected,
+  disabled,
+  getLabel,
+  getSelectedLabel,
+  onChange,
+  onAdd,
+  onRemove,
+}: {
+  label: string;
+  placeholder: string;
+  value: string;
+  options: SelectableAccessOption[];
+  selected: string[];
+  disabled?: boolean;
+  getLabel: (item: SelectableAccessOption) => string;
+  getSelectedLabel: (id: string) => string;
+  onChange: (value: string) => void;
+  onAdd: () => void;
+  onRemove: (id: string) => void;
+}) {
+  return (
+    <div className="space-y-1">
+      <label className="text-sm font-medium">{label}</label>
+      <div className="flex gap-2">
+        <select
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          disabled={disabled}
+          className="h-[44px] min-w-0 flex-1 rounded-lg border border-gray-400 px-3 text-sm transition-all duration-200 focus-visible:border-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <option value="">{placeholder}</option>
+          {options.map((option) => (
+            <option key={option.id} value={option.id}>
+              {getLabel(option)}
+            </option>
+          ))}
+        </select>
+        <Button type="button" variant="outline" onClick={onAdd} disabled={!value || disabled}>
+          Add
+        </Button>
+      </div>
+      {selected.length > 0 ? (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {selected.map((id) => (
+            <span key={id} className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+              {getSelectedLabel(id)}
+              <button type="button" onClick={() => onRemove(id)} className="text-primary/70 hover:text-primary">
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

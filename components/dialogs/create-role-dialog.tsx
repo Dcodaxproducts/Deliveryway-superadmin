@@ -17,6 +17,7 @@ import { ShieldCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useCreateStaffRole, usePermissionModules } from "@/hooks/useRbac";
+import { useGetRestaurantBranches, useGetRestaurants } from "@/hooks/useRestaurant";
 import { parseIdList } from "@/lib/staff-access";
 import {
     formatActionLabel,
@@ -36,7 +37,16 @@ export function CreateRoleDialog() {
     const [selectedPermissions, setSelectedPermissions] = useState<Record<string, string[]>>({});
     const [restaurantIds, setRestaurantIds] = useState("");
     const [branchIds, setBranchIds] = useState("");
+    const [restaurantSelectValue, setRestaurantSelectValue] = useState("");
+    const [branchSelectValue, setBranchSelectValue] = useState("");
     const [permissionError, setPermissionError] = useState(false);
+    const selectedRestaurantIds = parseIdList(restaurantIds);
+    const selectedBranchIds = parseIdList(branchIds);
+    const activeBranchRestaurantId = restaurantSelectValue || selectedRestaurantIds[0] || "";
+    const restaurantsQuery = useGetRestaurants({ page: 1, limit: 100, includeInactive: false });
+    const branchesQuery = useGetRestaurantBranches(activeBranchRestaurantId);
+    const restaurants = normalizeList(restaurantsQuery.data);
+    const branches = normalizeList(branchesQuery.data);
 
     useEffect(() => {
         setSelectedPermissions((prev) => {
@@ -75,8 +85,29 @@ export function CreateRoleDialog() {
         setRoleDescription("");
         setRestaurantIds("");
         setBranchIds("");
+        setRestaurantSelectValue("");
+        setBranchSelectValue("");
         setSelectedPermissions({});
         setPermissionError(false);
+    };
+
+    const addListValue = (current: string, value: string) => {
+        const values = parseIdList(current);
+        if (!value || values.includes(value)) return current;
+        return [...values, value].join(", ");
+    };
+
+    const removeListValue = (current: string, value: string) =>
+        parseIdList(current).filter((item) => item !== value).join(", ");
+
+    const getRestaurantLabel = (id: string) => {
+        const item = restaurants.find((restaurant) => restaurant.id === id);
+        return item?.name || item?.restaurantName || id;
+    };
+
+    const getBranchLabel = (id: string) => {
+        const item = branches.find((branch) => branch.id === id);
+        return item?.name || item?.branchName || id;
     };
 
     const handleSubmit = () => {
@@ -151,23 +182,41 @@ export function CreateRoleDialog() {
                         />
                     </div>
 
-                    <div className="grid gap-[6px]">
-                        <Label htmlFor="restaurantIds">{rbac("restaurantIds")}</Label>
-                        <Input
-                            id="restaurantIds"
-                            placeholder={rbac("restaurantIdsPlaceholder")}
-                            value={restaurantIds}
-                            onChange={(e) => setRestaurantIds(e.target.value)}
+                    <div className="grid gap-5 md:grid-cols-2">
+                        <AccessPicker
+                            label={rbac("restaurantIds")}
+                            placeholder={rbac("selectRestaurant")}
+                            value={restaurantSelectValue}
+                            options={restaurants.filter((restaurant) => !selectedRestaurantIds.includes(restaurant.id))}
+                            getLabel={(item) => item.name || item.restaurantName || item.id}
+                            onChange={setRestaurantSelectValue}
+                            onAdd={() => {
+                                setRestaurantIds((current) => addListValue(current, restaurantSelectValue));
+                                setRestaurantSelectValue("");
+                            }}
+                            selected={selectedRestaurantIds}
+                            getSelectedLabel={getRestaurantLabel}
+                            onRemove={(id) => {
+                                setRestaurantIds((current) => removeListValue(current, id));
+                                if (restaurantSelectValue === id) setRestaurantSelectValue("");
+                            }}
                         />
-                    </div>
 
-                    <div className="grid gap-[6px]">
-                        <Label htmlFor="branchIds">{rbac("branchIds")}</Label>
-                        <Input
-                            id="branchIds"
-                            placeholder={rbac("branchIdsPlaceholder")}
-                            value={branchIds}
-                            onChange={(e) => setBranchIds(e.target.value)}
+                        <AccessPicker
+                            label={rbac("branchIds")}
+                            placeholder={activeBranchRestaurantId ? rbac("selectBranch") : rbac("selectRestaurantFirst")}
+                            value={branchSelectValue}
+                            options={branches.filter((branch) => !selectedBranchIds.includes(branch.id))}
+                            getLabel={(item) => item.name || item.branchName || item.id}
+                            onChange={setBranchSelectValue}
+                            onAdd={() => {
+                                setBranchIds((current) => addListValue(current, branchSelectValue));
+                                setBranchSelectValue("");
+                            }}
+                            selected={selectedBranchIds}
+                            getSelectedLabel={getBranchLabel}
+                            onRemove={(id) => setBranchIds((current) => removeListValue(current, id))}
+                            disabled={!activeBranchRestaurantId}
                         />
                     </div>
 
@@ -239,5 +288,91 @@ export function CreateRoleDialog() {
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+    );
+}
+
+type SelectableAccessOption = {
+    id: string;
+    name?: string;
+    restaurantName?: string;
+    branchName?: string;
+};
+
+const normalizeList = (response: unknown): SelectableAccessOption[] => {
+    if (Array.isArray(response)) return response as SelectableAccessOption[];
+    if (!response || typeof response !== "object") return [];
+
+    const record = response as { data?: unknown; items?: unknown };
+    if (Array.isArray(record.data)) return record.data as SelectableAccessOption[];
+    if (Array.isArray(record.items)) return record.items as SelectableAccessOption[];
+
+    if (record.data && typeof record.data === "object") {
+        const dataRecord = record.data as { data?: unknown; items?: unknown };
+        if (Array.isArray(dataRecord.data)) return dataRecord.data as SelectableAccessOption[];
+        if (Array.isArray(dataRecord.items)) return dataRecord.items as SelectableAccessOption[];
+    }
+
+    return [];
+};
+
+function AccessPicker({
+    label,
+    placeholder,
+    value,
+    options,
+    selected,
+    disabled,
+    getLabel,
+    getSelectedLabel,
+    onChange,
+    onAdd,
+    onRemove,
+}: {
+    label: string;
+    placeholder: string;
+    value: string;
+    options: SelectableAccessOption[];
+    selected: string[];
+    disabled?: boolean;
+    getLabel: (item: SelectableAccessOption) => string;
+    getSelectedLabel: (id: string) => string;
+    onChange: (value: string) => void;
+    onAdd: () => void;
+    onRemove: (id: string) => void;
+}) {
+    return (
+        <div className="grid gap-[6px]">
+            <Label>{label}</Label>
+            <div className="flex gap-2">
+                <select
+                    value={value}
+                    onChange={(event) => onChange(event.target.value)}
+                    disabled={disabled}
+                    className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                    <option value="">{placeholder}</option>
+                    {options.map((option) => (
+                        <option key={option.id} value={option.id}>
+                            {getLabel(option)}
+                        </option>
+                    ))}
+                </select>
+                <Button type="button" variant="outline" onClick={onAdd} disabled={!value || disabled}>
+                    Add
+                </Button>
+            </div>
+            {selected.length > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-2">
+                    {selected.map((id) => (
+                        <span key={id} className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                            {getSelectedLabel(id)}
+                            <button type="button" onClick={() => onRemove(id)} className="text-primary/70 hover:text-primary">
+                                ×
+                            </button>
+                        </span>
+                    ))}
+                </div>
+            ) : null}
+        </div>
     );
 }

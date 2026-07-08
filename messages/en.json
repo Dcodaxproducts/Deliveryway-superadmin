@@ -545,7 +545,10 @@
     "updateEmployee": "Update Employee",
     "sendInvitation": "Send Invitation",
     "restaurantIds": "Restaurant IDs",
-    "branchIds": "Branch IDs"
+    "branchIds": "Branch IDs",
+    "selectRestaurant": "Select restaurant",
+    "selectBranch": "Select branch",
+    "selectRestaurantFirst": "Select restaurant first"
   },
   "rbac": {
     "rolesList": "Roles List",
@@ -587,6 +590,9 @@
     "restaurantIdsPlaceholder": "restaurant-id-1, restaurant-id-2",
     "branchIds": "Branch IDs",
     "branchIdsPlaceholder": "branch-id-1, branch-id-2",
+    "selectRestaurant": "Select restaurant",
+    "selectBranch": "Select branch",
+    "selectRestaurantFirst": "Select restaurant first",
     "drivers": "Drivers",
     "finance": "Finance",
     "reports": "Reports",

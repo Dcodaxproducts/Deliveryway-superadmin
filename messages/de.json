@@ -545,7 +545,10 @@
     "updateEmployee": "Mitarbeiter aktualisieren",
     "sendInvitation": "Einladung senden",
     "restaurantIds": "Restaurant-IDs",
-    "branchIds": "Filial-IDs"
+    "branchIds": "Filial-IDs",
+    "selectRestaurant": "Restaurant auswählen",
+    "selectBranch": "Filiale auswählen",
+    "selectRestaurantFirst": "Zuerst Restaurant auswählen"
   },
   "rbac": {
     "rolesList": "Rollenliste",
@@ -587,6 +590,9 @@
     "restaurantIdsPlaceholder": "restaurant-id-1, restaurant-id-2",
     "branchIds": "Filial-IDs",
     "branchIdsPlaceholder": "branch-id-1, branch-id-2",
+    "selectRestaurant": "Restaurant auswählen",
+    "selectBranch": "Filiale auswählen",
+    "selectRestaurantFirst": "Zuerst Restaurant auswählen",
     "drivers": "Fahrer",
     "finance": "Finanzen",
     "reports": "Berichte",
