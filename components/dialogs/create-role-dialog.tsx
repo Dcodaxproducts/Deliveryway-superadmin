@@ -13,71 +13,68 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Box, Menu, Bike, CircleDollarSign, BarChart3, Settings } from "lucide-react";
-import { useState } from "react";
+import { ShieldCheck } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { useCreateStaffRole } from "@/hooks/useRbac";
+import { useCreateStaffRole, usePermissionModules } from "@/hooks/useRbac";
 import { parseIdList } from "@/lib/staff-access";
-
-const permissionsModules = [
-    {
-        access: "orders",
-        labelKey: "orders",
-        icon: Box,
-        operations: [{ value: "read", labelKey: "view" }, { value: "write", labelKey: "createEdit" }, { value: "cancel", labelKey: "cancel" }]
-    },
-    {
-        access: "menu",
-        labelKey: "menus",
-        icon: Menu,
-        operations: [{ value: "read", labelKey: "view" }, { value: "write", labelKey: "addEdit" }, { value: "delete", labelKey: "delete" }]
-    },
-    {
-        access: "drivers",
-        labelKey: "drivers",
-        icon: Bike,
-        operations: [{ value: "read", labelKey: "view" }, { value: "assign", labelKey: "assign" }, { value: "manage", labelKey: "manageStatus" }]
-    },
-    {
-        access: "finance",
-        labelKey: "finance",
-        icon: CircleDollarSign,
-        operations: [{ value: "read", labelKey: "view" }, { value: "manage", labelKey: "managePayout" }, { value: "invoice", labelKey: "accessInvoice" }]
-    },
-    {
-        access: "reports",
-        labelKey: "reports",
-        icon: BarChart3,
-        operations: [{ value: "read", labelKey: "view" }, { value: "export", labelKey: "export" }]
-    },
-    {
-        access: "settings",
-        labelKey: "settings",
-        icon: Settings,
-        operations: [{ value: "read", labelKey: "view" }, { value: "manage", labelKey: "manage" }]
-    },
-];
+import {
+    formatActionLabel,
+    sanitizePermissions,
+    sortPermissionModules,
+} from "@/lib/permission-modules";
 
 export function CreateRoleDialog() {
     const rbac = useTranslations("rbac");
     const validation = useTranslations("validation");
     const { mutate: createRole, isPending } = useCreateStaffRole();
+    const { data: modulesData = [], isLoading: modulesLoading } = usePermissionModules();
+    const permissionModules = useMemo(() => sortPermissionModules(modulesData), [modulesData]);
     const [open, setOpen] = useState(false);
     const [roleName, setRoleName] = useState("");
     const [roleDescription, setRoleDescription] = useState("");
     const [selectedPermissions, setSelectedPermissions] = useState<Record<string, string[]>>({});
     const [restaurantIds, setRestaurantIds] = useState("");
     const [branchIds, setBranchIds] = useState("");
+    const [permissionError, setPermissionError] = useState(false);
+
+    useEffect(() => {
+        setSelectedPermissions((prev) => {
+            const sanitized = sanitizePermissions(
+                Object.entries(prev).map(([access, operations]) => ({ access, operations })),
+                permissionModules,
+            );
+            return sanitized.reduce<Record<string, string[]>>((next, permission) => {
+                next[permission.access] = permission.operations;
+                return next;
+            }, {});
+        });
+    }, [permissionModules]);
 
     const handlePermissionChange = (access: string, operation: string, checked: boolean) => {
+        setPermissionError(false);
         setSelectedPermissions(prev => {
             const current = prev[access] || [];
-            if (checked) {
-                return { ...prev, [access]: [...current, operation] };
-            } else {
-                return { ...prev, [access]: current.filter(op => op !== operation) };
+            const nextOperations = checked
+                ? Array.from(new Set([...current, operation]))
+                : current.filter(op => op !== operation);
+
+            if (nextOperations.length === 0) {
+                const { [access]: _removed, ...rest } = prev;
+                return rest;
             }
+
+            return { ...prev, [access]: nextOperations };
         });
+    };
+
+    const resetForm = () => {
+        setRoleName("");
+        setRoleDescription("");
+        setRestaurantIds("");
+        setBranchIds("");
+        setSelectedPermissions({});
+        setPermissionError(false);
     };
 
     const handleSubmit = () => {
@@ -85,14 +82,19 @@ export function CreateRoleDialog() {
             return;
         }
 
-        const permissions = Object.entries(selectedPermissions).map(([access, operations]) => ({
-            access,
-            operations
-        }));
+        const permissions = sanitizePermissions(
+            Object.entries(selectedPermissions).map(([access, operations]) => ({ access, operations })),
+            permissionModules,
+        );
+
+        if (permissions.length === 0) {
+            setPermissionError(true);
+            return;
+        }
 
         const roleData = {
-            name: roleName,
-            description: roleDescription,
+            name: roleName.trim(),
+            description: roleDescription.trim(),
             restaurantIds: parseIdList(restaurantIds),
             branchIds: parseIdList(branchIds),
             permissions
@@ -101,31 +103,18 @@ export function CreateRoleDialog() {
         createRole(roleData, {
             onSuccess: () => {
                 setOpen(false);
-                setRoleName("");
-                setRoleDescription("");
-                setSelectedPermissions({});
+                resetForm();
             }
         });
-    };
-
-    const handleReset = () => {
-        setRoleName("");
-        setRoleDescription("");
-        setRestaurantIds("");
-        setBranchIds("");
-        setSelectedPermissions({});
     };
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button
-                    variant="primary"
-                >
+                <Button variant="primary">
                     {rbac("addNewRole")}
                 </Button>
             </DialogTrigger>
-            {/* Added max-w and bg-color to match the design */}
             <DialogContent className="sm:max-w-[618px] bg-[#F5F5F5] p-[40px] border-none shadow-lg rounded-[14px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader className="text-left">
                     <DialogTitle className="h-[42px]">{rbac("createRole")}</DialogTitle>
@@ -180,63 +169,59 @@ export function CreateRoleDialog() {
                         />
                     </div>
 
-                    {/* Status Switch */}
-                    {/* <div className="flex items-center gap-[24px]">
-                        <Label htmlFor="status">
-                            Status
-                        </Label>
-                        <Switch
-                            id="status"
-                            checked={status}
-                            onCheckedChange={setStatus}
-                            className="w-[52px] h-[26px]"
-                        />
-                    </div> */}
-
-                    {/* Permissions Section */}
                     <div>
                         <h3 className="text-base text-dark mb-[6px]">{rbac("permissions")}</h3>
                         <p className="text-sm text-gray mb-[24px] pb-[24px] border-b border-[#BBBBBB]">
                             {rbac("permissionsDescription")}
                         </p>
 
-                        <div className="grid grid-cols-2 gap-x-8 gap-y-8">
-                            {permissionsModules.map((module) => (
-                                <div
-                                    key={module.access}
-                                >
-                                    <div className="flex items-center gap-[12px] mb-4">
-                                        <module.icon className="text-primary" size={24} />
-                                        <h4 className="font-semibold text-lg text-gray">{rbac(module.labelKey)}</h4>
-                                    </div>
-                                    <div className="grid gap-3">
-                                        {module.operations.map((operation) => (
-                                            <div key={operation.value} className="flex items-center gap-2">
-                                                <Checkbox
-                                                    id={`${module.access}-${operation.value}`}
-                                                    checked={selectedPermissions[module.access]?.includes(operation.value) || false}
-                                                    onCheckedChange={(checked) => handlePermissionChange(module.access, operation.value, checked as boolean)}
-                                                    className="w-[20px] h-[20px] data-[state=checked]:bg-primary data-[state=checked]:border-primary border-gray-300"
-                                                />
-                                                <Label
-                                                    htmlFor={`${module.access}-${operation.value}`}
-                                                    className="text-base text-dark cursor-pointer"
-                                                >
-                                                    {rbac(operation.labelKey)}
-                                                </Label>
+                        {modulesLoading ? (
+                            <p className="text-sm text-gray">{rbac("loadingPermissions")}</p>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
+                                {permissionModules.map((module) => (
+                                    <div key={module.accessKey}>
+                                        <div className="flex items-start gap-[12px] mb-4">
+                                            <ShieldCheck className="text-primary mt-1" size={24} />
+                                            <div>
+                                                <h4 className="font-semibold text-lg text-gray">{module.name}</h4>
+                                                {module.description ? (
+                                                    <p className="text-xs text-gray-400">{module.description}</p>
+                                                ) : null}
                                             </div>
-                                        ))}
+                                        </div>
+                                        <div className="grid gap-3">
+                                            {module.defaultActions.map((operation) => (
+                                                <div key={operation} className="flex items-center gap-2">
+                                                    <Checkbox
+                                                        id={`${module.accessKey}-${operation}`}
+                                                        checked={selectedPermissions[module.accessKey]?.includes(operation) || false}
+                                                        onCheckedChange={(checked) => handlePermissionChange(module.accessKey, operation, checked as boolean)}
+                                                        className="w-[20px] h-[20px] data-[state=checked]:bg-primary data-[state=checked]:border-primary border-gray-300"
+                                                    />
+                                                    <Label
+                                                        htmlFor={`${module.accessKey}-${operation}`}
+                                                        className="text-base text-dark cursor-pointer"
+                                                    >
+                                                        {formatActionLabel(operation)}
+                                                    </Label>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
+                        {permissionError ? (
+                            <p className="mt-3 text-sm text-primary">Select at least one permission action.</p>
+                        ) : null}
                     </div>
                 </div>
 
                 <DialogFooter className="flex items-center gap-[24px] mx-auto mt-[32px] max-w-[360px]">
                     <Button
                         variant="ghost"
-                        onClick={handleReset}
+                        onClick={resetForm}
                         disabled={isPending}
                     >
                         {rbac("reset")}
@@ -245,7 +230,7 @@ export function CreateRoleDialog() {
                         variant="primary"
                         className="text-[24px] w-[168px] px-0 h-[62px] rounded-[14px]"
                         onClick={handleSubmit}
-                        disabled={isPending || !roleName.trim()}
+                        disabled={isPending || modulesLoading || !roleName.trim()}
                     >
                         {isPending ? rbac("creating") : rbac("create")}
                     </Button>

@@ -1,7 +1,53 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { getStaffRoles, getStaffRoleById, createStaffRole, updateStaffRole, deleteStaffRole } from "@/services/rbac";
+import {
+  getStaffRoles,
+  getStaffRoleById,
+  createStaffRole,
+  updateStaffRole,
+  deleteStaffRole,
+  getPermissionModules,
+  createPermissionModule,
+  updatePermissionModule,
+  CreatePermissionModulePayload,
+  UpdatePermissionModulePayload,
+} from "@/services/rbac";
+
+export const usePermissionModules = (
+  params: { isActive?: boolean | null; limit?: number; page?: number } = { isActive: true, limit: 100 },
+) => {
+  return useQuery({
+    queryKey: ["permission-modules", params],
+    queryFn: () => getPermissionModules(params),
+  });
+};
+
+export const useCreatePermissionModule = () => {
+  const toasts = useTranslations("toasts");
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: CreatePermissionModulePayload) => createPermissionModule(payload),
+    onSuccess: () => {
+      toast.success(toasts("permissionModuleSaved"));
+      queryClient.invalidateQueries({ queryKey: ["permission-modules"] });
+    },
+    onError: (err: any) => toast.error(err?.response?.data?.message || toasts("permissionModuleSaveFailed")),
+  });
+};
+
+export const useUpdatePermissionModule = () => {
+  const toasts = useTranslations("toasts");
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: UpdatePermissionModulePayload }) => updatePermissionModule(id, payload),
+    onSuccess: () => {
+      toast.success(toasts("permissionModuleSaved"));
+      queryClient.invalidateQueries({ queryKey: ["permission-modules"] });
+    },
+    onError: (err: any) => toast.error(err?.response?.data?.message || toasts("permissionModuleSaveFailed")),
+  });
+};
 
 export const useStaffRoles = () => {
   return useQuery({
