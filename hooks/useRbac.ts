@@ -15,11 +15,15 @@ import {
 } from "@/services/rbac";
 
 export const usePermissionModules = (
-  params: { isActive?: boolean | null; limit?: number; page?: number } = { isActive: true, limit: 100 },
+  params: { isActive?: boolean | null; limit?: number; page?: number } = {},
 ) => {
+  const isActive = params.isActive === undefined ? true : params.isActive;
+  const limit = params.limit ?? 100;
+  const page = params.page;
+
   return useQuery({
-    queryKey: ["permission-modules", params],
-    queryFn: () => getPermissionModules(params),
+    queryKey: ["permission-modules", isActive, limit, page],
+    queryFn: () => getPermissionModules({ isActive, limit, page }),
   });
 };
 

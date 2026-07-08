@@ -44,10 +44,12 @@ export function CreateRoleDialog() {
                 Object.entries(prev).map(([access, operations]) => ({ access, operations })),
                 permissionModules,
             );
-            return sanitized.reduce<Record<string, string[]>>((next, permission) => {
+            const nextPermissions = sanitized.reduce<Record<string, string[]>>((next, permission) => {
                 next[permission.access] = permission.operations;
                 return next;
             }, {});
+
+            return JSON.stringify(prev) === JSON.stringify(nextPermissions) ? prev : nextPermissions;
         });
     }, [permissionModules]);
 
