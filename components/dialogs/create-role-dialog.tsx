@@ -182,7 +182,7 @@ export function CreateRoleDialog() {
                         />
                     </div>
 
-                    <div className="grid gap-5 md:grid-cols-2">
+                    <div className="grid gap-5">
                         <AccessPicker
                             label={rbac("restaurantIds")}
                             placeholder={rbac("selectRestaurant")}
@@ -343,7 +343,7 @@ function AccessPicker({
     return (
         <div className="grid gap-[6px]">
             <Label>{label}</Label>
-            <div className="flex gap-2">
+            <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_88px]">
                 <select
                     value={value}
                     onChange={(event) => onChange(event.target.value)}
@@ -357,7 +357,7 @@ function AccessPicker({
                         </option>
                     ))}
                 </select>
-                <Button type="button" variant="outline" onClick={onAdd} disabled={!value || disabled}>
+                <Button type="button" variant="outline" className="w-full" onClick={onAdd} disabled={!value || disabled}>
                     Add
                 </Button>
             </div>
