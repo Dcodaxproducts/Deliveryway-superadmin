@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useGetPackageSubscriptionInvoice } from "@/hooks/usePackagePlans";
 import type {
+  PackagePlanCharge,
   PackageSubscription,
   PackageSubscriptionInvoice,
 } from "@/services/packagePlans";
@@ -118,9 +119,19 @@ export function SubscriptionInvoiceModal({
     valueOrFallback(invoice?.vatAmount, invoice?.taxAmount)
   );
   const totalAmount = valueOrFallback(
-    totals?.totalAmount,
-    valueOrFallback(invoice?.totalAmount, invoice?.amountDue)
+    totals?.amountDue,
+    valueOrFallback(totals?.totalAmount, valueOrFallback(invoice?.totalAmount, invoice?.amountDue))
   );
+  const additionalChargeAmount = valueOrFallback(
+    totals?.additionalChargeAmount,
+    totals?.additionalChargesAmount
+  );
+  const deductionAmount = valueOrFallback(totals?.deductionAmount, 0);
+  const onlinePaymentCreditAmount = valueOrFallback(
+    totals?.onlinePaymentCreditAmount,
+    0
+  );
+  const creditAmount = valueOrFallback(totals?.creditAmount, 0);
 
   const rows = useMemo(() => {
     const servicePeriodStart =
@@ -293,6 +304,14 @@ export function SubscriptionInvoiceModal({
                     }
                   />
                   <AmountRow
+                    label={pricingModel("invoice.additionalCharges")}
+                    value={formatMoney(additionalChargeAmount, currency)}
+                  />
+                  <AmountRow
+                    label={pricingModel("invoice.deductions")}
+                    value={formatMoney(deductionAmount, currency)}
+                  />
+                  <AmountRow
                     label={pricingModel("invoice.subtotal")}
                     value={formatMoney(subtotal, currency)}
                   />
@@ -300,9 +319,17 @@ export function SubscriptionInvoiceModal({
                     label={pricingModel("invoice.vatAmount")}
                     value={formatMoney(vatAmount, currency)}
                   />
+                  <AmountRow
+                    label={pricingModel("invoice.onlinePaymentCredit")}
+                    value={formatMoney(onlinePaymentCreditAmount, currency)}
+                  />
+                  <AmountRow
+                    label={pricingModel("invoice.creditAmount")}
+                    value={formatMoney(creditAmount, currency)}
+                  />
                   <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                     <span className="text-base font-semibold text-gray-900">
-                      {pricingModel("invoice.total")}
+                      {pricingModel("invoice.amountDue")}
                     </span>
                     <span className="text-xl font-bold text-green">
                       {formatMoney(totalAmount, currency)}
@@ -310,6 +337,22 @@ export function SubscriptionInvoiceModal({
                   </div>
                 </div>
               </div>
+
+              <ChargeLineItemsSection
+                title={pricingModel("invoice.additionalCharges")}
+                items={invoice?.additionalCharges}
+                currency={currency}
+              />
+              <ChargeLineItemsSection
+                title={pricingModel("invoice.adjustments")}
+                items={invoice?.adjustments}
+                currency={currency}
+              />
+              <ChargeLineItemsSection
+                title={pricingModel("invoice.deductions")}
+                items={invoice?.deductions}
+                currency={currency}
+              />
 
               <div className="rounded-[14px] bg-white p-5">
                 <h3 className="mb-4 text-base font-semibold text-gray-900">
@@ -420,6 +463,48 @@ function AmountRow({
         ) : null}
       </span>
       <span className="text-sm font-semibold text-gray-900">{value}</span>
+    </div>
+  );
+}
+
+function ChargeLineItemsSection({
+  title,
+  items,
+  currency,
+}: {
+  title: string;
+  items?: PackagePlanCharge[] | null;
+  currency: string;
+}) {
+  if (!items?.length) return null;
+
+  return (
+    <div className="rounded-[14px] bg-white p-5">
+      <h3 className="mb-4 text-base font-semibold text-gray-900">{title}</h3>
+      <div className="space-y-3">
+        {items.map((item) => {
+          const amount = numberValue(item.amount);
+          const signedAmount = item.direction === "CREDIT" ? -Math.abs(amount) : amount;
+
+          return (
+            <div
+              key={item.id}
+              className="flex items-start justify-between gap-4 rounded-lg bg-gray-50 px-4 py-3"
+            >
+              <div>
+                <p className="text-sm font-semibold text-gray-900">{item.title}</p>
+                <p className="mt-1 text-xs text-gray-500">
+                  {prettyLabel(item.source)} · {prettyLabel(item.type)} · {prettyLabel(item.direction)}
+                  {item.moduleCode ? ` · ${item.moduleCode}` : ""}
+                </p>
+              </div>
+              <p className="text-sm font-semibold text-gray-900">
+                {formatMoney(signedAmount, item.currency || currency)}
+              </p>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

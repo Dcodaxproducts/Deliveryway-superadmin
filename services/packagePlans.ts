@@ -18,8 +18,16 @@ export type BillingInterval =
 export type PayoutCycle =
   | "DAILY"
   | "WEEKLY"
+  | "BIWEEKLY"
   | "MONTHLY"
   | "MANUAL"
+  | string;
+
+export type SubscriptionPayoutCycleOverride =
+  | "DAILY"
+  | "WEEKLY"
+  | "BIWEEKLY"
+  | "MONTHLY"
   | string;
 
 export type SubscriptionPaymentStatus =
@@ -103,6 +111,7 @@ export type PackageSubscription = {
   startsAt?: string | null;
   endsAt?: string | null;
   nextBillingAt?: string | null;
+  payoutCycleOverride?: SubscriptionPayoutCycleOverride | null;
   note?: string | null;
   packagePlan?: PackagePlan;
   tenant?: {
@@ -128,6 +137,7 @@ export type CreatePackageSubscriptionPayload = {
   startsAt?: string;
   endsAt?: string;
   nextBillingAt?: string;
+  payoutCycleOverride?: SubscriptionPayoutCycleOverride | null;
   note?: string;
 };
 
@@ -145,6 +155,77 @@ export type PackageSubscriptionsParams = {
   tenantId?: string;
   restaurantId?: string;
   status?: "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELLED" | "EXPIRED" | string;
+};
+
+export type PackagePlanChargeType = "ONE_TIME" | "RECURRING" | string;
+export type PackagePlanChargeDirection = "CHARGE" | "CREDIT" | string;
+export type PackagePlanChargeSource = "CUSTOM" | "MODULE" | string;
+export type PackagePlanChargeStatus = "ACTIVE" | "APPLIED" | "CANCELLED" | string;
+
+export type PackagePlanCharge = {
+  id: string;
+  tenantId?: string | null;
+  restaurantId?: string | null;
+  subscriptionId?: string | null;
+  type: PackagePlanChargeType;
+  direction: PackagePlanChargeDirection;
+  source: PackagePlanChargeSource;
+  moduleCode?: string | null;
+  title: string;
+  description?: string | null;
+  amount: string | number;
+  currency?: string | null;
+  appliesFrom?: string | null;
+  status?: PackagePlanChargeStatus | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
+export type PackagePlanChargesParams = {
+  tenantId?: string;
+  restaurantId?: string;
+  subscriptionId?: string;
+  type?: PackagePlanChargeType;
+  direction?: PackagePlanChargeDirection;
+  source?: PackagePlanChargeSource;
+  moduleCode?: string;
+  status?: PackagePlanChargeStatus;
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: "ASC" | "DESC";
+};
+
+export type CreatePackagePlanChargePayload = {
+  tenantId?: string;
+  restaurantId?: string;
+  subscriptionId?: string;
+  type: "ONE_TIME" | "RECURRING";
+  direction: "CHARGE" | "CREDIT";
+  source: "CUSTOM" | "MODULE";
+  moduleCode?: string;
+  title: string;
+  description?: string;
+  amount: number;
+  currency?: string;
+  appliesFrom?: string;
+};
+
+export type UpdatePackagePlanChargePayload = Partial<CreatePackagePlanChargePayload> & {
+  status?: "ACTIVE" | "APPLIED" | "CANCELLED";
+};
+
+export type PackagePlanChargesResponse = {
+  success?: boolean;
+  data?: PackagePlanCharge[];
+  meta?: {
+    page?: number;
+    limit?: number;
+    total?: number;
+    totalPages?: number;
+  };
+  message?: string;
 };
 
 export type PackagePlanFeatureCatalogItem = {
@@ -183,9 +264,16 @@ export type PackageSubscriptionInvoicePlan = {
 export type PackageSubscriptionInvoiceTotals = {
   subscriptionFeeAmount?: string | number | null;
   transactionFeeAmount?: string | number | null;
+  additionalChargeAmount?: string | number | null;
+  additionalChargesAmount?: string | number | null;
   subtotal?: string | number | null;
+  deductionAmount?: string | number | null;
   vatPercentage?: string | number | null;
   vatAmount?: string | number | null;
+  totalFeesAmount?: string | number | null;
+  onlinePaymentCreditAmount?: string | number | null;
+  amountDue?: string | number | null;
+  creditAmount?: string | number | null;
   totalAmount?: string | number | null;
   currency?: string | null;
 };
@@ -217,6 +305,9 @@ export type PackageSubscriptionInvoice = {
   commissionCapAmount?: string | number | null;
   vatPercentage?: string | number | null;
   totals?: PackageSubscriptionInvoiceTotals | null;
+  adjustments?: PackagePlanCharge[];
+  additionalCharges?: PackagePlanCharge[];
+  deductions?: PackagePlanCharge[];
   transactionFee?: PackageSubscriptionInvoiceTransactionFee | null;
   subtotal?: string | number | null;
   vatAmount?: string | number | null;
@@ -375,6 +466,54 @@ export const updatePackageSubscription = async (
   const { data } = await api.patch(
     `/admin/package-plans/subscriptions/${id}`,
     payload
+  );
+  return data;
+};
+
+/**
+ * ==============================
+ * PACKAGE PLAN CHARGES APIS
+ * ==============================
+ */
+
+export const getPackagePlanCharges = async (
+  params?: PackagePlanChargesParams
+): Promise<PackagePlanChargesResponse> => {
+  const { data } = await api.get("/admin/package-plans/charges", { params });
+  return data;
+};
+
+export const createPackagePlanCharge = async (
+  payload: CreatePackagePlanChargePayload
+) => {
+  const normalizedPayload = {
+    ...payload,
+    moduleCode: payload.moduleCode?.trim()
+      ? payload.moduleCode.trim().toUpperCase()
+      : undefined,
+  };
+
+  const { data } = await api.post(
+    "/admin/package-plans/charges",
+    normalizedPayload
+  );
+  return data;
+};
+
+export const updatePackagePlanCharge = async (
+  id: string,
+  payload: UpdatePackagePlanChargePayload
+) => {
+  const normalizedPayload = {
+    ...payload,
+    moduleCode: payload.moduleCode?.trim()
+      ? payload.moduleCode.trim().toUpperCase()
+      : payload.moduleCode,
+  };
+
+  const { data } = await api.patch(
+    `/admin/package-plans/charges/${id}`,
+    normalizedPayload
   );
   return data;
 };

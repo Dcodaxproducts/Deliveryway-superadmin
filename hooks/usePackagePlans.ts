@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import {
+  createPackagePlanCharge,
   createPackagePlan,
   createPackageSubscription,
   deletePackagePlan,
@@ -11,18 +12,23 @@ import {
   getPackagePlanDetail,
   getPackagePlanFeatureCatalog,
   getPackagePlans,
+  getPackagePlanCharges,
   getPackageSubscriptions,
   getWeeklyPayoutInvoice,
   sendPackageSubscriptionInvoiceEmail,
   sendWeeklyPayoutInvoiceEmail,
   updatePackagePlan,
+  updatePackagePlanCharge,
   updatePackageSubscription,
+  CreatePackagePlanChargePayload,
   CreatePackagePlanPayload,
   CreatePackageSubscriptionPayload,
+  PackagePlanChargesParams,
   PackagePlansParams,
   PackageSubscriptionsParams,
   SendPackageSubscriptionInvoiceEmailPayload,
   UpdatePackagePlanPayload,
+  UpdatePackagePlanChargePayload,
   UpdatePackageSubscriptionPayload,
   WeeklyPayoutInvoiceEmailPayload,
   WeeklyPayoutInvoiceParams,
@@ -53,6 +59,9 @@ export const packagePlanKeys = {
     [...packagePlanKeys.subscriptions(), params] as const,
   subscriptionInvoice: (id?: string) =>
     [...packagePlanKeys.subscriptions(), "invoice", id] as const,
+  charges: () => [...packagePlanKeys.all, "charges"] as const,
+  chargeList: (params?: PackagePlanChargesParams) =>
+    [...packagePlanKeys.charges(), params] as const,
   payoutInvoice: () => [...packagePlanKeys.all, "payout-invoice"] as const,
 };
 
@@ -295,6 +304,50 @@ export const useSendPackageSubscriptionInvoiceEmail = () => {
       toast.error(
         getErrorMessage(err, toasts("subscriptionInvoiceEmailSendFailed"))
       );
+    },
+  });
+};
+
+export const useGetPackagePlanCharges = (params?: PackagePlanChargesParams) => {
+  return useQuery({
+    queryKey: packagePlanKeys.chargeList(params),
+    queryFn: () => getPackagePlanCharges(params),
+    enabled: Boolean(params?.tenantId || params?.restaurantId || params?.subscriptionId),
+  });
+};
+
+export const useCreatePackagePlanCharge = () => {
+  const toasts = useTranslations("toasts");
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: CreatePackagePlanChargePayload) =>
+      createPackagePlanCharge(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: packagePlanKeys.charges() });
+      queryClient.invalidateQueries({ queryKey: packagePlanKeys.subscriptions() });
+      toast.success(toasts("packagePlanChargeSaved"));
+    },
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, toasts("packagePlanChargeSaveFailed")));
+    },
+  });
+};
+
+export const useUpdatePackagePlanCharge = () => {
+  const toasts = useTranslations("toasts");
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: UpdatePackagePlanChargePayload }) =>
+      updatePackagePlanCharge(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: packagePlanKeys.charges() });
+      queryClient.invalidateQueries({ queryKey: packagePlanKeys.subscriptions() });
+      toast.success(toasts("packagePlanChargeSaved"));
+    },
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, toasts("packagePlanChargeSaveFailed")));
     },
   });
 };

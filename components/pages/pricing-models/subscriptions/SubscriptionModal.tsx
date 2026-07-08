@@ -30,6 +30,7 @@ type PackageSubscriptionRow = {
   startsAt?: string | null;
   endsAt?: string | null;
   nextBillingAt?: string | null;
+  payoutCycleOverride?: string | null;
   note?: string | null;
   tenant?: {
     id: string;
@@ -91,6 +92,7 @@ type SubscriptionFormState = {
   startsAt: string;
   endsAt: string;
   nextBillingAt: string;
+  payoutCycleOverride: string;
   note: string;
 };
 
@@ -103,6 +105,7 @@ const defaultForm: SubscriptionFormState = {
   startsAt: "",
   endsAt: "",
   nextBillingAt: "",
+  payoutCycleOverride: "",
   note: "",
 };
 
@@ -335,6 +338,7 @@ export function SubscriptionModal({
         startsAt: toDateInputValue(initialData.startsAt),
         endsAt: toDateInputValue(initialData.endsAt),
         nextBillingAt: toDateInputValue(initialData.nextBillingAt),
+        payoutCycleOverride: initialData.payoutCycleOverride || "",
         note: initialData.note || "",
       });
 
@@ -372,6 +376,7 @@ export function SubscriptionModal({
       startsAt: toIsoOrUndefined(form.startsAt),
       endsAt: toIsoOrUndefined(form.endsAt),
       nextBillingAt: toIsoOrUndefined(form.nextBillingAt),
+      payoutCycleOverride: form.payoutCycleOverride || null,
       note: form.note.trim() || undefined,
     };
 
@@ -555,6 +560,27 @@ export function SubscriptionModal({
                 </option>
               </select>
             </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-gray">
+              {pricingModel("fields.payoutCycleOverride")}
+            </label>
+            <select
+              value={form.payoutCycleOverride}
+              onChange={(event) =>
+                updateForm("payoutCycleOverride", event.target.value)
+              }
+              className="mt-2 h-11 w-full rounded-lg border border-gray-100 bg-gray-50 px-4 text-sm text-dark outline-none transition focus:border-primary focus:bg-white"
+            >
+              <option value="">
+                {pricingModel("subscriptions.usePackagePlanPayoutCycle")}
+              </option>
+              <option value="DAILY">{pricingModel("display.payoutCycles.daily")}</option>
+              <option value="WEEKLY">{pricingModel("display.payoutCycles.weekly")}</option>
+              <option value="BIWEEKLY">{pricingModel("display.payoutCycles.biweekly")}</option>
+              <option value="MONTHLY">{pricingModel("display.payoutCycles.monthly")}</option>
+            </select>
           </div>
 
           <div className="grid grid-cols-1 gap-5 md:grid-cols-3">

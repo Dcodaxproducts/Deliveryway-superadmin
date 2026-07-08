@@ -656,6 +656,7 @@
       "startsAt": "Starts At",
       "endsAt": "Ends At",
       "nextBillingAt": "Next Billing At",
+      "payoutCycleOverride": "Payout cycle override",
       "note": "Note"
     },
     "placeholders": {
@@ -728,6 +729,7 @@
       "payoutCycles": {
         "daily": "Daily",
         "weekly": "Weekly",
+        "biweekly": "Biweekly",
         "monthly": "Monthly",
         "manual": "Manual"
       },
@@ -784,7 +786,33 @@
       "selectAtLeastOneOwnerDescription": "You can assign the subscription to a tenant, a restaurant, or both depending on your backend ownership flow.",
       "loadingPackagePlans": "Loading package plans...",
       "selectedValue": "Selected: {value}",
-      "idValue": "ID: {value}"
+      "idValue": "ID: {value}",
+      "usePackagePlanPayoutCycle": "Use package plan payout cycle",
+      "override": "Override"
+    },
+    "charges": {
+      "title": "Subscription Charges",
+      "manage": "Manage charges",
+      "createTitle": "Create charge or credit",
+      "activeCharges": "Charges & credits",
+      "noCharges": "No charges found for this subscription.",
+      "type": "Type",
+      "source": "Source",
+      "direction": "Direction",
+      "moduleCode": "Module code",
+      "titleField": "Title",
+      "description": "Description",
+      "amount": "Amount",
+      "currency": "Currency",
+      "appliesFrom": "Applies from",
+      "oneTime": "One-time",
+      "recurring": "Recurring",
+      "custom": "Custom",
+      "module": "Module",
+      "charge": "Charge",
+      "credit": "Credit",
+      "save": "Save charge",
+      "cancel": "Cancel charge"
     },
     "invoice": {
       "title": "Restaurant Subscription Invoice",
@@ -816,6 +844,12 @@
       "totals": "Totals",
       "subscriptionFee": "Monthly Subscription Fee",
       "transactionFee": "Transaction Fee",
+      "additionalCharges": "Additional Charges",
+      "adjustments": "Adjustments",
+      "deductions": "Deductions",
+      "onlinePaymentCredit": "Online Payment Credit",
+      "creditAmount": "Credit Amount",
+      "amountDue": "Amount Due",
       "paidOrdersCount": "{count} paid order(s) in billing period",
       "subtotal": "Subtotal",
       "vatAmount": "VAT Amount",
@@ -1338,6 +1372,8 @@
     "subscriptionAssignFailed": "Failed to assign subscription",
     "subscriptionUpdated": "Subscription updated successfully",
     "subscriptionUpdateFailed": "Failed to update subscription",
+    "packagePlanChargeSaved": "Package plan charge saved",
+    "packagePlanChargeSaveFailed": "Failed to save package plan charge",
     "subscriptionInvoiceDownloaded": "Restaurant invoice downloaded",
     "subscriptionInvoiceDownloadFailed": "Failed to download restaurant invoice",
     "subscriptionInvoiceEmailSent": "Restaurant invoice email sent",

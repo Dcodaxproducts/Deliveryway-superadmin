@@ -13,6 +13,7 @@ import {
 import type { PackageSubscription } from "@/services/packagePlans";
 import { SubscriptionModal } from "./SubscriptionModal";
 import { SubscriptionInvoiceModal } from "./SubscriptionInvoiceModal";
+import { SubscriptionChargesModal } from "./SubscriptionChargesModal";
 import { SubscriptionsFilters } from "./SubscriptionsFilters";
 import { SubscriptionsTable } from "./SubscriptionsTable";
 
@@ -65,6 +66,9 @@ export function PackageSubscriptionsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editData, setEditData] = useState<PackageSubscription | null>(null);
   const [invoiceData, setInvoiceData] = useState<PackageSubscription | null>(
+    null
+  );
+  const [chargesData, setChargesData] = useState<PackageSubscription | null>(
     null
   );
   const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<
@@ -192,6 +196,7 @@ export function PackageSubscriptionsPage() {
           pageSize={DEFAULT_LIMIT}
           onPageChange={setPage}
           onEdit={handleEdit}
+          onManageCharges={setChargesData}
           onViewInvoice={handleViewInvoice}
           onDownloadInvoice={handleDownloadInvoice}
           onSendInvoiceEmail={(item) => handleSendInvoiceEmail(item.id)}
@@ -217,6 +222,14 @@ export function PackageSubscriptionsPage() {
           }}
           onDownload={handleDownloadInvoice}
           onSendEmail={handleSendInvoiceEmail}
+        />
+
+        <SubscriptionChargesModal
+          open={!!chargesData}
+          subscription={chargesData}
+          onOpenChange={(open) => {
+            if (!open) setChargesData(null);
+          }}
         />
       </div>
     </Container>

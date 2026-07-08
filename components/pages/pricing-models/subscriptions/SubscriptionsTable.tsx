@@ -11,6 +11,7 @@ import {
   Loader2,
   Mail,
   Pencil,
+  ReceiptText,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -27,6 +28,7 @@ type SubscriptionsTableProps = {
   pageSize: number;
   onPageChange: (page: number) => void;
   onEdit?: (subscription: PackageSubscription) => void;
+  onManageCharges?: (subscription: PackageSubscription) => void;
   onViewInvoice: (subscription: PackageSubscription) => void;
   onDownloadInvoice: (subscriptionId: string) => void;
   onSendInvoiceEmail: (subscription: PackageSubscription) => void;
@@ -69,6 +71,14 @@ const billingIntervalLabelKeys: Record<string, string> = {
   YEARLY: "display.billingIntervals.yearly",
   WEEKLY: "display.billingIntervals.weekly",
   DAILY: "display.billingIntervals.daily",
+};
+
+const payoutCycleLabelKeys: Record<string, string> = {
+  DAILY: "display.payoutCycles.daily",
+  WEEKLY: "display.payoutCycles.weekly",
+  BIWEEKLY: "display.payoutCycles.biweekly",
+  MONTHLY: "display.payoutCycles.monthly",
+  MANUAL: "display.payoutCycles.manual",
 };
 
 const getVisiblePages = (currentPage: number, totalPages: number) => {
@@ -133,6 +143,7 @@ export function SubscriptionsTable({
   pageSize,
   onPageChange,
   onEdit,
+  onManageCharges,
   onViewInvoice,
   onDownloadInvoice,
   onSendInvoiceEmail,
@@ -244,6 +255,14 @@ export function SubscriptionsTable({
                                 )
                               : pricingModel("subscriptions.intervalNotSet")}
                           </p>
+                          <p className="mt-1 text-[11px] font-medium text-gray">
+                            {pricingModel("fields.payoutCycle")}: {item.payoutCycleOverride
+                              ? pricingModel(payoutCycleLabelKeys[item.payoutCycleOverride] || "display.custom")
+                              : plan?.payoutCycle
+                                ? pricingModel(payoutCycleLabelKeys[plan.payoutCycle] || "display.custom")
+                                : pricingModel("subscriptions.notSet")}
+                            {item.payoutCycleOverride ? ` (${pricingModel("subscriptions.override")})` : ""}
+                          </p>
                         </div>
                       </div>
                     </td>
@@ -343,6 +362,16 @@ export function SubscriptionsTable({
                             title={pricingModel("actions.updateSubscription")}
                           >
                             <Pencil size={16} />
+                          </button>
+                        ) : null}
+                        {onManageCharges ? (
+                          <button
+                            type="button"
+                            onClick={() => onManageCharges(item)}
+                            className="inline-flex size-8 items-center justify-center rounded-lg text-gray transition hover:bg-red-50 hover:text-primary"
+                            title={pricingModel("charges.manage")}
+                          >
+                            <ReceiptText size={16} />
                           </button>
                         ) : null}
                       </div>

@@ -656,6 +656,7 @@
       "startsAt": "Beginnt am",
       "endsAt": "Endet am",
       "nextBillingAt": "Nächste Abrechnung am",
+      "payoutCycleOverride": "Auszahlungszyklus überschreiben",
       "note": "Notiz"
     },
     "placeholders": {
@@ -728,6 +729,7 @@
       "payoutCycles": {
         "daily": "Täglich",
         "weekly": "Wöchentlich",
+        "biweekly": "Zweiwöchentlich",
         "monthly": "Monatlich",
         "manual": "Manuell"
       },
@@ -784,7 +786,33 @@
       "selectAtLeastOneOwnerDescription": "Du kannst das Abonnement einem Mandanten, einem Restaurant oder beiden zuweisen, abhängig vom Backend-Eigentümerfluss.",
       "loadingPackagePlans": "Paketpläne werden geladen...",
       "selectedValue": "Ausgewählt: {value}",
-      "idValue": "ID: {value}"
+      "idValue": "ID: {value}",
+      "usePackagePlanPayoutCycle": "Auszahlungszyklus des Paketplans verwenden",
+      "override": "Überschreibung"
+    },
+    "charges": {
+      "title": "Abonnement-Gebühren",
+      "manage": "Gebühren verwalten",
+      "createTitle": "Gebühr oder Gutschrift erstellen",
+      "activeCharges": "Gebühren & Gutschriften",
+      "noCharges": "Keine Gebühren für dieses Abonnement gefunden.",
+      "type": "Typ",
+      "source": "Quelle",
+      "direction": "Richtung",
+      "moduleCode": "Modulcode",
+      "titleField": "Titel",
+      "description": "Beschreibung",
+      "amount": "Betrag",
+      "currency": "Währung",
+      "appliesFrom": "Gültig ab",
+      "oneTime": "Einmalig",
+      "recurring": "Wiederkehrend",
+      "custom": "Benutzerdefiniert",
+      "module": "Modul",
+      "charge": "Gebühr",
+      "credit": "Gutschrift",
+      "save": "Gebühr speichern",
+      "cancel": "Gebühr stornieren"
     },
     "invoice": {
       "title": "Restaurant-Abonnementrechnung",
@@ -816,6 +844,12 @@
       "totals": "Summen",
       "subscriptionFee": "Monatliche Abonnementgebühr",
       "transactionFee": "Transaktionsgebühr",
+      "additionalCharges": "Zusatzgebühren",
+      "adjustments": "Anpassungen",
+      "deductions": "Abzüge",
+      "onlinePaymentCredit": "Online-Zahlungsgutschrift",
+      "creditAmount": "Gutschrift",
+      "amountDue": "Fälliger Betrag",
       "paidOrdersCount": "{count} bezahlte Bestellung(en) im Abrechnungszeitraum",
       "subtotal": "Zwischensumme",
       "vatAmount": "MwSt.-Betrag",
@@ -1338,6 +1372,8 @@
     "subscriptionAssignFailed": "Abonnement konnte nicht zugewiesen werden",
     "subscriptionUpdated": "Abonnement erfolgreich aktualisiert",
     "subscriptionUpdateFailed": "Abonnement konnte nicht aktualisiert werden",
+    "packagePlanChargeSaved": "Paketplan-Gebühr gespeichert",
+    "packagePlanChargeSaveFailed": "Paketplan-Gebühr konnte nicht gespeichert werden",
     "subscriptionInvoiceDownloaded": "Restaurantrechnung heruntergeladen",
     "subscriptionInvoiceDownloadFailed": "Restaurantrechnung konnte nicht heruntergeladen werden",
     "subscriptionInvoiceEmailSent": "Restaurantrechnung per E-Mail gesendet",
