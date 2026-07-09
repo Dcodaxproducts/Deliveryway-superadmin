@@ -240,7 +240,7 @@ export function StripeAccountPanel({ restaurantId }: StripeAccountPanelProps) {
               type="button"
               onClick={submitTransfer}
               disabled={transferDisabled}
-              className="h-11 rounded-[10px]"
+              className="h-11 rounded-[10px] px-5"
             >
               {createTransfer.isPending ? (
                 <Loader2 className="mr-2 size-4 animate-spin" />
