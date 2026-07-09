@@ -180,7 +180,14 @@
     "uploadingLogo": "Uploading logo...",
     "uploadLogo": "Click to upload logo",
     "uploadLogoHint": "JPG, JPEG, PNG up to 20MB",
-    "whatsapp": "WhatsApp"
+    "whatsapp": "WhatsApp",
+    "serviceChargeSettings": "Service Charge",
+    "serviceChargeDescription": "Set the restaurant-level service charge for customer quotes and orders. Transaction fee remains platform/global.",
+    "serviceChargeType": "Service Charge Type",
+    "serviceChargeValue": "Service Charge Value",
+    "serviceChargeInvalid": "Enter a valid value. Percentage cannot exceed 100.",
+    "percentage": "Percentage",
+    "fixedAmount": "Fixed Amount"
   },
   "businessOwners": {
     "title": "Business Owners",
@@ -288,7 +295,7 @@
     "minimumOrder": "Minimum Order",
     "freeDelivery": "Free Delivery",
     "serviceChargeSettings": "Service Charge",
-    "serviceChargeDescription": "Super Admin can configure an optional branch service charge. Restaurant and branch admins will not see or send this setting.",
+    "serviceChargeDescription": "Super Admin can configure restaurant service charge on the restaurant/business owner details page.",
     "serviceChargeType": "Service Charge Type",
     "serviceChargeValue": "Service Charge Value",
     "percentage": "Percentage",
@@ -1414,8 +1421,6 @@
     "roleUpdateFailed": "Failed to update role",
     "roleDeleted": "Role deleted successfully",
     "roleDeleteFailed": "Failed to delete role",
-    "permissionModuleSaved": "Permission module saved",
-    "permissionModuleSaveFailed": "Failed to save permission module",
     "permissionModuleSaved": "Permission module saved",
     "permissionModuleSaveFailed": "Failed to save permission module",
     "settingsUpdated": "Settings updated successfully!",

@@ -33,6 +33,20 @@ export const deleteRestaurant = async (id: string) => {
   return data.data;
 };
 
+export type RestaurantServiceChargePayload = {
+  isEnabled?: boolean;
+  type?: "PERCENTAGE" | "AMOUNT";
+  value?: number;
+};
+
+export const updateRestaurantServiceCharge = async (
+  id: string,
+  payload: RestaurantServiceChargePayload
+) => {
+  const { data } = await api.patch(`/restaurants/${id}/service-charge`, payload);
+  return data;
+};
+
 // BRANCH APIS
 export const getRestaurantBranches = async (id: string) => {
   const { data } = await api.get(`/branches?restaurantId=${id}`);

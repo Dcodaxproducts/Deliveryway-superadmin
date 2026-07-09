@@ -8,8 +8,6 @@ import type {
   UpdatePaymentMethodsResponse,
 } from "@/types/global-settings";
 
-export type ServiceChargeType = "PERCENTAGE" | "AMOUNT";
-
 export type GlobalSettingsValues = {
   globalTaxPercentage: number;
   vatHandlingRule: string;
@@ -23,14 +21,6 @@ export type GlobalSettingsValues = {
   primaryColor: string;
   secondaryColor: string;
   fontFamily: string;
-  serviceChargeEnabled: boolean;
-  serviceChargeType: ServiceChargeType;
-  serviceChargeValue: number;
-  serviceCharge?: {
-    isEnabled: boolean;
-    type: ServiceChargeType;
-    value: number;
-  };
   isTaxEnforced: boolean;
   isCommissionEnforced: boolean;
   isCurrencyEnforced: boolean;

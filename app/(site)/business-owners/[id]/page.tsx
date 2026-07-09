@@ -4,6 +4,7 @@ import Container from "@/components/container";
 import SummarySection from "@/components/pages/profile/address-info"
 import BranchList from "@/components/pages/profile/branch-list-section"
 import Hero from "@/components/pages/profile/hero"
+import { ServiceChargePanel } from "@/components/pages/restaurants/service-charge-panel"
 import Header from "@/components/header"
 import { useGetRestaurant, useGetRestaurantBranches } from "@/hooks/useRestaurant";
 import { useParams } from "next/navigation";
@@ -28,6 +29,7 @@ const RestaurantDetailsPage = () => {
             <div className="flex flex-col gap-[32px] w-full bg-white p-4 lg:p-[30px] rounded-[14px]">
                 <Hero data={restaurantData} />
                 <SummarySection data={restaurantData} />
+                <ServiceChargePanel restaurant={restaurantData} />
                 <BranchList branches={branchesData} />
             </div>
         </Container>

@@ -30,7 +30,6 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 
 import {
   createRegisterTenantSchema,
@@ -38,8 +37,6 @@ import {
 } from "@/validations/tenants";
 import { useRegisterTenant, useUpdateTenant } from "@/hooks/useTenants";
 import { useFileUpload } from "@/hooks/useFileUpload";
-import { useUser } from "@/hooks/useAuth";
-import { isSuperAdmin } from "@/lib/auth-role";
 import { useRouter } from "next/navigation";
 import { PremiumImageDropzone } from "@/components/forms/PremiumImageDropzone";
 
@@ -85,8 +82,6 @@ const isGoogleMapsKeyConfigured = () => {
 };
 
 type DeliveryMode = "RADIUS" | "ZONE" | "POSTAL_CODE";
-type ServiceChargeType = "PERCENTAGE" | "AMOUNT";
-
 type UploadField =
   | "user.avatarUrl"
   | "tenant.logoUrl"
@@ -120,11 +115,6 @@ const DEFAULT_BRANCH_SETTINGS = {
   },
   taxation: {
     taxPercentage: 0,
-  },
-  serviceCharge: {
-    isEnabled: false,
-    type: "PERCENTAGE" as ServiceChargeType,
-    value: 0,
   },
   contact: {
     whatsapp: "",
@@ -349,14 +339,11 @@ export default function BusinessOwnerForm({
   const validation = useTranslations("validation");
   const toasts = useTranslations("toasts");
   const { uploadFile, uploading, progress } = useFileUpload();
-  const { data: user } = useUser();
-
   const createMutation = useRegisterTenant();
   const updateMutation = useUpdateTenant();
 
   const isEdit = mode === "edit" && Boolean(tenantId);
   const isPending = isEdit ? updateMutation.isPending : createMutation.isPending;
-  const canManageServiceCharge = isSuperAdmin(user);
   const registerTenantSchema = createRegisterTenantSchema(validation);
   const updateTenantSchema = createUpdateTenantSchema(validation);
 
@@ -460,8 +447,6 @@ export default function BusinessOwnerForm({
   const branchLogo = watch("branch.logoUrl");
   const branchCover = watch("branch.coverImage");
   const deliveryMode = watch("branch.settings.deliveryConfig.mode") || "RADIUS";
-  const serviceChargeEnabled = Boolean(watch("branch.settings.serviceCharge.isEnabled"));
-  const serviceChargeType = watch("branch.settings.serviceCharge.type") || "PERCENTAGE";
   const branchLat = watch("branch.lat");
   const branchLng = watch("branch.lng");
   const zones = normalizeArray(watch("branch.settings.deliveryConfig.zones"));
@@ -1108,10 +1093,6 @@ export default function BusinessOwnerForm({
             ...DEFAULT_DELIVERY_CONFIG,
             ...(initialData.branch?.settings?.deliveryConfig || {}),
           },
-          serviceCharge: {
-            ...DEFAULT_BRANCH_SETTINGS.serviceCharge,
-            ...(initialData.branch?.settings?.serviceCharge || {}),
-          },
         },
         street: initialData.branch?.street || "",
         area: initialData.branch?.area || "",
@@ -1550,8 +1531,7 @@ export default function BusinessOwnerForm({
       }
 
       const branchSettingsPayload = buildBranchSettingsPayload(
-        values.branch?.settings || {},
-        canManageServiceCharge
+        values.branch?.settings || {}
       );
 
       const payload = {
@@ -2258,61 +2238,6 @@ export default function BusinessOwnerForm({
               }
             />
 
-            {canManageServiceCharge ? (
-              <div className="space-y-4 rounded-2xl border border-primary/10 bg-primary/[0.03] p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">
-                      {businessOwners("serviceChargeSettings")}
-                    </p>
-                    <p className="mt-1 text-sm leading-6 text-gray-600">
-                      {businessOwners("serviceChargeDescription")}
-                    </p>
-                  </div>
-
-                  <label className="flex items-center gap-3 rounded-full bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-100">
-                    <Switch
-                      checked={serviceChargeEnabled}
-                      onCheckedChange={(checked) =>
-                        setValue("branch.settings.serviceCharge.isEnabled", checked, {
-                          shouldValidate: true,
-                          shouldDirty: true,
-                        })
-                      }
-                    />
-                    {serviceChargeEnabled ? common("enabled") : common("disabled")}
-                  </label>
-                </div>
-
-                <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
-                  <SelectGroup
-                    label={businessOwners("serviceChargeType")}
-                    value={serviceChargeType}
-                    options={[
-                      { label: businessOwners("percentage"), value: "PERCENTAGE" },
-                      { label: businessOwners("fixedAmount"), value: "AMOUNT" },
-                    ]}
-                    onChange={(value) =>
-                      setValue("branch.settings.serviceCharge.type", value as ServiceChargeType, {
-                        shouldValidate: true,
-                        shouldDirty: true,
-                      })
-                    }
-                  />
-
-                  <FormGroup
-                    label={businessOwners("serviceChargeValue")}
-                    placeholder={serviceChargeType === "PERCENTAGE" ? "5" : "2.50"}
-                    type="number"
-                    step="0.01"
-                    error={readError(errors, "branch.settings.serviceCharge.value")}
-                    {...register("branch.settings.serviceCharge.value", {
-                      valueAsNumber: true,
-                    })}
-                  />
-                </div>
-              </div>
-            ) : null}
 
             {deliveryMode === "RADIUS" ? (
               <DynamicSection

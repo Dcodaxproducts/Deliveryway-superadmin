@@ -180,7 +180,14 @@
     "uploadingLogo": "Logo wird hochgeladen...",
     "uploadLogo": "Logo hochladen",
     "uploadLogoHint": "JPG, JPEG, PNG bis 20 MB",
-    "whatsapp": "WhatsApp"
+    "whatsapp": "WhatsApp",
+    "serviceChargeSettings": "Servicegebühr",
+    "serviceChargeDescription": "Lege die restaurantbezogene Servicegebühr für Kundenangebote und Bestellungen fest. Die Transaktionsgebühr bleibt plattformweit/global.",
+    "serviceChargeType": "Art der Servicegebühr",
+    "serviceChargeValue": "Wert der Servicegebühr",
+    "serviceChargeInvalid": "Gib einen gültigen Wert ein. Prozentwerte dürfen 100 nicht überschreiten.",
+    "percentage": "Prozentsatz",
+    "fixedAmount": "Fester Betrag"
   },
   "businessOwners": {
     "title": "Geschäftsinhaber",
@@ -288,7 +295,7 @@
     "minimumOrder": "Mindestbestellung",
     "freeDelivery": "Kostenlose Lieferung",
     "serviceChargeSettings": "Servicegebühr",
-    "serviceChargeDescription": "Super Admin kann eine optionale Servicegebühr für die Filiale konfigurieren. Restaurant- und Filial-Admins sehen oder senden diese Einstellung nicht.",
+    "serviceChargeDescription": "Super Admin kann die Servicegebühr des Restaurants auf der Detailseite des Restaurants/Geschäftsinhabers konfigurieren.",
     "serviceChargeType": "Art der Servicegebühr",
     "serviceChargeValue": "Wert der Servicegebühr",
     "percentage": "Prozentsatz",
@@ -1414,8 +1421,6 @@
     "roleUpdateFailed": "Rolle konnte nicht aktualisiert werden",
     "roleDeleted": "Rolle erfolgreich gelöscht",
     "roleDeleteFailed": "Rolle konnte nicht gelöscht werden",
-    "permissionModuleSaved": "Berechtigungsmodul gespeichert",
-    "permissionModuleSaveFailed": "Berechtigungsmodul konnte nicht gespeichert werden",
     "permissionModuleSaved": "Berechtigungsmodul gespeichert",
     "permissionModuleSaveFailed": "Berechtigungsmodul konnte nicht gespeichert werden",
     "settingsUpdated": "Einstellungen erfolgreich aktualisiert!",

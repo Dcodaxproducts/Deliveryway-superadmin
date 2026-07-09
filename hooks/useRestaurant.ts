@@ -7,6 +7,7 @@ import {
   deleteRestaurant, 
   createRestaurant, 
   updateRestaurant, 
+  updateRestaurantServiceCharge,
   getRestaurantBranches, 
   getBranch,
   getRestaurantTrend,
@@ -79,6 +80,29 @@ export const useUpdateRestaurant = () => {
       queryClient.invalidateQueries({ queryKey: ["restaurant", variables.id] });
       toast.success(toasts("restaurantUpdated"));
       router.push(`/restaurants`);
+    },
+    onError: (err: ApiError) => {
+      toast.error(err.response?.data?.message || toasts("restaurantUpdateFailed"));
+    },
+  });
+};
+
+
+export const useUpdateRestaurantServiceCharge = () => {
+  const queryClient = useQueryClient();
+  const toasts = useTranslations("toasts");
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: { isEnabled?: boolean; type?: "PERCENTAGE" | "AMOUNT"; value?: number };
+    }) => updateRestaurantServiceCharge(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["restaurants"] });
+      queryClient.invalidateQueries({ queryKey: ["restaurant", variables.id] });
+      toast.success(toasts("restaurantUpdated"));
     },
     onError: (err: ApiError) => {
       toast.error(err.response?.data?.message || toasts("restaurantUpdateFailed"));
