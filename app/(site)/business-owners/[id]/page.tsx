@@ -5,6 +5,7 @@ import SummarySection from "@/components/pages/profile/address-info"
 import BranchList from "@/components/pages/profile/branch-list-section"
 import Hero from "@/components/pages/profile/hero"
 import { ServiceChargePanel } from "@/components/pages/restaurants/service-charge-panel"
+import { RestaurantPayoutPanel } from "@/components/pages/restaurants/restaurant-payout-panel"
 import Header from "@/components/header"
 import { useGetRestaurant, useGetRestaurantBranches } from "@/hooks/useRestaurant";
 import { useParams } from "next/navigation";
@@ -30,6 +31,7 @@ const RestaurantDetailsPage = () => {
                 <Hero data={restaurantData} />
                 <SummarySection data={restaurantData} />
                 <ServiceChargePanel restaurant={restaurantData} />
+                <RestaurantPayoutPanel restaurantId={id} />
                 <BranchList branches={branchesData} />
             </div>
         </Container>
