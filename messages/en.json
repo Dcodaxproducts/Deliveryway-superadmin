@@ -555,7 +555,8 @@
     "branchIds": "Branch IDs",
     "selectRestaurant": "Select restaurant",
     "selectBranch": "Select branch",
-    "selectRestaurantFirst": "Select restaurant first"
+    "selectRestaurantFirst": "Select restaurant first",
+    "assignAllRestaurants": "Assign all restaurants"
   },
   "rbac": {
     "rolesList": "Roles List",

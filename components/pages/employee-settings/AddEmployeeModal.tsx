@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { PremiumImageDropzone } from "@/components/forms/PremiumImageDropzone";
 
 import { useEffect, useState } from "react";
@@ -21,7 +22,10 @@ import {
   useUpdateStaff,
   useGetStaffRoles,
 } from "@/hooks/useEmployees";
-import { useGetRestaurantBranches, useGetRestaurants } from "@/hooks/useRestaurant";
+import {
+  useGetRestaurantBranches,
+  useGetRestaurants,
+} from "@/hooks/useRestaurant";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { parseIdList, stringifyIdList } from "@/lib/staff-access";
 
@@ -32,13 +36,27 @@ type Props = {
   onSuccess?: () => void;
 };
 
+const getInitialPassword = (data: any) =>
+  data?.password ||
+  data?.plainPassword ||
+  data?.temporaryPassword ||
+  data?.generatedPassword ||
+  "";
+
+const getInitialAllRestaurantsAccess = (data: any) =>
+  Boolean(
+    data?.allRestaurants ||
+    data?.hasAllRestaurantsAccess ||
+    data?.restaurantAccess?.allRestaurants ||
+    data?.restaurantAccess?.hasAllRestaurantsAccess,
+  );
+
 export default function EmployeeInvitationModal({
   open,
   onOpenChange,
   initialData,
   onSuccess,
 }: Props) {
-  const common = useTranslations("common");
   const employeeSettings = useTranslations("employeeSettings");
   const validation = useTranslations("validation");
   const toasts = useTranslations("toasts");
@@ -48,7 +66,11 @@ export default function EmployeeInvitationModal({
   const updateMutation = useUpdateStaff();
 
   const { data: rolesData } = useGetStaffRoles();
-  const restaurantsQuery = useGetRestaurants({ page: 1, limit: 100, includeInactive: false });
+  const restaurantsQuery = useGetRestaurants({
+    page: 1,
+    limit: 100,
+    includeInactive: false,
+  });
 
   const [loading, setLoading] = useState(false);
 
@@ -68,13 +90,16 @@ export default function EmployeeInvitationModal({
     bio: "",
     restaurantIds: "",
     branchIds: "",
+    allRestaurants: false,
     isActive: true,
   });
   const [restaurantSelectValue, setRestaurantSelectValue] = useState("");
   const [branchSelectValue, setBranchSelectValue] = useState("");
   const selectedRestaurantIds = parseIdList(form.restaurantIds);
   const selectedBranchIds = parseIdList(form.branchIds);
-  const activeBranchRestaurantId = restaurantSelectValue || selectedRestaurantIds[0] || "";
+  const hasAllRestaurantsAccess = form.allRestaurants;
+  const activeBranchRestaurantId =
+    restaurantSelectValue || selectedRestaurantIds[0] || "";
   const branchesQuery = useGetRestaurantBranches(activeBranchRestaurantId);
   const branches = normalizeList(branchesQuery.data);
 
@@ -83,15 +108,21 @@ export default function EmployeeInvitationModal({
     if (initialData && open) {
       setForm({
         email: initialData.email || "",
-        password: initialData.password || "",
+        password: getInitialPassword(initialData),
         firstName: initialData.firstName || "",
         lastName: initialData.lastName || "",
         staffRoleId: initialData.staffRoleId || "",
         phone: initialData.phone || "",
         avatarUrl: initialData.avatarUrl || "",
         bio: initialData.bio || "",
-        restaurantIds: stringifyIdList(initialData.restaurantIds ?? initialData.restaurantAccess?.restaurantIds),
-        branchIds: stringifyIdList(initialData.branchIds ?? initialData.restaurantAccess?.branchIds),
+        restaurantIds: stringifyIdList(
+          initialData.restaurantIds ??
+            initialData.restaurantAccess?.restaurantIds,
+        ),
+        branchIds: stringifyIdList(
+          initialData.branchIds ?? initialData.restaurantAccess?.branchIds,
+        ),
+        allRestaurants: getInitialAllRestaurantsAccess(initialData),
         isActive: initialData.isActive ?? true,
       });
     }
@@ -111,6 +142,7 @@ export default function EmployeeInvitationModal({
         bio: "",
         restaurantIds: "",
         branchIds: "",
+        allRestaurants: false,
         isActive: true,
       });
       setRestaurantSelectValue("");
@@ -123,6 +155,19 @@ export default function EmployeeInvitationModal({
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  const handleAllRestaurantsChange = (checked: boolean) => {
+    setForm((prev) => ({
+      ...prev,
+      allRestaurants: checked,
+      restaurantIds: checked ? "" : prev.restaurantIds,
+      branchIds: checked ? "" : prev.branchIds,
+    }));
+    if (checked) {
+      setRestaurantSelectValue("");
+      setBranchSelectValue("");
+    }
+  };
+
   const addListValue = (current: string, value: string) => {
     const values = parseIdList(current);
     if (!value || values.includes(value)) return current;
@@ -130,7 +175,9 @@ export default function EmployeeInvitationModal({
   };
 
   const removeListValue = (current: string, value: string) =>
-    parseIdList(current).filter((item) => item !== value).join(", ");
+    parseIdList(current)
+      .filter((item) => item !== value)
+      .join(", ");
 
   const getRestaurantLabel = (id: string) => {
     const item = restaurants.find((restaurant) => restaurant.id === id);
@@ -151,66 +198,71 @@ export default function EmployeeInvitationModal({
   };
 
   /* ---------- Submit ---------- */
-const handleSubmit = async () => {
-  try {
-    setLoading(true);
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
 
-    /**
-     * ✅ Prepare payload (FIXED)
-     */
-    const payload = {
-      ...form,
-      restaurantIds: parseIdList(form.restaurantIds),
-      branchIds: parseIdList(form.branchIds),
-      ...(isEdit ? {password: form.password} : { password: form.password }),
-    };
+      /**
+       * ✅ Prepare payload (FIXED)
+       */
+      const restaurantIds = hasAllRestaurantsAccess
+        ? []
+        : parseIdList(form.restaurantIds);
+      const branchIds = hasAllRestaurantsAccess
+        ? []
+        : parseIdList(form.branchIds);
 
-    /**
-     * ✅ Zod validation (IMPROVED)
-     */
-    const parsed = createStaffSchema(validation).safeParse(payload);
+      const payload = {
+        ...form,
+        allRestaurants: hasAllRestaurantsAccess,
+        hasAllRestaurantsAccess,
+        restaurantIds,
+        branchIds,
+        password: form.password,
+      };
 
-    if (!parsed.success) {
-      const errors = parsed.error.errors;
+      /**
+       * ✅ Zod validation (IMPROVED)
+       */
+      const parsed = createStaffSchema(validation).safeParse(payload);
 
-      // 🔍 Debug full error in console
-      console.log("Zod Errors:", errors);
+      if (!parsed.success) {
+        const errors = parsed.error.errors;
 
-      // ✅ Show all errors in one toast
-      const message = errors
-        .map((e) => `${e.path.join(".")} - ${e.message}`)
-        .join("\n");
+        // 🔍 Debug full error in console
+        console.log("Zod Errors:", errors);
 
-      toast.error(message);
-      return;
+        // ✅ Show all errors in one toast
+        const message = errors
+          .map((e) => `${e.path.join(".")} - ${e.message}`)
+          .join("\n");
+
+        toast.error(message);
+        return;
+      }
+
+      /**
+       * ✅ API Call
+       */
+      if (isEdit) {
+        await updateMutation.mutateAsync({
+          id: initialData.id,
+          data: payload,
+        });
+      } else {
+        await createMutation.mutateAsync(payload);
+      }
+
+      onSuccess?.();
+      onOpenChange(false);
+    } catch (err: any) {
+      console.error("API Error:", err);
+
+      toast.error(err?.response?.data?.message || toasts("somethingWentWrong"));
+    } finally {
+      setLoading(false);
     }
-
-    /**
-     * ✅ API Call
-     */
-    if (isEdit) {
-      await updateMutation.mutateAsync({
-        id: initialData.id,
-        data: payload,
-      });
-    } else {
-      await createMutation.mutateAsync(payload);
-    }
-
-  
-
-    onSuccess?.();
-    onOpenChange(false);
-  } catch (err: any) {
-    console.error("API Error:", err);
-
-    toast.error(
-      err?.response?.data?.message || toasts("somethingWentWrong")
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+  };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[460px] rounded-[20px] p-6 max-h-[100vh] overflow-auto">
@@ -256,22 +308,22 @@ const handleSubmit = async () => {
               onChange={(v) => handleChange("phone", v)}
             />
             {/* {!isEdit && ( */}
-              <FormField
-                label={employeeSettings("passwordRequired")}
-                value={form.password}
-                onChange={(v) => handleChange("password", v)}
-              />
+            <FormField
+              label={employeeSettings("passwordRequired")}
+              value={form.password}
+              onChange={(v) => handleChange("password", v)}
+            />
             {/* )} */}
           </div>
 
           {/* Role Dropdown */}
           <div>
-            <label className="text-sm font-medium">{employeeSettings("roleRequired")}</label>
+            <label className="text-sm font-medium">
+              {employeeSettings("roleRequired")}
+            </label>
             <select
               value={form.staffRoleId}
-              onChange={(e) =>
-                handleChange("staffRoleId", e.target.value)
-              }
+              onChange={(e) => handleChange("staffRoleId", e.target.value)}
               className="mt-1 h-[44px] w-full rounded-lg border border-gray-400 px-3 text-sm focus-visible:outline-none 
 focus-visible:ring-2 
 focus-visible:ring-red-500 
@@ -289,7 +341,9 @@ transition-all duration-200"
 
           {/* Avatar Upload */}
           <div>
-            <label className="text-sm font-medium">{employeeSettings("avatar")}</label>
+            <label className="text-sm font-medium">
+              {employeeSettings("avatar")}
+            </label>
             <PremiumImageDropzone
               alt={employeeSettings("avatar")}
               emptyHint={employeeSettings("avatar")}
@@ -311,40 +365,77 @@ transition-all duration-200"
             onChange={(v) => handleChange("bio", v)}
           />
 
+          <div className="flex items-start gap-3 rounded-lg border border-gray-200 p-3">
+            <Checkbox
+              id="all-restaurants-access"
+              checked={hasAllRestaurantsAccess}
+              onCheckedChange={(checked) =>
+                handleAllRestaurantsChange(checked === true)
+              }
+              className="mt-0.5 h-5 w-5 data-[state=checked]:border-primary data-[state=checked]:bg-primary"
+            />
+            <label
+              htmlFor="all-restaurants-access"
+              className="cursor-pointer text-sm font-medium text-gray-700"
+            >
+              {employeeSettings("assignAllRestaurants")}
+            </label>
+          </div>
+
           <AccessPicker
             label={employeeSettings("restaurantIds")}
             placeholder={employeeSettings("selectRestaurant")}
             value={restaurantSelectValue}
-            options={restaurants.filter((restaurant) => !selectedRestaurantIds.includes(restaurant.id))}
+            options={restaurants.filter(
+              (restaurant) => !selectedRestaurantIds.includes(restaurant.id),
+            )}
             getLabel={(item) => item.name || item.restaurantName || item.id}
             onChange={setRestaurantSelectValue}
             onAdd={() => {
-              handleChange("restaurantIds", addListValue(form.restaurantIds, restaurantSelectValue));
+              handleChange(
+                "restaurantIds",
+                addListValue(form.restaurantIds, restaurantSelectValue),
+              );
               setRestaurantSelectValue("");
             }}
             selected={selectedRestaurantIds}
             getSelectedLabel={getRestaurantLabel}
             onRemove={(id) => {
-              handleChange("restaurantIds", removeListValue(form.restaurantIds, id));
+              handleChange(
+                "restaurantIds",
+                removeListValue(form.restaurantIds, id),
+              );
               if (restaurantSelectValue === id) setRestaurantSelectValue("");
             }}
+            disabled={hasAllRestaurantsAccess}
           />
 
           <AccessPicker
             label={employeeSettings("branchIds")}
-            placeholder={activeBranchRestaurantId ? employeeSettings("selectBranch") : employeeSettings("selectRestaurantFirst")}
+            placeholder={
+              activeBranchRestaurantId
+                ? employeeSettings("selectBranch")
+                : employeeSettings("selectRestaurantFirst")
+            }
             value={branchSelectValue}
-            options={branches.filter((branch) => !selectedBranchIds.includes(branch.id))}
+            options={branches.filter(
+              (branch) => !selectedBranchIds.includes(branch.id),
+            )}
             getLabel={(item) => item.name || item.branchName || item.id}
             onChange={setBranchSelectValue}
             onAdd={() => {
-              handleChange("branchIds", addListValue(form.branchIds, branchSelectValue));
+              handleChange(
+                "branchIds",
+                addListValue(form.branchIds, branchSelectValue),
+              );
               setBranchSelectValue("");
             }}
             selected={selectedBranchIds}
             getSelectedLabel={getBranchLabel}
-            onRemove={(id) => handleChange("branchIds", removeListValue(form.branchIds, id))}
-            disabled={!activeBranchRestaurantId}
+            onRemove={(id) =>
+              handleChange("branchIds", removeListValue(form.branchIds, id))
+            }
+            disabled={hasAllRestaurantsAccess || !activeBranchRestaurantId}
           />
         </div>
 
@@ -359,8 +450,8 @@ transition-all duration-200"
               ? employeeSettings("updating")
               : employeeSettings("sending")
             : isEdit
-            ? employeeSettings("updateEmployee")
-            : employeeSettings("sendInvitation")}
+              ? employeeSettings("updateEmployee")
+              : employeeSettings("sendInvitation")}
         </Button>
       </DialogContent>
     </Dialog>
@@ -406,13 +497,17 @@ const normalizeList = (response: unknown): SelectableAccessOption[] => {
   if (!response || typeof response !== "object") return [];
 
   const record = response as { data?: unknown; items?: unknown };
-  if (Array.isArray(record.data)) return record.data as SelectableAccessOption[];
-  if (Array.isArray(record.items)) return record.items as SelectableAccessOption[];
+  if (Array.isArray(record.data))
+    return record.data as SelectableAccessOption[];
+  if (Array.isArray(record.items))
+    return record.items as SelectableAccessOption[];
 
   if (record.data && typeof record.data === "object") {
     const dataRecord = record.data as { data?: unknown; items?: unknown };
-    if (Array.isArray(dataRecord.data)) return dataRecord.data as SelectableAccessOption[];
-    if (Array.isArray(dataRecord.items)) return dataRecord.items as SelectableAccessOption[];
+    if (Array.isArray(dataRecord.data))
+      return dataRecord.data as SelectableAccessOption[];
+    if (Array.isArray(dataRecord.items))
+      return dataRecord.items as SelectableAccessOption[];
   }
 
   return [];
@@ -460,16 +555,28 @@ function AccessPicker({
             </option>
           ))}
         </select>
-        <Button type="button" variant="outline" onClick={onAdd} disabled={!value || disabled}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onAdd}
+          disabled={!value || disabled}
+        >
           Add
         </Button>
       </div>
       {selected.length > 0 ? (
         <div className="mt-2 flex flex-wrap gap-2">
           {selected.map((id) => (
-            <span key={id} className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+            <span
+              key={id}
+              className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
+            >
               {getSelectedLabel(id)}
-              <button type="button" onClick={() => onRemove(id)} className="text-primary/70 hover:text-primary">
+              <button
+                type="button"
+                onClick={() => onRemove(id)}
+                className="text-primary/70 hover:text-primary"
+              >
                 ×
               </button>
             </span>

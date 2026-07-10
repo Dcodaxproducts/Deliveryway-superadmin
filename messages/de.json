@@ -555,7 +555,8 @@
     "branchIds": "Filial-IDs",
     "selectRestaurant": "Restaurant auswählen",
     "selectBranch": "Filiale auswählen",
-    "selectRestaurantFirst": "Zuerst Restaurant auswählen"
+    "selectRestaurantFirst": "Zuerst Restaurant auswählen",
+    "assignAllRestaurants": "Allen Restaurants zuweisen"
   },
   "rbac": {
     "rolesList": "Rollenliste",
