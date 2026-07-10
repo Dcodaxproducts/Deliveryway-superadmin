@@ -7,7 +7,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ChevronRight, LogOut } from "lucide-react";
 import { menuItems, type SidebarMenuItem } from "@/constants/sidebarItems";
-import { canStaffAccessMenu, isStaffUser, type AuthUserLike } from "@/lib/staff-access";
+import { type AuthUserLike } from "@/lib/staff-access";
+import { filterSidebarItemsForUser } from "@/lib/sidebar-permissions";
 import { Button } from "@/components/ui/button";
 import Logo from "../logo";
 
@@ -159,11 +160,7 @@ export default function Sidebar({ onLinkClick }: SidebarProps) {
     }
   }, []);
 
-  const visibleMenuItems = menuItems.filter((item) => {
-    if (!isStaffUser(authUser)) return true;
-    const isMenuItem = item.href?.startsWith("/menu") || item.href?.startsWith("/products");
-    return !isMenuItem || canStaffAccessMenu(authUser, "read");
-  });
+  const visibleMenuItems = filterSidebarItemsForUser(menuItems, authUser);
 
   const handleLogout = () => {
     localStorage.removeItem("token");

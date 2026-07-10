@@ -1,3 +1,8 @@
+import {
+  canonicalizePermissionAccess,
+  operationMatches,
+} from "@/lib/permission-modules";
+
 export type StaffPermission = {
   access?: string | null;
   operations?: string[] | null;
@@ -6,40 +11,29 @@ export type StaffPermission = {
 export type StaffRestaurantAccess = {
   restaurantIds?: string[] | null;
   branchIds?: string[] | null;
+  allRestaurants?: boolean | null;
+  hasAllRestaurantsAccess?: boolean | null;
 };
 
 export type AuthUserLike = {
   actorType?: string | null;
   role?: string | null;
+  permissions?: StaffPermission[] | null;
   restaurantIds?: string[] | null;
   branchIds?: string[] | null;
+  allRestaurants?: boolean | null;
+  hasAllRestaurantsAccess?: boolean | null;
   restaurantAccess?: StaffRestaurantAccess | null;
   user?: AuthUserLike | null;
   staffRole?: {
     permissions?: StaffPermission[] | null;
     restaurantIds?: string[] | null;
     branchIds?: string[] | null;
+    allRestaurants?: boolean | null;
+    hasAllRestaurantsAccess?: boolean | null;
     restaurantAccess?: StaffRestaurantAccess | null;
   } | null;
 };
-
-export const MENU_PERMISSION_ACCESSES = new Set([
-  "menu",
-  "menus",
-  "menu-management",
-  "restaurant-menus",
-  "menu-categories",
-  "menu-items",
-  "modifiers",
-  "modifier-categories",
-  "modifier-groups",
-  "variations",
-  "branch-overrides",
-  "cuisines",
-]);
-
-export const MENU_READ_OPERATIONS = new Set(["read", "write", "create", "update", "manage", "*"]);
-export const MENU_WRITE_OPERATIONS = new Set(["write", "create", "update", "delete", "manage", "*"]);
 
 const normalize = (value?: string | null) => String(value || "").trim().toLowerCase();
 
@@ -58,26 +52,52 @@ export const getStaffRestaurantAccess = (user?: AuthUserLike | null): StaffResta
   return {
     restaurantIds: authUser?.restaurantIds ?? directAccess.restaurantIds ?? authUser?.staffRole?.restaurantIds ?? roleAccess.restaurantIds ?? [],
     branchIds: authUser?.branchIds ?? directAccess.branchIds ?? authUser?.staffRole?.branchIds ?? roleAccess.branchIds ?? [],
+    allRestaurants:
+      authUser?.allRestaurants
+      ?? authUser?.hasAllRestaurantsAccess
+      ?? directAccess.allRestaurants
+      ?? directAccess.hasAllRestaurantsAccess
+      ?? authUser?.staffRole?.allRestaurants
+      ?? authUser?.staffRole?.hasAllRestaurantsAccess
+      ?? roleAccess.allRestaurants
+      ?? roleAccess.hasAllRestaurantsAccess
+      ?? false,
   };
 };
 
 export const hasAssignedRestaurantOrBranch = (user?: AuthUserLike | null) => {
   const access = getStaffRestaurantAccess(user);
-  return Boolean(access.restaurantIds?.length || access.branchIds?.length);
+  return Boolean(access.allRestaurants || access.restaurantIds?.length || access.branchIds?.length);
 };
 
-export const hasMenuPermission = (user?: AuthUserLike | null, mode: "read" | "write" = "read") => {
+const getStaffPermissions = (user?: AuthUserLike | null) => {
   const authUser = unwrapUser(user);
-  const allowedOperations = mode === "write" ? MENU_WRITE_OPERATIONS : MENU_READ_OPERATIONS;
-  const permissions = authUser?.staffRole?.permissions ?? [];
+  return authUser?.staffRole?.permissions ?? authUser?.permissions ?? [];
+};
+
+export const hasStaffPermission = (
+  user?: AuthUserLike | null,
+  accessKeys?: string | string[] | null,
+  operation = "read",
+) => {
+  if (!isStaffUser(user)) return true;
+  if (!accessKeys) return true;
+
+  const requiredAccesses = (Array.isArray(accessKeys) ? accessKeys : [accessKeys])
+    .map(canonicalizePermissionAccess);
+  const permissions = getStaffPermissions(user);
 
   return permissions.some((permission) => {
-    const access = normalize(permission.access);
+    const access = canonicalizePermissionAccess(permission.access);
     const operations = permission.operations ?? [];
 
-    return MENU_PERMISSION_ACCESSES.has(access) && operations.some((operation) => allowedOperations.has(normalize(operation)));
+    return requiredAccesses.includes(access)
+      && operations.some((grantedOperation) => operationMatches(grantedOperation, operation));
   });
 };
+
+export const hasMenuPermission = (user?: AuthUserLike | null, mode: "read" | "write" = "read") =>
+  hasStaffPermission(user, "menu-management", mode === "write" ? "update" : "read");
 
 export const canStaffAccessMenu = (user?: AuthUserLike | null, mode: "read" | "write" = "read") => {
   if (!isStaffUser(user)) return true;

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { canStaffAccessMenu, isStaffUser } from '@/lib/staff-access'
+import { isStaffUser } from '@/lib/staff-access'
+import { canAccessPath, getFirstAccessiblePath } from '@/lib/sidebar-permissions'
 
 const publicRoutes = new Set(['/auth/login'])
 
@@ -23,14 +24,18 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
   const [loading, setLoading] = useState(true)
+  const [accessDenied, setAccessDenied] = useState(false)
 
   useEffect(() => {
     const token = getStoredToken()
     const isPublicRoute = publicRoutes.has(pathname)
 
+    setAccessDenied(false)
+
     if (isPublicRoute) {
       if (token) {
-        router.replace('/')
+        const user = getStoredUser()
+        router.replace(isStaffUser(user) ? getFirstAccessiblePath(user) ?? '/' : '/')
         return
       }
 
@@ -45,8 +50,15 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     }
 
     const user = getStoredUser()
-    if (isStaffUser(user) && (pathname.startsWith('/menu') || pathname.startsWith('/products')) && !canStaffAccessMenu(user, 'read')) {
-      router.replace('/')
+    if (isStaffUser(user) && !canAccessPath(user, pathname)) {
+      const firstAccessiblePath = getFirstAccessiblePath(user)
+
+      if (firstAccessiblePath && firstAccessiblePath !== pathname) {
+        router.replace(firstAccessiblePath)
+        return
+      }
+
+      setAccessDenied(true)
       setLoading(false)
       return
     }
@@ -58,6 +70,17 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-red-200 border-t-primary rounded-full animate-spin"></div>
+      </div>
+    )
+  }
+
+  if (accessDenied) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6 text-center">
+        <div>
+          <h1 className="text-2xl font-semibold text-dark">Access denied</h1>
+          <p className="mt-2 text-gray">Your staff role does not include permission for this page.</p>
+        </div>
       </div>
     )
   }

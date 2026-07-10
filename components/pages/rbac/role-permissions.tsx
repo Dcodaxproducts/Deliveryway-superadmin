@@ -9,13 +9,12 @@ import { useTranslations } from "next-intl";
 import { usePermissionModules, useStaffRole, useUpdateStaffRole } from "@/hooks/useRbac";
 import { useParams, useSearchParams } from "next/navigation";
 import {
+  canonicalizePermissionAccess,
   formatActionLabel,
   sanitizePermissions,
   sortPermissionModules,
   type StaffPermission,
 } from "@/lib/permission-modules";
-
-const normalizePermission = (value?: string) => String(value || "").trim().toLowerCase();
 
 function RolePermissionsContent() {
   const rbac = useTranslations("rbac");
@@ -34,7 +33,7 @@ function RolePermissionsContent() {
       const rolePermissions = permissionModules.map((module) => {
         const rolePermission = role.permissions.find(
           (permission: { access?: string; operations?: string[] }) =>
-            normalizePermission(permission.access) === normalizePermission(module.accessKey),
+            canonicalizePermissionAccess(permission.access) === canonicalizePermissionAccess(module.accessKey),
         );
 
         return {
