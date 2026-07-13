@@ -958,7 +958,7 @@
   },
   "invoicing": {
     "dashboardTitle": "Invoicing Dashboard",
-    "dashboardDescription": "Manage generated order invoices, payments, and finance records in one place.",
+    "dashboardDescription": "Manage business owner subscription invoices and weekly restaurant payout invoices in one place.",
     "generateInvoice": "Generate Invoice",
     "orderInvoices": "Order Invoices",
     "orderInvoicesDescription": "Restaurant order invoices and customer payment records.",

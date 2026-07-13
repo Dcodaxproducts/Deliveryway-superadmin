@@ -958,7 +958,7 @@
   },
   "invoicing": {
     "dashboardTitle": "Rechnungs-Dashboard",
-    "dashboardDescription": "Verwalte erstellte Bestellrechnungen, Zahlungen und Finanzdaten an einem Ort.",
+    "dashboardDescription": "Verwalte Abonnementrechnungen von Geschäftsinhabern und wöchentliche Restaurant-Auszahlungsrechnungen an einem Ort.",
     "generateInvoice": "Rechnung erstellen",
     "orderInvoices": "Bestellrechnungen",
     "orderInvoicesDescription": "Restaurant-Bestellrechnungen und Kundenzahlungen.",
