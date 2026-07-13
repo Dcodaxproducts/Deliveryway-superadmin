@@ -18,7 +18,6 @@ import {
   Calculator,
   FileText,
   Building2,
-  Repeat,
   Utensils,
 } from "lucide-react";
 import { PiUsersThree } from "react-icons/pi";
@@ -76,11 +75,6 @@ export const menuItems: SidebarMenuItem[] = [
       //   icon: Building2,
       //   href: "/pricing-model/restaurant-billing",
       // },
-      {
-        titleKey: "navigation.subscriptions",
-        icon: Repeat,
-        href: "/pricing-model/subscriptions",
-      },
     ],
   },
 
