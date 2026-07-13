@@ -100,6 +100,8 @@ const serviceChargeSchema = z
  */
 
 export const createRegisterTenantSchema = (t: TranslationFunction) => z.object({
+  packagePlanId: z.string().min(1, t("packagePlanRequired")),
+
   user: z.object({
     email: z.string().email(t("invalidEmail")),
     password: z.string().min(8, t("passwordMin")),
@@ -164,6 +166,8 @@ export const createRegisterTenantSchema = (t: TranslationFunction) => z.object({
       .optional(),
 
     street: optionalString.optional(),
+    shopNumber: optionalString.optional(),
+    postalCode: optionalString.optional(),
     area: optionalString.optional(),
     city: optionalString.optional(),
     state: optionalString.optional(),

@@ -36,6 +36,8 @@ import {
   createUpdateTenantSchema,
 } from "@/validations/tenants";
 import { useRegisterTenant, useUpdateTenant } from "@/hooks/useTenants";
+import { useGetPackagePlans } from "@/hooks/usePackagePlans";
+import type { PackagePlan } from "@/services/packagePlans";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { useRouter } from "next/navigation";
 import { PremiumImageDropzone } from "@/components/forms/PremiumImageDropzone";
@@ -135,6 +137,28 @@ const normalizePlainObject = (value: any) => {
 
 const normalizeArray = (value: any) => {
   return Array.isArray(value) ? value : [];
+};
+
+type ListResponse<T> = {
+  data?: T[] | { data?: T[]; items?: T[] };
+  items?: T[];
+};
+
+const normalizeListResponse = <T,>(response: unknown): T[] => {
+  if (Array.isArray(response)) return response as T[];
+  if (!response || typeof response !== "object") return [];
+
+  const record = response as ListResponse<T>;
+
+  if (Array.isArray(record.data)) return record.data;
+  if (Array.isArray(record.items)) return record.items;
+
+  if (record.data && typeof record.data === "object") {
+    if (Array.isArray(record.data.data)) return record.data.data;
+    if (Array.isArray(record.data.items)) return record.data.items;
+  }
+
+  return [];
 };
 
 const normalizeDeliveryMode = (mode: any): DeliveryMode => {
@@ -341,6 +365,12 @@ export default function BusinessOwnerForm({
   const { uploadFile, uploading, progress } = useFileUpload();
   const createMutation = useRegisterTenant();
   const updateMutation = useUpdateTenant();
+  const packagePlansQuery = useGetPackagePlans({
+    includeInactive: false,
+    limit: 100,
+    sortBy: "name",
+    sortOrder: "ASC",
+  });
 
   const isEdit = mode === "edit" && Boolean(tenantId);
   const isPending = isEdit ? updateMutation.isPending : createMutation.isPending;
@@ -360,6 +390,7 @@ export default function BusinessOwnerForm({
   } = useForm<any>({
     resolver: zodResolver(isEdit ? updateTenantSchema : registerTenantSchema),
     defaultValues: {
+      packagePlanId: "",
       user: {
         email: "",
         password: "",
@@ -420,6 +451,8 @@ export default function BusinessOwnerForm({
         description: "",
         settings: DEFAULT_BRANCH_SETTINGS,
         street: "",
+        shopNumber: "",
+        postalCode: "",
         area: "",
         city: "",
         state: "",
@@ -454,6 +487,11 @@ export default function BusinessOwnerForm({
   const postalCodeRules = normalizeArray(
     watch("branch.settings.deliveryConfig.postalCodeRules")
   );
+  const packagePlans = useMemo(() => {
+    return normalizeListResponse<PackagePlan>(packagePlansQuery.data).filter(
+      (plan) => plan.id && plan.isActive !== false
+    );
+  }, [packagePlansQuery.data]);
   const uploadLabels = {
     preview: businessOwners("preview"),
     imageSelected: businessOwners("imageSelected"),
@@ -537,7 +575,15 @@ export default function BusinessOwnerForm({
   };
 
   const composeBranchAddress = (source: any) => {
-    return [source?.street, source?.area, source?.city, source?.state, source?.country]
+    return [
+      source?.shopNumber,
+      source?.street,
+      source?.area,
+      source?.postalCode,
+      source?.city,
+      source?.state,
+      source?.country,
+    ]
       .filter(Boolean)
       .join(", ");
   };
@@ -604,8 +650,12 @@ export default function BusinessOwnerForm({
     }
 
     const streetNumber = getAddressComponent(components, ["street_number"]);
+    const shopNumber =
+      getAddressComponent(components, ["subpremise"]) ||
+      getAddressComponent(components, ["premise"]) ||
+      streetNumber;
     const route = getAddressComponent(components, ["route"]);
-    const street = [streetNumber, route].filter(Boolean).join(" ").trim() || place?.name || "";
+    const street = route.trim() || place?.name || "";
 
     const area =
       getAddressComponent(components, [
@@ -628,8 +678,11 @@ export default function BusinessOwnerForm({
       "";
 
     const country = getAddressComponent(components, ["country"]) || watch("branch.country") || "";
+    const postalCode = getAddressComponent(components, ["postal_code"]);
 
     if (street) setValue("branch.street", street, { shouldValidate: true });
+    if (shopNumber) setValue("branch.shopNumber", shopNumber, { shouldValidate: true });
+    if (postalCode) setValue("branch.postalCode", postalCode, { shouldValidate: true });
     if (area) setValue("branch.area", area, { shouldValidate: true });
     if (city) setValue("branch.city", city, { shouldValidate: true });
     if (state) setValue("branch.state", state, { shouldValidate: true });
@@ -642,7 +695,7 @@ export default function BusinessOwnerForm({
 
     const formattedAddress =
       place?.formatted_address ||
-      composeBranchAddress({ street, area, city, state, country }) ||
+      composeBranchAddress({ shopNumber, street, area, postalCode, city, state, country }) ||
       "";
 
     setAddressQuery(formattedAddress);
@@ -1095,6 +1148,8 @@ export default function BusinessOwnerForm({
           },
         },
         street: initialData.branch?.street || "",
+        shopNumber: initialData.branch?.shopNumber || "",
+        postalCode: initialData.branch?.postalCode || "",
         area: initialData.branch?.area || "",
         city: initialData.branch?.city || "",
         state: initialData.branch?.state || "",
@@ -1136,8 +1191,10 @@ export default function BusinessOwnerForm({
 
   useEffect(() => {
     const composed = composeBranchAddress({
+      shopNumber: watch("branch.shopNumber"),
       street: watch("branch.street"),
       area: watch("branch.area"),
+      postalCode: watch("branch.postalCode"),
       city: watch("branch.city"),
       state: watch("branch.state"),
       country: watch("branch.country"),
@@ -1533,8 +1590,12 @@ export default function BusinessOwnerForm({
       const branchSettingsPayload = buildBranchSettingsPayload(
         values.branch?.settings || {}
       );
+      const branchStreet = String(values.branch.street || "").trim();
+      const branchShopNumber = String(values.branch.shopNumber || "").trim();
+      const branchPostalCode = String(values.branch.postalCode || "").trim();
 
       const payload = {
+        packagePlanId: values.packagePlanId,
         user: {
           email: values.user.email,
           password: values.user.password,
@@ -1576,7 +1637,9 @@ export default function BusinessOwnerForm({
           coverImage: values.branch.coverImage || "",
           description: values.branch.description || "",
           settings: branchSettingsPayload,
-          street: values.branch.street || "",
+          street: branchStreet,
+          shopNumber: branchShopNumber,
+          postalCode: branchPostalCode,
           area: values.branch.area || "",
           city: values.branch.city || "",
           state: values.branch.state || "",
@@ -1613,6 +1676,43 @@ export default function BusinessOwnerForm({
       onSubmit={handleSubmit(onSubmit, (formErrors) => console.log(formErrors))}
       className="space-y-[48px] rounded-[14px] bg-white p-[30px]"
     >
+      {!isEdit && (
+        <FormSection label={businessOwners("packagePlan")}>
+          <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
+            <div className="w-full space-y-[8px]">
+              <Label>{`${businessOwners("packagePlan")} *`}</Label>
+              <select
+                className={`h-[52px] w-full rounded-md border border-[#BBBBBB] px-3 text-sm focus:border-primary focus:outline-none ${
+                  readError(errors, "packagePlanId") ? "border-red-500" : ""
+                }`}
+                disabled={packagePlansQuery.isLoading || packagePlansQuery.isFetching}
+                {...register("packagePlanId")}
+              >
+                <option value="">
+                  {packagePlansQuery.isLoading || packagePlansQuery.isFetching
+                    ? businessOwners("loadingPackagePlans")
+                    : businessOwners("selectPackagePlan")}
+                </option>
+                {packagePlans.map((plan) => (
+                  <option key={plan.id} value={plan.id}>
+                    {plan.name}
+                    {plan.billingModel ? ` - ${plan.billingModel}` : ""}
+                    {plan.planPrice !== undefined && plan.planPrice !== null
+                      ? ` (${plan.currency || "PKR"} ${plan.planPrice})`
+                      : ""}
+                  </option>
+                ))}
+              </select>
+              {readError(errors, "packagePlanId") ? (
+                <p className="mt-1 text-sm text-red-500">
+                  {readError(errors, "packagePlanId")}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </FormSection>
+      )}
+
       {!isEdit && (
         <FormSection label={businessOwners("ownerAccount")}>
           <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
@@ -2104,6 +2204,21 @@ export default function BusinessOwnerForm({
                 placeholder={businessOwners("streetAddress")}
                 error={readError(errors, "branch.street")}
                 {...register("branch.street")}
+              />
+              <FormGroup
+                label={businessOwners("shopNumber")}
+                placeholder={businessOwners("shopNumber")}
+                error={readError(errors, "branch.shopNumber")}
+                {...register("branch.shopNumber")}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
+              <FormGroup
+                label={businessOwners("postalCode")}
+                placeholder={businessOwners("postalCode")}
+                error={readError(errors, "branch.postalCode")}
+                {...register("branch.postalCode")}
               />
               <FormGroup
                 label={businessOwners("area")}

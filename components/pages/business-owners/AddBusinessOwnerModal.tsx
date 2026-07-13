@@ -21,7 +21,9 @@ import {
   useRegisterTenant,
   useUpdateTenant,
 } from "@/hooks/useTenants";
+import { useGetPackagePlans } from "@/hooks/usePackagePlans";
 import { useFileUpload } from "@/hooks/useFileUpload";
+import type { PackagePlan } from "@/services/packagePlans";
 
 type Props = {
   open: boolean;
@@ -57,6 +59,7 @@ type BusinessOwnerModalData = {
 };
 
 type FormValues = {
+  packagePlanId: string;
   email: string;
   password: string;
   firstName: string;
@@ -74,6 +77,28 @@ type UploadTarget = "avatar" | "tenantLogo" | null;
 
 type ApiErrorResponse = {
   message?: string;
+};
+
+type ListResponse<T> = {
+  data?: T[] | { data?: T[]; items?: T[] };
+  items?: T[];
+};
+
+const normalizeListResponse = <T,>(response: unknown): T[] => {
+  if (Array.isArray(response)) return response as T[];
+  if (!response || typeof response !== "object") return [];
+
+  const record = response as ListResponse<T>;
+
+  if (Array.isArray(record.data)) return record.data;
+  if (Array.isArray(record.items)) return record.items;
+
+  if (record.data && typeof record.data === "object") {
+    if (Array.isArray(record.data.data)) return record.data.data;
+    if (Array.isArray(record.data.items)) return record.data.items;
+  }
+
+  return [];
 };
 
 const getErrorMessage = (error: unknown) => {
@@ -107,6 +132,12 @@ export function AddBusinessOwnerModal({
 
   const createMutation = useRegisterTenant();
   const updateMutation = useUpdateTenant();
+  const packagePlansQuery = useGetPackagePlans({
+    includeInactive: false,
+    limit: 100,
+    sortBy: "name",
+    sortOrder: "ASC",
+  });
 
   const [loading, setLoading] = useState(false);
   const [uploadingTarget, setUploadingTarget] = useState<UploadTarget>(null);
@@ -114,6 +145,7 @@ export function AddBusinessOwnerModal({
   const isEdit = !!initialData;
 
   const [form, setForm] = useState({
+    packagePlanId: "",
     email: "",
     password: "",
     firstName: "",
@@ -129,10 +161,15 @@ export function AddBusinessOwnerModal({
     isActive: true,
   });
 
+  const packagePlans = normalizeListResponse<PackagePlan>(
+    packagePlansQuery.data
+  ).filter((plan) => plan.id && plan.isActive !== false);
+
   /* ---------- Prefill ---------- */
   useEffect(() => {
     if (initialData && open) {
       setForm({
+        packagePlanId: "",
         email: initialData.user?.email || initialData.email || "",
         password: "",
         firstName: initialData.user?.firstName || initialData.firstName || "",
@@ -154,6 +191,7 @@ export function AddBusinessOwnerModal({
   useEffect(() => {
     if (!open) {
       setForm({
+        packagePlanId: "",
         email: "",
         password: "",
         firstName: "",
@@ -238,6 +276,7 @@ export function AddBusinessOwnerModal({
         });
       } else {
         const payload = {
+          packagePlanId: form.packagePlanId,
           user: {
             email: form.email,
             password: form.password,
@@ -302,6 +341,8 @@ export function AddBusinessOwnerModal({
               },
             },
             street: "",
+            shopNumber: "",
+            postalCode: "",
             area: "",
             city: "",
             state: "",
@@ -350,6 +391,35 @@ export function AddBusinessOwnerModal({
         </DialogHeader>
 
         <div className="mt-6 space-y-4">
+          {!isEdit && (
+            <div className="space-y-1">
+              <label className="text-sm font-medium">
+                {`${businessOwners("packagePlan")} *`}
+              </label>
+              <select
+                className="h-[44px] w-full rounded-md border px-3 text-sm focus:border-primary focus:outline-none"
+                disabled={packagePlansQuery.isLoading || packagePlansQuery.isFetching}
+                value={form.packagePlanId}
+                onChange={(event) => handleChange("packagePlanId", event.target.value)}
+              >
+                <option value="">
+                  {packagePlansQuery.isLoading || packagePlansQuery.isFetching
+                    ? businessOwners("loadingPackagePlans")
+                    : businessOwners("selectPackagePlan")}
+                </option>
+                {packagePlans.map((plan) => (
+                  <option key={plan.id} value={plan.id}>
+                    {plan.name}
+                    {plan.billingModel ? ` - ${plan.billingModel}` : ""}
+                    {plan.planPrice !== undefined && plan.planPrice !== null
+                      ? ` (${plan.currency || "PKR"} ${plan.planPrice})`
+                      : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <FormField
             label={`${auth("email")} *`}
             value={form.email}
