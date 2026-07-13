@@ -67,11 +67,20 @@ export const getTenants = async (
     data: data.data.map(normalizeBusinessOwnerRow),
   };
 };
+export type RegisterTenantResponse = {
+  success?: boolean;
+  message?: string;
+  data?: Record<string, any>;
+  subscription?: Record<string, any> | null;
+};
+
 /**
- * POST /auth/register-tenant
+ * POST /auth/admin/register-tenant
  */
-export const registerTenant = async (payload: RegisterTenantValues) => {
-  const { data } = await api.post("/auth/register-tenant", payload);
+export const registerTenant = async (
+  payload: RegisterTenantValues
+): Promise<RegisterTenantResponse> => {
+  const { data } = await api.post("/auth/admin/register-tenant", payload);
   return data;
 };
 

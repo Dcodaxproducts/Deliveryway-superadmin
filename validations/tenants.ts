@@ -111,13 +111,6 @@ export const createRegisterTenantSchema = (t: TranslationFunction) => z.object({
     bio: z.string().max(500, t("bioMax")).optional(),
   }),
 
-  branchAdmin: z.object({
-    email: z.string().email(t("branchAdminEmailInvalid")),
-    password: z.string().min(8, t("branchAdminPasswordMin")),
-    firstName: z.string().min(1, t("branchAdminFirstNameRequired")),
-    lastName: z.string().min(1, t("branchAdminLastNameRequired")),
-    phone: optionalString.optional(),
-  }),
 
   tenant: z.object({
     name: z.string().min(2, t("tenantNameRequired")),

@@ -275,48 +275,46 @@ export function AddBusinessOwnerModal({
           data: payload,
         });
       } else {
+        const tenantName = form.tenantName.trim();
+        const tenantSlug = form.tenantSlug.trim();
+        const tenantLogoUrl = form.tenantLogoUrl.trim();
+        const tenantBio = form.tenantBio.trim();
+
         const payload = {
-          packagePlanId: form.packagePlanId,
+          packagePlanId: form.packagePlanId.trim(),
           user: {
-            email: form.email,
+            email: form.email.trim(),
             password: form.password,
-            firstName: form.firstName,
-            lastName: form.lastName,
-            avatarUrl: form.avatarUrl,
-            bio: form.bio,
-          },
-          branchAdmin: {
-            email: form.email,
-            password: form.password,
-            firstName: form.firstName,
-            lastName: form.lastName,
-            phone: "",
+            firstName: form.firstName.trim(),
+            lastName: form.lastName.trim(),
+            avatarUrl: form.avatarUrl.trim(),
+            bio: form.bio.trim(),
           },
           tenant: {
-            name: form.tenantName,
-            slug: form.tenantSlug,
-            logoUrl: form.tenantLogoUrl,
-            bio: form.tenantBio,
+            name: tenantName,
+            slug: tenantSlug,
+            logoUrl: tenantLogoUrl,
+            bio: tenantBio,
             socialLinks: {},
             settings: {},
           },
           restaurant: {
-            name: form.tenantName,
-            slug: form.tenantSlug,
-            logoUrl: form.tenantLogoUrl,
+            name: tenantName,
+            slug: tenantSlug,
+            logoUrl: tenantLogoUrl,
             coverImage: "",
             customDomain: "",
-            bio: form.tenantBio,
+            bio: tenantBio,
             tagline: "",
             supportContact: {},
             branding: {},
             socialMedia: {},
           },
           branch: {
-            name: `${form.tenantName} Main Branch`,
-            logoUrl: form.tenantLogoUrl,
+            name: `${tenantName} Main Branch`.trim(),
+            logoUrl: tenantLogoUrl,
             coverImage: "",
-            description: form.tenantBio,
+            description: tenantBio,
             settings: {
               tableReservationsEnabled: false,
               allowedOrderTypes: ["DELIVERY"],
@@ -343,7 +341,6 @@ export function AddBusinessOwnerModal({
             street: "",
             shopNumber: "",
             postalCode: "",
-            area: "",
             city: "",
             state: "",
             country: "",

@@ -67,6 +67,14 @@ type DeliveryZonePayload = {
   polygon: LatLngPoint[];
 };
 
+type TenantCreationSuccess = {
+  tenantName: string;
+  ownerEmail: string;
+  subscriptionId?: string;
+  paymentStatus?: string;
+  paymentRequiredNow: boolean;
+};
+
 const GOOGLE_MAPS_SCRIPT_ID = "google-maps-places-script";
 const GOOGLE_MAPS_API_KEY =
   process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "YOUR_GOOGLE_MAPS_API_KEY";
@@ -173,6 +181,26 @@ const compactObject = (obj: Record<string, any>) => {
         value !== null &&
         !(typeof value === "string" && value.trim() === "")
     )
+  );
+};
+
+const trimString = (value: unknown) => String(value ?? "").trim();
+
+const firstObject = (...values: unknown[]) => {
+  return values.find(
+    (value): value is Record<string, any> =>
+      Boolean(value) && typeof value === "object" && !Array.isArray(value)
+  );
+};
+
+const getSubscriptionFromRegisterResponse = (response: any) => {
+  return firstObject(
+    response?.subscription,
+    response?.data?.subscription,
+    response?.data?.tenantSubscription,
+    response?.data?.packageSubscription,
+    response?.tenantSubscription,
+    response?.packageSubscription
   );
 };
 
@@ -379,6 +407,8 @@ export default function BusinessOwnerForm({
 
   const [previews, setPreviews] = useState<Record<string, string>>({});
   const [uploadingField, setUploadingField] = useState<UploadField | null>(null);
+  const [creationSuccess, setCreationSuccess] =
+    useState<TenantCreationSuccess | null>(null);
 
   const {
     register,
@@ -398,13 +428,6 @@ export default function BusinessOwnerForm({
         lastName: "",
         avatarUrl: "",
         bio: "",
-      },
-      branchAdmin: {
-        email: "",
-        password: "",
-        firstName: "",
-        lastName: "",
-        phone: "",
       },
       tenant: {
         name: "",
@@ -1089,13 +1112,6 @@ export default function BusinessOwnerForm({
         avatarUrl: initialData.user?.avatarUrl || "",
         bio: initialData.user?.bio || "",
       },
-      branchAdmin: {
-        email: initialData.branchAdmin?.email || "",
-        password: "",
-        firstName: initialData.branchAdmin?.firstName || "",
-        lastName: initialData.branchAdmin?.lastName || "",
-        phone: initialData.branchAdmin?.phone || "",
-      },
       tenant: {
         name: initialData.tenant?.name || initialData.name || "",
         slug: initialData.tenant?.slug || initialData.slug || "",
@@ -1590,68 +1606,73 @@ export default function BusinessOwnerForm({
       const branchSettingsPayload = buildBranchSettingsPayload(
         values.branch?.settings || {}
       );
-      const branchStreet = String(values.branch.street || "").trim();
-      const branchShopNumber = String(values.branch.shopNumber || "").trim();
-      const branchPostalCode = String(values.branch.postalCode || "").trim();
+      const branchStreet = trimString(values.branch.street);
+      const branchShopNumber = trimString(values.branch.shopNumber);
+      const branchPostalCode = trimString(values.branch.postalCode);
+      const branchLat = trimString(values.branch.lat);
+      const branchLng = trimString(values.branch.lng);
 
       const payload = {
-        packagePlanId: values.packagePlanId,
+        packagePlanId: trimString(values.packagePlanId),
         user: {
-          email: values.user.email,
+          email: trimString(values.user.email),
           password: values.user.password,
-          firstName: values.user.firstName,
-          lastName: values.user.lastName,
-          avatarUrl: values.user.avatarUrl || "",
-          bio: values.user.bio || "",
-        },
-        branchAdmin: {
-          email: values.branchAdmin.email,
-          password: values.branchAdmin.password,
-          firstName: values.branchAdmin.firstName,
-          lastName: values.branchAdmin.lastName,
-          phone: values.branchAdmin.phone || "",
+          firstName: trimString(values.user.firstName),
+          lastName: trimString(values.user.lastName),
+          avatarUrl: trimString(values.user.avatarUrl),
+          bio: trimString(values.user.bio),
         },
         tenant: {
-          name: values.tenant.name,
-          slug: values.tenant.slug,
-          logoUrl: values.tenant.logoUrl || "",
-          bio: values.tenant.bio || "",
+          name: trimString(values.tenant.name),
+          slug: trimString(values.tenant.slug),
+          logoUrl: trimString(values.tenant.logoUrl),
+          bio: trimString(values.tenant.bio),
           socialLinks: compactObject(values.tenant.socialLinks || {}),
           settings: compactObject(values.tenant.settings || {}),
         },
         restaurant: {
-          name: values.restaurant.name,
-          slug: values.restaurant.slug,
-          logoUrl: values.restaurant.logoUrl || "",
-          coverImage: values.restaurant.coverImage || "",
-          customDomain: values.restaurant.customDomain || "",
-          bio: values.restaurant.bio || "",
-          tagline: values.restaurant.tagline || "",
+          name: trimString(values.restaurant.name),
+          slug: trimString(values.restaurant.slug),
+          logoUrl: trimString(values.restaurant.logoUrl),
+          coverImage: trimString(values.restaurant.coverImage),
+          customDomain: trimString(values.restaurant.customDomain),
+          bio: trimString(values.restaurant.bio),
+          tagline: trimString(values.restaurant.tagline),
           supportContact: compactObject(values.restaurant.supportContact || {}),
           branding: compactObject(values.restaurant.branding || {}),
           socialMedia: compactObject(values.restaurant.socialMedia || {}),
         },
         branch: {
-          name: values.branch.name,
-          logoUrl: values.branch.logoUrl || "",
-          coverImage: values.branch.coverImage || "",
-          description: values.branch.description || "",
+          name: trimString(values.branch.name),
+          logoUrl: trimString(values.branch.logoUrl),
+          coverImage: trimString(values.branch.coverImage),
+          description: trimString(values.branch.description),
           settings: branchSettingsPayload,
           street: branchStreet,
           shopNumber: branchShopNumber,
           postalCode: branchPostalCode,
-          area: values.branch.area || "",
-          city: values.branch.city || "",
-          state: values.branch.state || "",
-          country: values.branch.country || "",
-          lat: values.branch.lat ? String(values.branch.lat) : "",
-          lng: values.branch.lng ? String(values.branch.lng) : "",
+          city: trimString(values.branch.city),
+          state: trimString(values.branch.state),
+          country: trimString(values.branch.country),
+          lat: branchLat,
+          lng: branchLng,
         },
       };
 
-      await createMutation.mutateAsync(payload);
-      toast.success(toasts("businessOwnerCreated"));
-      router.back();
+      const response = await createMutation.mutateAsync(payload);
+      const subscription = getSubscriptionFromRegisterResponse(response);
+      const paymentStatus = trimString(subscription?.paymentStatus);
+      const paymentRequiredNow =
+        Boolean(subscription?.paymentRequiredNow) || paymentStatus === "PENDING";
+
+      setCreationSuccess({
+        tenantName: payload.tenant.name,
+        ownerEmail: payload.user.email,
+        subscriptionId: trimString(subscription?.id || subscription?.subscriptionId),
+        paymentStatus,
+        paymentRequiredNow,
+      });
+      toast.success(response?.message || toasts("businessOwnerCreated"));
     } catch (err: unknown) {
       const message =
         typeof err === "object" &&
@@ -1676,6 +1697,64 @@ export default function BusinessOwnerForm({
       onSubmit={handleSubmit(onSubmit, (formErrors) => console.log(formErrors))}
       className="space-y-[48px] rounded-[14px] bg-white p-[30px]"
     >
+      {creationSuccess ? (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-950">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-600" />
+            <div className="space-y-2">
+              <p className="text-base font-semibold">
+                {businessOwners("tenantCreatedNoOtp")}
+              </p>
+              <p className="text-sm leading-6 text-emerald-900">
+                {businessOwners("tenantCreatedNoOtpDescription", {
+                  tenant: creationSuccess.tenantName,
+                  email: creationSuccess.ownerEmail,
+                })}
+              </p>
+            </div>
+          </div>
+          {creationSuccess.paymentRequiredNow ? (
+            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
+              <p className="text-sm font-semibold">
+                {businessOwners("paymentPendingTitle")}
+              </p>
+              <p className="mt-1 text-sm leading-6">
+                {businessOwners("paymentPendingDescription")}
+              </p>
+              <div className="mt-3 grid gap-2 text-sm md:grid-cols-2">
+                <span>
+                  <strong>{businessOwners("subscriptionId")}:</strong>{" "}
+                  {creationSuccess.subscriptionId || businessOwners("notAvailable")}
+                </span>
+                <span>
+                  <strong>{businessOwners("paymentStatus")}:</strong>{" "}
+                  {creationSuccess.paymentStatus || "PENDING"}
+                </span>
+              </div>
+            </div>
+          ) : null}
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Button
+              type="button"
+              variant="primary"
+              onClick={() => router.push("/business-owners")}
+            >
+              {businessOwners("viewBusinessOwners")}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setCreationSuccess(null);
+                reset();
+              }}
+            >
+              {businessOwners("createAnotherBusinessOwner")}
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
       {!isEdit && (
         <FormSection label={businessOwners("packagePlan")}>
           <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
@@ -1771,57 +1850,6 @@ export default function BusinessOwnerForm({
               variant="avatar"
             />
           </div>
-        </FormSection>
-      )}
-
-      {!isEdit && (
-        <FormSection label={businessOwners("branchAdminAccount")}>
-          <div className="rounded-2xl border border-primary/10 bg-primary/5 p-4">
-            <p className="text-sm font-semibold text-gray-900">
-              {businessOwners("branchAdminLogin")}
-            </p>
-            <p className="mt-1 text-sm leading-6 text-gray-600">
-              {businessOwners("branchAdminLoginDescription")}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
-            <FormGroup
-                label={`${businessOwners("firstName")} *`}
-                placeholder={businessOwners("branchAdminFirstNamePlaceholder")}
-              error={readError(errors, "branchAdmin.firstName")}
-              {...register("branchAdmin.firstName")}
-            />
-            <FormGroup
-                label={`${businessOwners("lastName")} *`}
-                placeholder={businessOwners("branchAdminLastNamePlaceholder")}
-              error={readError(errors, "branchAdmin.lastName")}
-              {...register("branchAdmin.lastName")}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
-            <FormGroup
-                label={`${authLabel("email")} *`}
-              placeholder="branch.admin@brand.com"
-              error={readError(errors, "branchAdmin.email")}
-              {...register("branchAdmin.email")}
-            />
-            <FormGroup
-                label={`${authLabel("password")} *`}
-                placeholder={businessOwners("minimumCharacters")}
-              type="password"
-              error={readError(errors, "branchAdmin.password")}
-              {...register("branchAdmin.password")}
-            />
-          </div>
-
-          <FormGroup
-            label={restaurants("phone")}
-            placeholder="+923001234567"
-            error={readError(errors, "branchAdmin.phone")}
-            {...register("branchAdmin.phone")}
-          />
         </FormSection>
       )}
 
@@ -2791,7 +2819,7 @@ export default function BusinessOwnerForm({
 
         <Button
           type="submit"
-          disabled={isPending || uploading}
+          disabled={isPending || uploading || Boolean(creationSuccess)}
           variant="primary"
           className="h-[52px] px-8"
         >
