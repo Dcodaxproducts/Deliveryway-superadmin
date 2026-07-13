@@ -61,7 +61,10 @@
     "systemHealthMonitoring": "System Health & Monitoring",
     "notificationSettings": "Notification Setting",
     "logout": "Logout",
-    "cuisines": "Cuisines"
+    "cuisines": "Cuisines",
+    "generatedHistory": "Generated History",
+    "weeklyPayout": "Weekly Payout",
+    "monthlySubscription": "Monthly Subscription"
   },
   "auth": {
     "login": "Login",
@@ -1092,7 +1095,13 @@
     "dueDateLabel": "Due Date:",
     "totalAmountColon": "Total Amount:",
     "generateMore": "Generate More",
-    "backToDashboard": "Back to Dashboard"
+    "backToDashboard": "Back to Dashboard",
+    "generatedHistoryTitle": "Generated Invoice History",
+    "generatedHistoryDescription": "Review all generated invoice documents and send/download activity.",
+    "weeklyPayoutTitle": "Weekly Payout Invoices",
+    "weeklyPayoutDescription": "Create and share weekly restaurant payout invoices.",
+    "monthlySubscriptionTitle": "Monthly Subscription Invoices",
+    "monthlySubscriptionDescription": "Manage restaurant subscription invoices and billing status."
   },
   "analytics": {
     "title": "Reports & Analytics",

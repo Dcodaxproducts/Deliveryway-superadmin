@@ -32,16 +32,66 @@ export type SidebarMenuItem = {
 };
 
 export const menuItems: SidebarMenuItem[] = [
-  { titleKey: "navigation.dashboard", icon: LayoutGrid, href: "/", permissionAccess: "dashboard" },
-  { titleKey: "navigation.manageRestaurants", icon: Store, href: "/restaurants", permissionAccess: "branch-management" },
-  { titleKey: "navigation.globalSettings", icon: Globe, href: "/global-settings", permissionAccess: "storefront-settings" },
-  { titleKey: "navigation.worldwideCustomers", icon: Users, href: "/customers", permissionAccess: "customer-management" },
-  { titleKey: "navigation.businessOwners", icon: Users, href: "/business-owners", permissionAccess: "branch-management" },
-  { titleKey: "navigation.ordersRevenuePerformance", icon: BarChart3, href: "/orders", permissionAccess: "order-management" },
-  { titleKey: "navigation.employeeSettings", icon: PiUsersThree, href: "/employee-settings", permissionAccess: "employees" },
-  { titleKey: "navigation.productOverview", icon: Box, href: "/products", permissionAccess: "menu-management" },
-  { titleKey: "navigation.cuisines", icon: Utensils, href: "/menu/cuisines", permissionAccess: "menu-management" },
-  { titleKey: "navigation.rbac", icon: ShieldCheck, href: "/rbac", permissionAccess: "employees" },
+  {
+    titleKey: "navigation.dashboard",
+    icon: LayoutGrid,
+    href: "/",
+    permissionAccess: "dashboard",
+  },
+  {
+    titleKey: "navigation.manageRestaurants",
+    icon: Store,
+    href: "/restaurants",
+    permissionAccess: "branch-management",
+  },
+  {
+    titleKey: "navigation.globalSettings",
+    icon: Globe,
+    href: "/global-settings",
+    permissionAccess: "storefront-settings",
+  },
+  {
+    titleKey: "navigation.worldwideCustomers",
+    icon: Users,
+    href: "/customers",
+    permissionAccess: "customer-management",
+  },
+  {
+    titleKey: "navigation.businessOwners",
+    icon: Users,
+    href: "/business-owners",
+    permissionAccess: "branch-management",
+  },
+  {
+    titleKey: "navigation.ordersRevenuePerformance",
+    icon: BarChart3,
+    href: "/orders",
+    permissionAccess: "order-management",
+  },
+  {
+    titleKey: "navigation.employeeSettings",
+    icon: PiUsersThree,
+    href: "/employee-settings",
+    permissionAccess: "employees",
+  },
+  {
+    titleKey: "navigation.productOverview",
+    icon: Box,
+    href: "/products",
+    permissionAccess: "menu-management",
+  },
+  {
+    titleKey: "navigation.cuisines",
+    icon: Utensils,
+    href: "/menu/cuisines",
+    permissionAccess: "menu-management",
+  },
+  {
+    titleKey: "navigation.rbac",
+    icon: ShieldCheck,
+    href: "/rbac",
+    permissionAccess: "employees",
+  },
   // { title: "Business Models", icon: Gift, href: "/models" },
 
   {
@@ -78,10 +128,47 @@ export const menuItems: SidebarMenuItem[] = [
     ],
   },
 
-  { titleKey: "navigation.invoicingFinancials", icon: Receipt, href: "/invoicing", permissionAccess: ["reports-payouts", "payment-settings"] },
-  { titleKey: "navigation.reportsAnalytics", icon: LineChart, href: "/analytics", permissionAccess: "reports-payouts" },
-  { titleKey: "navigation.systemHealthMonitoring", icon: ShieldAlert, href: "/monitoring", permissionAccess: "dashboard" },
+  {
+    titleKey: "navigation.invoicingFinancials",
+    icon: Receipt,
+    href: "/invoicing",
+    permissionAccess: ["reports-payouts", "payment-settings"],
+    children: [
+      {
+        titleKey: "navigation.generatedHistory",
+        icon: FileText,
+        href: "/invoicing/generated-history",
+      },
+      {
+        titleKey: "navigation.weeklyPayout",
+        icon: Receipt,
+        href: "/invoicing/weekly-payout",
+      },
+      {
+        titleKey: "navigation.monthlySubscription",
+        icon: ListChecks,
+        href: "/invoicing/monthly-subscription",
+      },
+    ],
+  },
+  {
+    titleKey: "navigation.reportsAnalytics",
+    icon: LineChart,
+    href: "/analytics",
+    permissionAccess: "reports-payouts",
+  },
+  {
+    titleKey: "navigation.systemHealthMonitoring",
+    icon: ShieldAlert,
+    href: "/monitoring",
+    permissionAccess: "dashboard",
+  },
   // { title: "Theme Setting", icon: Palette, href: "/theme-settings", permissionAccess: "storefront-settings" },
-  { titleKey: "navigation.notificationSettings", icon: Bell, href: "/notification-settings", permissionAccess: "notifications" },
+  {
+    titleKey: "navigation.notificationSettings",
+    icon: Bell,
+    href: "/notification-settings",
+    permissionAccess: "notifications",
+  },
   // { title: "Backups & Maintenance", icon: Database, href: "/maintenance" },
 ];

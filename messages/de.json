@@ -61,7 +61,10 @@
     "systemHealthMonitoring": "Systemzustand & Überwachung",
     "notificationSettings": "Benachrichtigungseinstellungen",
     "logout": "Abmelden",
-    "cuisines": "Küchen"
+    "cuisines": "Küchen",
+    "generatedHistory": "Generierte Historie",
+    "weeklyPayout": "Wöchentliche Auszahlung",
+    "monthlySubscription": "Monatliches Abonnement"
   },
   "auth": {
     "login": "Anmelden",
@@ -1092,7 +1095,13 @@
     "dueDateLabel": "Fälligkeitsdatum:",
     "totalAmountColon": "Gesamtbetrag:",
     "generateMore": "Weitere erstellen",
-    "backToDashboard": "Zurück zum Dashboard"
+    "backToDashboard": "Zurück zum Dashboard",
+    "generatedHistoryTitle": "Historie generierter Rechnungen",
+    "generatedHistoryDescription": "Prüfe alle generierten Rechnungsdokumente sowie Versand- und Download-Aktivitäten.",
+    "weeklyPayoutTitle": "Wöchentliche Auszahlungsrechnungen",
+    "weeklyPayoutDescription": "Erstelle und teile wöchentliche Restaurant-Auszahlungsrechnungen.",
+    "monthlySubscriptionTitle": "Monatliche Abonnementrechnungen",
+    "monthlySubscriptionDescription": "Verwalte Restaurant-Abonnementrechnungen und Zahlungsstatus."
   },
   "analytics": {
     "title": "Berichte & Analysen",
