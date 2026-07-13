@@ -64,7 +64,7 @@
     "cuisines": "Küchen",
     "generatedHistory": "Generierte Historie",
     "weeklyPayout": "Wöchentliche Auszahlung",
-    "monthlySubscription": "Monatliches Abonnement"
+    "monthlySubscription": "Abonnements"
   },
   "auth": {
     "login": "Anmelden",
@@ -1100,8 +1100,8 @@
     "generatedHistoryDescription": "Prüfe alle generierten Rechnungsdokumente sowie Versand- und Download-Aktivitäten.",
     "weeklyPayoutTitle": "Wöchentliche Auszahlungsrechnungen",
     "weeklyPayoutDescription": "Erstelle und teile wöchentliche Restaurant-Auszahlungsrechnungen.",
-    "monthlySubscriptionTitle": "Monatliche Abonnementrechnungen",
-    "monthlySubscriptionDescription": "Verwalte Restaurant-Abonnementrechnungen und Zahlungsstatus."
+    "monthlySubscriptionTitle": "Abonnements",
+    "monthlySubscriptionDescription": "Verwalte Abonnementrechnungen und Zahlungsstatus."
   },
   "analytics": {
     "title": "Berichte & Analysen",

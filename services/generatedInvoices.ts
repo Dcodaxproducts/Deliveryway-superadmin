@@ -19,8 +19,6 @@ export type GeneratedInvoiceStatus =
   | string;
 
 export type GeneratedInvoicesParams = {
-  page?: number;
-  limit?: number;
   kind?: GeneratedInvoiceKind;
   status?: GeneratedInvoiceStatus;
   fromDate?: string;
@@ -101,11 +99,23 @@ export type GeneratedInvoicesResponse = {
   message?: string;
 };
 
+const cleanGeneratedInvoiceParams = (params?: GeneratedInvoicesParams) => {
+  if (!params) return undefined;
+
+  const cleaned = Object.fromEntries(
+    Object.entries(params).filter(
+      ([, value]) => value !== undefined && value !== null && value !== "",
+    ),
+  );
+
+  return Object.keys(cleaned).length > 0 ? cleaned : undefined;
+};
+
 export const getGeneratedInvoices = async (
   params?: GeneratedInvoicesParams,
 ): Promise<GeneratedInvoicesResponse> => {
   const { data } = await api.get("/admin/reports/generated-invoices", {
-    params,
+    params: cleanGeneratedInvoiceParams(params),
   });
 
   return data;

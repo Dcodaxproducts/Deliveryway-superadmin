@@ -135,19 +135,19 @@ export const menuItems: SidebarMenuItem[] = [
     permissionAccess: ["reports-payouts", "payment-settings"],
     children: [
       {
-        titleKey: "navigation.generatedHistory",
-        icon: FileText,
-        href: "/invoicing/generated-history",
-      },
-      {
         titleKey: "navigation.weeklyPayout",
         icon: Receipt,
         href: "/invoicing/weekly-payout",
       },
       {
-        titleKey: "navigation.monthlySubscription",
+        titleKey: "navigation.subscriptions",
         icon: ListChecks,
-        href: "/invoicing/monthly-subscription",
+        href: "/invoicing/subscriptions",
+      },
+      {
+        titleKey: "navigation.generatedHistory",
+        icon: FileText,
+        href: "/invoicing/generated-history",
       },
     ],
   },
