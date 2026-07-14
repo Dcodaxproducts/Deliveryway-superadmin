@@ -84,6 +84,14 @@ const DEFAULT_MAP_CENTER: LatLngPoint = {
   lng: 73.0479,
 };
 
+const scrollToPageTop = () => {
+  if (typeof window === "undefined") return;
+
+  window.requestAnimationFrame(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+};
+
 const isGoogleMapsKeyConfigured = () => {
   return (
     Boolean(GOOGLE_MAPS_API_KEY) &&
@@ -1672,6 +1680,9 @@ export default function BusinessOwnerForm({
         paymentStatus,
         paymentRequiredNow,
       });
+      reset();
+      setPreviews({});
+      scrollToPageTop();
       toast.success(response?.message || toasts("businessOwnerCreated"));
     } catch (err: unknown) {
       const message =
@@ -1688,6 +1699,7 @@ export default function BusinessOwnerForm({
           ? err.response.data.message
           : toasts("somethingWentWrong");
 
+      scrollToPageTop();
       toast.error(message);
     }
   };
@@ -2294,15 +2306,6 @@ export default function BusinessOwnerForm({
           </FormSection>
 
           <FormSection label={businessOwners("deliveryAreaConfiguration")}>
-            <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-              <p className="text-sm font-semibold text-gray-900">
-                {businessOwners("hiddenDefaultsIncluded")}
-              </p>
-              <p className="mt-1 text-sm leading-6 text-gray-600">
-                {businessOwners("hiddenDefaultsDescription")}
-              </p>
-            </div>
-
             <SelectGroup
               label={businessOwners("deliveryMode")}
               value={deliveryMode}
