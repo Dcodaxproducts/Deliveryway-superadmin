@@ -236,6 +236,7 @@
     "serial": "Nr.",
     "details": "Details",
     "tenant": "Mandant",
+    "subscription": "Abonnement",
     "editBusinessOwner": "Geschäftsinhaber bearbeiten",
     "createBusinessOwner": "Geschäftsinhaber erstellen",
     "updateBusinessOwner": "Geschäftsinhaber aktualisieren",

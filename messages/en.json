@@ -236,6 +236,7 @@
     "serial": "SL",
     "details": "Details",
     "tenant": "Tenant",
+    "subscription": "Subscription",
     "editBusinessOwner": "Edit business owner",
     "createBusinessOwner": "Create Business Owner",
     "updateBusinessOwner": "Update Business Owner",

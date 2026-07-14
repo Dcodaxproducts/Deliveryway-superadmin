@@ -11,8 +11,10 @@ import {
 import {
   CheckCircle2,
   Clock3,
+  CreditCard,
   Loader2,
   MoreVertical,
+  Package,
   Pencil,
   ShieldCheck,
   Trash2,
@@ -51,6 +53,9 @@ type BusinessOwnerRow = {
   isVerified: boolean;
   isApproved: boolean;
   isActive: boolean;
+  planName?: string | null;
+  subscriptionStatus?: string | null;
+  paymentStatus?: string | null;
   [key: string]: any;
 };
 
@@ -116,6 +121,17 @@ function RequirementBadge({
     </button>
   );
 }
+
+const formatStatusLabel = (value?: string | null) =>
+  value ? value.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase()) : "N/A";
+
+const getSubscriptionTone = (status?: string | null): RequirementTone => {
+  if (status === "ACTIVE" || status === "PAID") return "success";
+  if (status === "FAILED" || status === "CANCELLED" || status === "REFUNDED") return "danger";
+  if (status === "PENDING" || status === "PAST_DUE") return "warning";
+
+  return "muted";
+};
 
 const getOverallStatus = (item: BusinessOwnerRow) => {
   const isActive = Boolean(item?.isActive);
@@ -300,7 +316,7 @@ export default function BusinessOwnerTable({
     setDeleteId(item.id);
   };
 
-  const tableColSpan = 6;
+  const tableColSpan = 7;
 
   const skeletonRows = useMemo(() => Array.from({ length: 6 }), []);
 
@@ -313,6 +329,7 @@ export default function BusinessOwnerTable({
             <TableHead>{businessOwnersText("businessOwner")}</TableHead>
             <TableHead>{businessOwnersText("details")}</TableHead>
             <TableHead>{businessOwnersText("tenant")}</TableHead>
+            <TableHead>{businessOwnersText("subscription")}</TableHead>
             <TableHead>{common("status")}</TableHead>
             <TableHead className="w-[90px] text-center">{common("actions")}</TableHead>
           </TableRow>
@@ -340,6 +357,9 @@ export default function BusinessOwnerTable({
                     : null;
 
                 const status = getOverallStatus(item);
+                const planName = item.planName || "N/A";
+                const subscriptionStatus = item.subscriptionStatus || null;
+                const paymentStatus = item.paymentStatus || null;
                 const isActiveUpdating = activeUpdatingId === item.id;
                 const isApprovalUpdating = approvalUpdatingId === item.id;
                 const isApprovedAndVerified =
@@ -391,6 +411,29 @@ export default function BusinessOwnerTable({
                         <span className="max-w-[180px] truncate text-sm text-gray-600">
                           {item.id}
                         </span>
+                      </div>
+                    </TableCell>
+
+                    <TableCell className="min-w-[260px] py-4">
+                      <div className="flex flex-wrap gap-2">
+                        <RequirementBadge
+                          label="Plan"
+                          value={planName}
+                          tone={planName === "N/A" ? "muted" : "primary"}
+                          icon={<Package size={14} />}
+                        />
+                        <RequirementBadge
+                          label="Subscription"
+                          value={formatStatusLabel(subscriptionStatus)}
+                          tone={getSubscriptionTone(subscriptionStatus)}
+                          icon={<Clock3 size={14} />}
+                        />
+                        <RequirementBadge
+                          label="Payment"
+                          value={formatStatusLabel(paymentStatus)}
+                          tone={getSubscriptionTone(paymentStatus)}
+                          icon={<CreditCard size={14} />}
+                        />
                       </div>
                     </TableCell>
 

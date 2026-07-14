@@ -16,6 +16,16 @@ const getFirstBoolean = (...values: unknown[]) => {
   return typeof value === "boolean" ? value : false;
 };
 
+const getLatestSubscription = (tenant: TenantListRecord) => {
+  const subscriptions = Array.isArray(tenant.tenantSubscriptions)
+    ? tenant.tenantSubscriptions
+    : Array.isArray(tenant.subscriptions)
+      ? tenant.subscriptions
+      : [];
+
+  return tenant.latestSubscription ?? tenant.subscription ?? subscriptions[0] ?? null;
+};
+
 const normalizeBusinessOwnerRow = (tenant: TenantListRecord) => {
   const owner =
     tenant.owner ??
@@ -24,6 +34,9 @@ const normalizeBusinessOwnerRow = (tenant: TenantListRecord) => {
     tenant.businessOwner ??
     tenant.adminUser ??
     {};
+
+  const latestSubscription = getLatestSubscription(tenant);
+  const packagePlan = latestSubscription?.packagePlan ?? tenant.packagePlan ?? tenant.plan ?? null;
 
   return {
     ...tenant,
@@ -38,6 +51,20 @@ const normalizeBusinessOwnerRow = (tenant: TenantListRecord) => {
     isVerified: getFirstBoolean(tenant.isVerified, owner.isVerified),
     isApproved: getFirstBoolean(tenant.isApproved, owner.isApproved),
     isActive: getFirstBoolean(tenant.isActive, owner.isActive),
+    latestSubscription,
+    subscriptionStatus: getFirstString(
+      tenant.subscriptionStatus,
+      latestSubscription?.status,
+    ),
+    paymentStatus: getFirstString(
+      tenant.paymentStatus,
+      latestSubscription?.paymentStatus,
+    ),
+    planName: getFirstString(
+      tenant.planName,
+      packagePlan?.name,
+      latestSubscription?.planName,
+    ),
   };
 };
 
