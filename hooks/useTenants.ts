@@ -12,6 +12,13 @@ import {
   getBusinessOwnerStats,
 } from "@/services/tenants";
 
+export const TENANTS_QUERY_KEY = ["tenants"] as const;
+export const BUSINESS_OWNER_STATS_QUERY_KEY = [
+  "admin-dashboard",
+  "business-owners",
+  "stats",
+] as const;
+
 /**
  * ==============================
  * TENANT HOOKS
@@ -25,7 +32,8 @@ export const useRegisterTenant = () => {
   return useMutation({
     mutationFn: registerTenant,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tenants"] });
+      queryClient.invalidateQueries({ queryKey: TENANTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: BUSINESS_OWNER_STATS_QUERY_KEY });
       toast.success(toasts("tenantRegistered"));
     },
     onError: (err: any) => {
@@ -64,7 +72,8 @@ export const useUpdateTenant = () => {
       updateTenant(id, data),
 
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["tenants"] });
+      queryClient.invalidateQueries({ queryKey: TENANTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: BUSINESS_OWNER_STATS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: ["tenant-analytics", variables.id] });
       // toast.success("Tenant updated successfully!");
     },
@@ -83,7 +92,8 @@ export const useDeleteTenant = () => {
     mutationFn: forceDeleteTenant,
     onSuccess: () => {
       toast.success(toasts("tenantDeleted"));
-      queryClient.invalidateQueries({ queryKey: ["tenants"] });
+      queryClient.invalidateQueries({ queryKey: TENANTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: BUSINESS_OWNER_STATS_QUERY_KEY });
     },
     onError: (err: any) => {
       toast.error(err?.response?.data?.message || toasts("tenantDeleteFailed"));
@@ -106,7 +116,8 @@ export const useApproveBusinessAdmin = () => {
   return useMutation({
     mutationFn: approveBusinessAdmin,
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["tenants"] });
+      queryClient.invalidateQueries({ queryKey: TENANTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: BUSINESS_OWNER_STATS_QUERY_KEY });
       toast.success(data?.message || toasts("businessAdminApproved"));
     },
     onError: (err: any) => {
@@ -129,7 +140,7 @@ export const useGetTenant = (id: string) => {
 
 export const useGetBusinessOwnerStats = () => {
   return useQuery({
-    queryKey: ["admin-dashboard", "business-owners", "stats"],
+    queryKey: BUSINESS_OWNER_STATS_QUERY_KEY,
     queryFn: getBusinessOwnerStats,
   });
 };

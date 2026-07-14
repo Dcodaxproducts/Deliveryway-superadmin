@@ -1,7 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertCircle, Percent, Plus, Trash2 } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Loader2,
+  Percent,
+  Plus,
+  Save,
+  Star,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 
@@ -136,174 +145,214 @@ export function TaxTypesSection({ canManage }: TaxTypesSectionProps) {
   };
 
   return (
-    <section className="space-y-[24px] rounded-[14px] bg-white p-4 lg:p-[30px]">
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="space-y-[6px]">
-          <Label className="text-base font-semibold text-dark">
-            {globalSettings("taxTypes")}
-          </Label>
-          <p className="text-sm leading-6 text-gray">
-            {canManage
-              ? globalSettings("taxTypesDescription")
-              : globalSettings("taxTypesReadonlyDescription")}
-          </p>
+    <section className="overflow-hidden rounded-[18px] border border-[#EAECF0] bg-white shadow-sm">
+      <div className="flex flex-col gap-4 border-b border-[#EAECF0] bg-gradient-to-r from-slate-50 to-white p-5 lg:flex-row lg:items-start lg:justify-between lg:p-7">
+        <div className="flex gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-primary/10 text-primary">
+            <Percent size={22} />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-lg font-semibold text-dark">
+              {globalSettings("taxTypes")}
+            </Label>
+            <p className="max-w-3xl text-sm leading-6 text-gray">
+              {canManage
+                ? globalSettings("taxTypesDescription")
+                : globalSettings("taxTypesReadonlyDescription")}
+            </p>
+          </div>
         </div>
 
-        <div className="flex w-fit items-center gap-2 rounded-[10px] border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2 text-sm text-gray">
-          <Percent size={16} className="text-primary" />
+        <div className="flex w-fit items-center gap-2 rounded-full border border-primary/20 bg-white px-4 py-2 text-sm text-gray shadow-sm">
+          <CheckCircle2 size={16} className="text-primary" />
           <span className="font-semibold text-dark">{activeCount}</span>
           {globalSettings("activeTaxTypes", { total: taxTypes.length })}
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="rounded-[12px] border border-dashed border-[#BBBBBB] bg-[#F9FAFB] p-5 text-sm text-gray">
-          {globalSettings("loadingTaxTypes")}
-        </div>
-      ) : isError ? (
-        <Alert variant="destructive">
-          <AlertDescription>{globalSettings("taxTypesLoadFailed")}</AlertDescription>
-        </Alert>
-      ) : taxTypes.length === 0 ? (
-        <div className="rounded-[12px] border border-dashed border-[#BBBBBB] bg-[#F9FAFB] p-5 text-sm text-gray">
-          {globalSettings("noTaxTypes")}
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {taxTypes.map((taxType, index) => (
-            <div
-              key={`${taxType.code || "tax-type"}-${index}`}
-              className="rounded-[14px] border border-[#E5E7EB] bg-[#F9FAFB] p-4"
-            >
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge className="rounded-[8px] bg-primary/10 px-2.5 py-1 text-primary">
-                    {taxType.code || globalSettings("newTaxType")}
-                  </Badge>
-                  {taxType.isDefault ? (
-                    <Badge className="rounded-[8px] bg-green/10 px-2.5 py-1 text-green">
-                      {globalSettings("defaultTaxType")}
+      <div className="space-y-5 p-5 lg:p-7">
+        {isLoading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div
+                key={index}
+                className="h-20 animate-pulse rounded-[16px] border border-[#EAECF0] bg-[#F8FAFC]"
+              />
+            ))}
+          </div>
+        ) : isError ? (
+          <Alert variant="destructive" className="rounded-[14px]">
+            <AlertCircle size={16} />
+            <AlertDescription>{globalSettings("taxTypesLoadFailed")}</AlertDescription>
+          </Alert>
+        ) : taxTypes.length === 0 ? (
+          <div className="flex flex-col items-center justify-center rounded-[16px] border border-dashed border-[#D0D5DD] bg-[#F9FAFB] p-8 text-center">
+            <Percent size={28} className="text-gray" />
+            <p className="mt-3 text-sm font-medium text-dark">
+              {globalSettings("noTaxTypes")}
+            </p>
+            {canManage ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-4 rounded-[12px] px-5"
+                onClick={addTaxType}
+              >
+                <Plus size={16} />
+                {globalSettings("addTaxType")}
+              </Button>
+            ) : null}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {taxTypes.map((taxType, index) => (
+              <div
+                key={`${taxType.code || "tax-type"}-${index}`}
+                className="rounded-[16px] border border-[#EAECF0] bg-white p-4 shadow-[0_10px_24px_rgba(15,23,42,0.03)]"
+              >
+                <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge className="rounded-full bg-primary/10 px-3 py-1 text-primary">
+                      {taxType.code || globalSettings("newTaxType")}
                     </Badge>
+                    {taxType.isDefault ? (
+                      <Badge className="rounded-full bg-amber-50 px-3 py-1 text-amber-700">
+                        <Star size={12} />
+                        {globalSettings("defaultTaxType")}
+                      </Badge>
+                    ) : null}
+                    <Badge
+                      className={
+                        taxType.isActive
+                          ? "rounded-full bg-emerald-50 px-3 py-1 text-emerald-700"
+                          : "rounded-full bg-slate-100 px-3 py-1 text-slate-500"
+                      }
+                    >
+                      {taxType.isActive ? common("active") : common("inactive")}
+                    </Badge>
+                  </div>
+
+                  {canManage ? (
+                    <div className="flex flex-wrap items-center gap-3">
+                      <label className="flex items-center gap-2 rounded-full border border-[#EAECF0] bg-[#F9FAFB] px-3 py-2 text-sm text-gray">
+                        <Switch
+                          checked={taxType.isActive}
+                          onCheckedChange={(checked) =>
+                            updateTaxType(index, { isActive: checked })
+                          }
+                        />
+                        {taxType.isActive ? common("active") : common("inactive")}
+                      </label>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-10 rounded-[12px] px-3 text-red-500 hover:bg-red-50 hover:text-red-600"
+                        onClick={() => removeTaxType(index)}
+                        disabled={taxTypes.length === 1}
+                      >
+                        <Trash2 size={15} />
+                      </Button>
+                    </div>
                   ) : null}
-                  <Badge
-                    className={
-                      taxType.isActive
-                        ? "rounded-[8px] bg-primary/10 px-2.5 py-1 text-primary"
-                        : "rounded-[8px] bg-gray-200 px-2.5 py-1 text-gray-600"
-                    }
-                  >
-                    {taxType.isActive ? common("active") : common("inactive")}
-                  </Badge>
                 </div>
 
                 {canManage ? (
-                  <div className="flex items-center gap-3">
-                    <label className="flex items-center gap-2 text-sm text-gray">
-                      <Switch
-                        checked={taxType.isActive}
-                        onCheckedChange={(checked) => updateTaxType(index, { isActive: checked })}
-                      />
-                      {taxType.isActive ? common("active") : common("inactive")}
-                    </label>
+                  <div className="grid grid-cols-1 gap-4 lg:grid-cols-[0.9fr_1.4fr_0.8fr_auto]">
+                    <TaxInput
+                      label={globalSettings("taxTypeCode")}
+                      value={taxType.code}
+                      disabled={false}
+                      onChange={(value) =>
+                        updateTaxType(index, { code: value.toUpperCase() })
+                      }
+                    />
+                    <TaxInput
+                      label={globalSettings("taxTypeLabel")}
+                      value={taxType.label}
+                      disabled={false}
+                      onChange={(value) => updateTaxType(index, { label: value })}
+                    />
+                    <TaxInput
+                      label={globalSettings("taxTypePercentage")}
+                      value={String(taxType.percentage)}
+                      type="number"
+                      disabled={false}
+                      onChange={(value) =>
+                        updateTaxType(index, { percentage: Number(value) })
+                      }
+                    />
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-9 rounded-[10px] px-3 text-red-500 hover:bg-red-50 hover:text-red-600"
-                      onClick={() => removeTaxType(index)}
-                      disabled={taxTypes.length === 1}
-                    >
-                      <Trash2 size={15} />
-                    </Button>
+                    <div className="flex flex-col justify-end">
+                      <Button
+                        type="button"
+                        variant={taxType.isDefault ? "primary" : "outline"}
+                        className="h-11 rounded-[12px] px-4"
+                        disabled={taxType.isDefault}
+                        onClick={() => markDefault(index)}
+                      >
+                        <Star size={15} />
+                        {taxType.isDefault
+                          ? globalSettings("defaultTaxType")
+                          : globalSettings("makeDefaultTaxType")}
+                      </Button>
+                    </div>
                   </div>
-                ) : null}
+                ) : (
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <ReadonlyValue
+                      label={globalSettings("taxTypeCode")}
+                      value={taxType.code || common("notAvailable")}
+                    />
+                    <ReadonlyValue
+                      label={globalSettings("taxTypeLabel")}
+                      value={taxType.label || common("notAvailable")}
+                    />
+                    <ReadonlyValue
+                      label={globalSettings("taxTypePercentage")}
+                      value={`${taxType.percentage}%`}
+                    />
+                  </div>
+                )}
               </div>
+            ))}
+          </div>
+        )}
 
-              {canManage ? (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_1.5fr_1fr_auto]">
-                  <TaxInput
-                    label={globalSettings("taxTypeCode")}
-                    value={taxType.code}
-                    disabled={false}
-                    onChange={(value) => updateTaxType(index, { code: value.toUpperCase() })}
-                  />
-                  <TaxInput
-                    label={globalSettings("taxTypeLabel")}
-                    value={taxType.label}
-                    disabled={false}
-                    onChange={(value) => updateTaxType(index, { label: value })}
-                  />
-                  <TaxInput
-                    label={globalSettings("taxTypePercentage")}
-                    value={String(taxType.percentage)}
-                    type="number"
-                    disabled={false}
-                    onChange={(value) => updateTaxType(index, { percentage: Number(value) })}
-                  />
+        {validationMessage ? (
+          <Alert variant="destructive" className="rounded-[14px]">
+            <AlertCircle size={16} />
+            <AlertDescription>{validationMessage}</AlertDescription>
+          </Alert>
+        ) : null}
 
-                  <div className="flex flex-col justify-end">
-                    <Button
-                      type="button"
-                      variant={taxType.isDefault ? "primary" : "outline"}
-                      className="h-[48px] rounded-[12px] px-4"
-                      disabled={taxType.isDefault}
-                      onClick={() => markDefault(index)}
-                    >
-                      {taxType.isDefault
-                        ? globalSettings("defaultTaxType")
-                        : globalSettings("makeDefaultTaxType")}
-                    </Button>
-                  </div>
-                </div>
+        {canManage ? (
+          <div className="flex flex-col gap-3 border-t border-[#EAECF0] pt-5 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              className="h-12 rounded-[12px] px-5"
+              onClick={addTaxType}
+            >
+              <Plus size={16} />
+              {globalSettings("addTaxType")}
+            </Button>
+            <Button
+              type="button"
+              className="h-12 rounded-[12px] px-8"
+              disabled={updateMutation.isPending || Boolean(validationMessage)}
+              onClick={handleSave}
+            >
+              {updateMutation.isPending ? (
+                <Loader2 size={16} className="animate-spin" />
               ) : (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                  <ReadonlyValue
-                    label={globalSettings("taxTypeCode")}
-                    value={taxType.code || common("notAvailable")}
-                  />
-                  <ReadonlyValue
-                    label={globalSettings("taxTypeLabel")}
-                    value={taxType.label || common("notAvailable")}
-                  />
-                  <ReadonlyValue
-                    label={globalSettings("taxTypePercentage")}
-                    value={`${taxType.percentage}%`}
-                  />
-                </div>
+                <Save size={16} />
               )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {validationMessage ? (
-        <Alert variant="destructive">
-          <AlertCircle size={16} />
-          <AlertDescription>{validationMessage}</AlertDescription>
-        </Alert>
-      ) : null}
-
-      {canManage ? (
-        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            className="h-[48px] rounded-[12px] px-5"
-            onClick={addTaxType}
-          >
-            <Plus size={16} />
-            {globalSettings("addTaxType")}
-          </Button>
-          <Button
-            type="button"
-            className="h-[48px] rounded-[12px] px-8"
-            disabled={updateMutation.isPending || Boolean(validationMessage)}
-            onClick={handleSave}
-          >
-            {updateMutation.isPending ? common("saving") : globalSettings("saveTaxTypes")}
-          </Button>
-        </div>
-      ) : null}
+              {updateMutation.isPending ? common("saving") : globalSettings("saveTaxTypes")}
+            </Button>
+          </div>
+        ) : null}
+      </div>
     </section>
   );
 }
