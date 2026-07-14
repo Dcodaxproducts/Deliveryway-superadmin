@@ -8,7 +8,9 @@ import {
 type TenantListRecord = Record<string, any>;
 
 const getFirstString = (...values: unknown[]) =>
-  values.find((value): value is string => typeof value === "string" && value.length > 0);
+  values.find(
+    (value): value is string => typeof value === "string" && value.length > 0,
+  );
 
 const getFirstBoolean = (...values: unknown[]) => {
   const value = values.find((item) => typeof item === "boolean");
@@ -23,7 +25,9 @@ const getLatestSubscription = (tenant: TenantListRecord) => {
       ? tenant.subscriptions
       : [];
 
-  return tenant.latestSubscription ?? tenant.subscription ?? subscriptions[0] ?? null;
+  return (
+    tenant.latestSubscription ?? tenant.subscription ?? subscriptions[0] ?? null
+  );
 };
 
 const normalizeBusinessOwnerRow = (tenant: TenantListRecord) => {
@@ -36,7 +40,11 @@ const normalizeBusinessOwnerRow = (tenant: TenantListRecord) => {
     {};
 
   const latestSubscription = getLatestSubscription(tenant);
-  const packagePlan = latestSubscription?.packagePlan ?? tenant.packagePlan ?? tenant.plan ?? null;
+  const packagePlan =
+    latestSubscription?.packagePlan ??
+    tenant.packagePlan ??
+    tenant.plan ??
+    null;
 
   return {
     ...tenant,
@@ -60,6 +68,10 @@ const normalizeBusinessOwnerRow = (tenant: TenantListRecord) => {
       tenant.paymentStatus,
       latestSubscription?.paymentStatus,
     ),
+    subscriptionId: getFirstString(
+      tenant.subscriptionId,
+      latestSubscription?.id,
+    ),
     planName: getFirstString(
       tenant.planName,
       packagePlan?.name,
@@ -81,7 +93,7 @@ export const getTenants = async (
   params?: TenantListFilterValues & {
     page?: number;
     limit?: number;
-  }
+  },
 ) => {
   const { data } = await api.get("/tenants", { params });
 
@@ -105,7 +117,7 @@ export type RegisterTenantResponse = {
  * POST /auth/admin/register-tenant
  */
 export const registerTenant = async (
-  payload: RegisterTenantValues
+  payload: RegisterTenantValues,
 ): Promise<RegisterTenantResponse> => {
   const { data } = await api.post("/auth/admin/register-tenant", payload);
   return data;
@@ -116,7 +128,7 @@ export const registerTenant = async (
  */
 export const updateTenant = async (
   id: string,
-  payload: Partial<UpdateTenantValues>
+  payload: Partial<UpdateTenantValues>,
 ) => {
   const { data } = await api.patch(`/tenants/${id}`, payload);
   return data;
@@ -144,17 +156,16 @@ export const getTenantAnalytics = async (id: string) => {
  * PATCH /admin/users/business-admins/{id}/approve
  */
 export const approveBusinessAdmin = async (id: string) => {
-  const { data } = await api.patch(`/admin/users/business-admins/${id}/approve`);
+  const { data } = await api.patch(
+    `/admin/users/business-admins/${id}/approve`,
+  );
   return data;
 };
-
 
 export const getTenant = async (id: string) => {
   const { data } = await api.get(`/tenants/${id}`);
   return data;
 };
-
-
 
 export type BusinessOwnerStats = {
   totalBusinessOwners: number;
@@ -170,9 +181,7 @@ export type BusinessOwnerStatsResponse = {
 
 export const getBusinessOwnerStats =
   async (): Promise<BusinessOwnerStatsResponse> => {
-    const { data } = await api.get(
-      "/admin/dashboard/business-owners/stats"
-    );
+    const { data } = await api.get("/admin/dashboard/business-owners/stats");
 
     return data;
   };

@@ -15,7 +15,9 @@ import {
   getPackagePlanCharges,
   getPackageSubscriptions,
   getWeeklyPayoutInvoice,
+  markSubscriptionManualPaid,
   sendPackageSubscriptionInvoiceEmail,
+  sendSubscriptionPaymentRequest,
   sendWeeklyPayoutInvoiceEmail,
   updatePackagePlan,
   updatePackagePlanCharge,
@@ -27,6 +29,8 @@ import {
   PackagePlansParams,
   PackageSubscriptionsParams,
   SendPackageSubscriptionInvoiceEmailPayload,
+  SendSubscriptionPaymentRequestPayload,
+  MarkSubscriptionManualPaidPayload,
   UpdatePackagePlanPayload,
   UpdatePackagePlanChargePayload,
   UpdatePackageSubscriptionPayload,
@@ -53,8 +57,7 @@ export const packagePlanKeys = {
   featureCatalog: () =>
     [...packagePlanKeys.all, "features", "catalog"] as const,
 
-  subscriptions: () =>
-    [...packagePlanKeys.all, "subscriptions"] as const,
+  subscriptions: () => [...packagePlanKeys.all, "subscriptions"] as const,
   subscriptionList: (params?: PackageSubscriptionsParams) =>
     [...packagePlanKeys.subscriptions(), params] as const,
   subscriptionInvoice: (id?: string) =>
@@ -206,7 +209,7 @@ export const useGetPackagePlanFeatureCatalog = () => {
  */
 
 export const useGetPackageSubscriptions = (
-  params?: PackageSubscriptionsParams
+  params?: PackageSubscriptionsParams,
 ) => {
   return useQuery({
     queryKey: packagePlanKeys.subscriptionList(params),
@@ -280,7 +283,7 @@ export const useDownloadPackageSubscriptionInvoicePdf = () => {
     },
     onError: (err: any) => {
       toast.error(
-        getErrorMessage(err, toasts("subscriptionInvoiceDownloadFailed"))
+        getErrorMessage(err, toasts("subscriptionInvoiceDownloadFailed")),
       );
     },
   });
@@ -298,12 +301,60 @@ export const useSendPackageSubscriptionInvoiceEmail = () => {
       payload?: SendPackageSubscriptionInvoiceEmailPayload;
     }) => sendPackageSubscriptionInvoiceEmail(id, payload),
     onSuccess: (response) => {
-      toast.success(response?.message || toasts("subscriptionInvoiceEmailSent"));
+      toast.success(
+        response?.message || toasts("subscriptionInvoiceEmailSent"),
+      );
     },
     onError: (err: any) => {
       toast.error(
-        getErrorMessage(err, toasts("subscriptionInvoiceEmailSendFailed"))
+        getErrorMessage(err, toasts("subscriptionInvoiceEmailSendFailed")),
       );
+    },
+  });
+};
+
+export const useSendSubscriptionPaymentRequest = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload?: SendSubscriptionPaymentRequestPayload;
+    }) => sendSubscriptionPaymentRequest(id, payload),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({
+        queryKey: packagePlanKeys.subscriptions(),
+      });
+      toast.success(response?.message || "Payment request created");
+    },
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, "Payment request failed"));
+    },
+  });
+};
+
+export const useMarkSubscriptionManualPaid = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: MarkSubscriptionManualPaidPayload;
+    }) => markSubscriptionManualPaid(id, payload),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({
+        queryKey: packagePlanKeys.subscriptions(),
+      });
+      toast.success(response?.message || "Subscription marked paid");
+    },
+    onError: (err: any) => {
+      toast.error(getErrorMessage(err, "Manual settlement failed"));
     },
   });
 };
@@ -312,7 +363,9 @@ export const useGetPackagePlanCharges = (params?: PackagePlanChargesParams) => {
   return useQuery({
     queryKey: packagePlanKeys.chargeList(params),
     queryFn: () => getPackagePlanCharges(params),
-    enabled: Boolean(params?.tenantId || params?.restaurantId || params?.subscriptionId),
+    enabled: Boolean(
+      params?.tenantId || params?.restaurantId || params?.subscriptionId,
+    ),
   });
 };
 
@@ -325,7 +378,9 @@ export const useCreatePackagePlanCharge = () => {
       createPackagePlanCharge(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: packagePlanKeys.charges() });
-      queryClient.invalidateQueries({ queryKey: packagePlanKeys.subscriptions() });
+      queryClient.invalidateQueries({
+        queryKey: packagePlanKeys.subscriptions(),
+      });
       toast.success(toasts("packagePlanChargeSaved"));
     },
     onError: (err: any) => {
@@ -339,11 +394,18 @@ export const useUpdatePackagePlanCharge = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: UpdatePackagePlanChargePayload }) =>
-      updatePackagePlanCharge(id, payload),
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: UpdatePackagePlanChargePayload;
+    }) => updatePackagePlanCharge(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: packagePlanKeys.charges() });
-      queryClient.invalidateQueries({ queryKey: packagePlanKeys.subscriptions() });
+      queryClient.invalidateQueries({
+        queryKey: packagePlanKeys.subscriptions(),
+      });
       toast.success(toasts("packagePlanChargeSaved"));
     },
     onError: (err: any) => {
@@ -370,14 +432,14 @@ export const useDownloadWeeklyPayoutInvoicePdf = () => {
         blob,
         `weekly-payout-invoice-${params.restaurantId}-${params.fromDate.slice(
           0,
-          10
-        )}.pdf`
+          10,
+        )}.pdf`,
       );
       toast.success(toasts("weeklyPayoutInvoiceDownloaded"));
     },
     onError: (err: any) => {
       toast.error(
-        getErrorMessage(err, toasts("weeklyPayoutInvoiceDownloadFailed"))
+        getErrorMessage(err, toasts("weeklyPayoutInvoiceDownloadFailed")),
       );
     },
   });
@@ -390,11 +452,13 @@ export const useSendWeeklyPayoutInvoiceEmail = () => {
     mutationFn: (payload: WeeklyPayoutInvoiceEmailPayload) =>
       sendWeeklyPayoutInvoiceEmail(payload),
     onSuccess: (response) => {
-      toast.success(response?.message || toasts("weeklyPayoutInvoiceEmailSent"));
+      toast.success(
+        response?.message || toasts("weeklyPayoutInvoiceEmailSent"),
+      );
     },
     onError: (err: any) => {
       toast.error(
-        getErrorMessage(err, toasts("weeklyPayoutInvoiceEmailSendFailed"))
+        getErrorMessage(err, toasts("weeklyPayoutInvoiceEmailSendFailed")),
       );
     },
   });

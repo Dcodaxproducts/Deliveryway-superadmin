@@ -9,41 +9,19 @@ import api from "@/lib/axios";
 export type BillingModel = "COMMISSION" | "PLAN" | "HYBRID" | string;
 
 export type BillingInterval =
-  | "MONTHLY"
-  | "YEARLY"
-  | "WEEKLY"
-  | "DAILY"
-  | string;
+  "MONTHLY" | "YEARLY" | "WEEKLY" | "DAILY" | string;
 
 export type PayoutCycle =
-  | "DAILY"
-  | "WEEKLY"
-  | "BIWEEKLY"
-  | "MONTHLY"
-  | "MANUAL"
-  | string;
+  "DAILY" | "WEEKLY" | "BIWEEKLY" | "MONTHLY" | "MANUAL" | string;
 
 export type SubscriptionPayoutCycleOverride =
-  | "DAILY"
-  | "WEEKLY"
-  | "BIWEEKLY"
-  | "MONTHLY"
-  | string;
+  "DAILY" | "WEEKLY" | "BIWEEKLY" | "MONTHLY" | string;
 
 export type SubscriptionPaymentStatus =
-  | "PENDING"
-  | "PAID"
-  | "FAILED"
-  | "CANCELLED"
-  | string;
+  "PENDING" | "PAID" | "FAILED" | "CANCELLED" | string;
 
 export type SubscriptionStatus =
-  | "TRIALING"
-  | "ACTIVE"
-  | "PAST_DUE"
-  | "CANCELLED"
-  | "EXPIRED"
-  | string;
+  "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELLED" | "EXPIRED" | string;
 
 export type PackagePlanFeatures = Record<string, any>;
 
@@ -154,13 +132,15 @@ export type PackageSubscriptionsParams = {
   includeInactive?: boolean;
   tenantId?: string;
   restaurantId?: string;
-  status?: "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELLED" | "EXPIRED" | string;
+  status?:
+    "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELLED" | "EXPIRED" | string;
 };
 
 export type PackagePlanChargeType = "ONE_TIME" | "RECURRING" | string;
 export type PackagePlanChargeDirection = "CHARGE" | "CREDIT" | string;
 export type PackagePlanChargeSource = "CUSTOM" | "MODULE" | string;
-export type PackagePlanChargeStatus = "ACTIVE" | "APPLIED" | "CANCELLED" | string;
+export type PackagePlanChargeStatus =
+  "ACTIVE" | "APPLIED" | "CANCELLED" | string;
 
 export type PackagePlanCharge = {
   id: string;
@@ -212,9 +192,10 @@ export type CreatePackagePlanChargePayload = {
   appliesFrom?: string;
 };
 
-export type UpdatePackagePlanChargePayload = Partial<CreatePackagePlanChargePayload> & {
-  status?: "ACTIVE" | "APPLIED" | "CANCELLED";
-};
+export type UpdatePackagePlanChargePayload =
+  Partial<CreatePackagePlanChargePayload> & {
+    status?: "ACTIVE" | "APPLIED" | "CANCELLED";
+  };
 
 export type PackagePlanChargesResponse = {
   success?: boolean;
@@ -339,6 +320,19 @@ export type SendPackageSubscriptionInvoiceEmailResponse = {
   message?: string;
 };
 
+export type SendSubscriptionPaymentRequestPayload = {
+  email?: string;
+  paymentUrl?: string;
+  note?: string;
+};
+
+export type MarkSubscriptionManualPaidPayload = {
+  paymentMethod: "BANK_TRANSFER" | "COD" | "CARD_ON_DELIVERY";
+  paymentReference: string;
+  receiptUrl: string;
+  note: string;
+};
+
 export type WeeklyPayoutInvoiceParams = {
   restaurantId: string;
   fromDate: string;
@@ -393,9 +387,7 @@ export type WeeklyPayoutInvoiceResponse = {
  * ==============================
  */
 
-export const createPackagePlan = async (
-  payload: CreatePackagePlanPayload
-) => {
+export const createPackagePlan = async (payload: CreatePackagePlanPayload) => {
   const { data } = await api.post("/admin/package-plans", payload);
   return data;
 };
@@ -412,7 +404,7 @@ export const getPackagePlanDetail = async (id: string) => {
 
 export const updatePackagePlan = async (
   id: string,
-  payload: UpdatePackagePlanPayload
+  payload: UpdatePackagePlanPayload,
 ) => {
   const { data } = await api.patch(`/admin/package-plans/${id}`, payload);
   return data;
@@ -441,7 +433,7 @@ export const getPackagePlanFeatureCatalog = async () => {
  */
 
 export const getPackageSubscriptions = async (
-  params?: PackageSubscriptionsParams
+  params?: PackageSubscriptionsParams,
 ) => {
   const { data } = await api.get("/admin/package-plans/subscriptions", {
     params,
@@ -450,22 +442,22 @@ export const getPackageSubscriptions = async (
 };
 
 export const createPackageSubscription = async (
-  payload: CreatePackageSubscriptionPayload
+  payload: CreatePackageSubscriptionPayload,
 ) => {
   const { data } = await api.post(
     "/admin/package-plans/subscriptions",
-    payload
+    payload,
   );
   return data;
 };
 
 export const updatePackageSubscription = async (
   id: string,
-  payload: UpdatePackageSubscriptionPayload
+  payload: UpdatePackageSubscriptionPayload,
 ) => {
   const { data } = await api.patch(
     `/admin/package-plans/subscriptions/${id}`,
-    payload
+    payload,
   );
   return data;
 };
@@ -477,14 +469,14 @@ export const updatePackageSubscription = async (
  */
 
 export const getPackagePlanCharges = async (
-  params?: PackagePlanChargesParams
+  params?: PackagePlanChargesParams,
 ): Promise<PackagePlanChargesResponse> => {
   const { data } = await api.get("/admin/package-plans/charges", { params });
   return data;
 };
 
 export const createPackagePlanCharge = async (
-  payload: CreatePackagePlanChargePayload
+  payload: CreatePackagePlanChargePayload,
 ) => {
   const normalizedPayload = {
     ...payload,
@@ -495,14 +487,14 @@ export const createPackagePlanCharge = async (
 
   const { data } = await api.post(
     "/admin/package-plans/charges",
-    normalizedPayload
+    normalizedPayload,
   );
   return data;
 };
 
 export const updatePackagePlanCharge = async (
   id: string,
-  payload: UpdatePackagePlanChargePayload
+  payload: UpdatePackagePlanChargePayload,
 ) => {
   const normalizedPayload = {
     ...payload,
@@ -513,7 +505,7 @@ export const updatePackagePlanCharge = async (
 
   const { data } = await api.patch(
     `/admin/package-plans/charges/${id}`,
-    normalizedPayload
+    normalizedPayload,
   );
   return data;
 };
@@ -525,10 +517,10 @@ export const updatePackagePlanCharge = async (
  */
 
 export const getPackageSubscriptionInvoice = async (
-  id: string
+  id: string,
 ): Promise<PackageSubscriptionInvoiceResponse> => {
   const { data } = await api.get(
-    `/admin/package-plans/subscriptions/${id}/invoice`
+    `/admin/package-plans/subscriptions/${id}/invoice`,
   );
 
   return data;
@@ -539,7 +531,7 @@ export const downloadPackageSubscriptionInvoicePdf = async (id: string) => {
     `/admin/package-plans/subscriptions/${id}/invoice/pdf`,
     {
       responseType: "blob",
-    }
+    },
   );
 
   return response.data;
@@ -547,11 +539,35 @@ export const downloadPackageSubscriptionInvoicePdf = async (id: string) => {
 
 export const sendPackageSubscriptionInvoiceEmail = async (
   id: string,
-  payload?: SendPackageSubscriptionInvoiceEmailPayload
+  payload?: SendPackageSubscriptionInvoiceEmailPayload,
 ): Promise<SendPackageSubscriptionInvoiceEmailResponse> => {
   const { data } = await api.post(
     `/admin/package-plans/subscriptions/${id}/invoice/send-email`,
-    payload?.email ? payload : undefined
+    payload?.email ? payload : undefined,
+  );
+
+  return data;
+};
+
+export const sendSubscriptionPaymentRequest = async (
+  id: string,
+  payload?: SendSubscriptionPaymentRequestPayload,
+) => {
+  const { data } = await api.post(
+    `/payments/subscriptions/${id}/payment-request`,
+    payload,
+  );
+
+  return data;
+};
+
+export const markSubscriptionManualPaid = async (
+  id: string,
+  payload: MarkSubscriptionManualPaidPayload,
+) => {
+  const { data } = await api.post(
+    `/payments/subscriptions/${id}/mark-manual-paid`,
+    payload,
   );
 
   return data;
@@ -564,36 +580,36 @@ export const sendPackageSubscriptionInvoiceEmail = async (
  */
 
 export const getWeeklyPayoutInvoice = async (
-  params: WeeklyPayoutInvoiceParams
+  params: WeeklyPayoutInvoiceParams,
 ): Promise<WeeklyPayoutInvoiceResponse> => {
   const { data } = await api.get(
     "/admin/package-plans/payouts/weekly-invoice",
-    { params }
+    { params },
   );
 
   return data;
 };
 
 export const downloadWeeklyPayoutInvoicePdf = async (
-  params: WeeklyPayoutInvoiceParams
+  params: WeeklyPayoutInvoiceParams,
 ) => {
   const response = await api.get<Blob>(
     "/admin/package-plans/payouts/weekly-invoice/pdf",
     {
       params,
       responseType: "blob",
-    }
+    },
   );
 
   return response.data;
 };
 
 export const sendWeeklyPayoutInvoiceEmail = async (
-  payload: WeeklyPayoutInvoiceEmailPayload
+  payload: WeeklyPayoutInvoiceEmailPayload,
 ): Promise<SendPackageSubscriptionInvoiceEmailResponse> => {
   const { data } = await api.post(
     "/admin/package-plans/payouts/weekly-invoice/send-email",
-    payload
+    payload,
   );
 
   return data;

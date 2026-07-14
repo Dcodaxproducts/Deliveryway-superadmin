@@ -21,6 +21,8 @@ import {
   MoreVertical,
   Package,
   Pencil,
+  ReceiptText,
+  Send,
   ShieldCheck,
   Trash2,
   UserCheck,
@@ -34,11 +36,26 @@ import {
   useUpdateTenant,
   useApproveBusinessAdmin,
 } from "@/hooks/useTenants";
+import {
+  useMarkSubscriptionManualPaid,
+  useSendSubscriptionPaymentRequest,
+} from "@/hooks/usePackagePlans";
 import Pagination from "@/components/pagination";
 import DeleteDialog from "@/components/dialogs/delete-dialog";
 import AddBusinessOwnerModal from "../pages/business-owners/AddBusinessOwnerModal";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 type RequirementTone = "success" | "warning" | "danger" | "muted" | "primary";
 
@@ -55,6 +72,7 @@ type RequirementBadgeProps = {
 type BusinessOwnerRow = {
   id: string;
   ownerId?: string;
+  subscriptionId?: string | null;
   isVerified: boolean;
   isApproved: boolean;
   isActive: boolean;
@@ -140,7 +158,11 @@ function RequirementBadge({
   );
 
   if (!onClick) {
-    return <div className={className} title={title || value}>{content}</div>;
+    return (
+      <div className={className} title={title || value}>
+        {content}
+      </div>
+    );
   }
 
   return (
@@ -157,11 +179,17 @@ function RequirementBadge({
 }
 
 const formatStatusLabel = (value?: string | null) =>
-  value ? value.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase()) : "N/A";
+  value
+    ? value
+        .replace(/_/g, " ")
+        .toLowerCase()
+        .replace(/\b\w/g, (char) => char.toUpperCase())
+    : "N/A";
 
 const getSubscriptionTone = (status?: string | null): RequirementTone => {
   if (status === "ACTIVE" || status === "PAID") return "success";
-  if (status === "FAILED" || status === "CANCELLED" || status === "REFUNDED") return "danger";
+  if (status === "FAILED" || status === "CANCELLED" || status === "REFUNDED")
+    return "danger";
   if (status === "PENDING" || status === "PAST_DUE") return "warning";
 
   return "muted";
@@ -239,6 +267,14 @@ export default function BusinessOwnerTable({
   const [approvalUpdatingId, setApprovalUpdatingId] = useState<string | null>(
     null,
   );
+  const [manualPaidRow, setManualPaidRow] = useState<BusinessOwnerRow | null>(
+    null,
+  );
+  const [manualPaidForm, setManualPaidForm] = useState({
+    paymentReference: "",
+    receiptUrl: "",
+    note: "",
+  });
 
   const actionMenuRef = useRef<HTMLDivElement | null>(null);
 
@@ -253,6 +289,8 @@ export default function BusinessOwnerTable({
   const { mutate: deleteTenant } = useDeleteTenant();
   const { mutate: updateTenant } = useUpdateTenant();
   const { mutate: approveBusinessAdmin } = useApproveBusinessAdmin();
+  const sendPaymentRequest = useSendSubscriptionPaymentRequest();
+  const markManualPaid = useMarkSubscriptionManualPaid();
 
   const businessOwners = useMemo(() => data?.data || [], [data?.data]);
   const meta = data?.meta;
@@ -340,6 +378,68 @@ export default function BusinessOwnerTable({
     });
   };
 
+  const handleSendPaymentRequest = (item: BusinessOwnerRow) => {
+    if (!item.subscriptionId) {
+      toast.error("Subscription id is missing");
+      return;
+    }
+
+    sendPaymentRequest.mutate(
+      {
+        id: item.subscriptionId,
+        payload: { note: "Super admin requested subscription payment" },
+      },
+      {
+        onSuccess: () => {
+          refetch();
+          setOpenActionId(null);
+        },
+      },
+    );
+  };
+
+  const handleOpenManualPaid = (item: BusinessOwnerRow) => {
+    if (!item.subscriptionId) {
+      toast.error("Subscription id is missing");
+      return;
+    }
+
+    setManualPaidRow(item);
+    setManualPaidForm({ paymentReference: "", receiptUrl: "", note: "" });
+    setOpenActionId(null);
+  };
+
+  const handleSubmitManualPaid = () => {
+    if (!manualPaidRow?.subscriptionId) return;
+
+    const paymentReference = manualPaidForm.paymentReference.trim();
+    const receiptUrl = manualPaidForm.receiptUrl.trim();
+    const note = manualPaidForm.note.trim();
+
+    if (!paymentReference || !receiptUrl || !note) {
+      toast.error("Reference, receipt and note are required");
+      return;
+    }
+
+    markManualPaid.mutate(
+      {
+        id: manualPaidRow.subscriptionId,
+        payload: {
+          paymentMethod: "BANK_TRANSFER",
+          paymentReference,
+          receiptUrl,
+          note,
+        },
+      },
+      {
+        onSuccess: () => {
+          setManualPaidRow(null);
+          refetch();
+        },
+      },
+    );
+  };
+
   const handleEdit = (item: BusinessOwnerRow) => {
     setOpenActionId(null);
     router.push(`/business-owners/${item.id}/edit`);
@@ -357,281 +457,335 @@ export default function BusinessOwnerTable({
   return (
     <>
       <div className="max-w-full overflow-hidden rounded-lg border border-gray-100">
-      <Table className="min-w-[960px] table-fixed">
-        <colgroup>
-          <col className="w-[7%]" />
-          <col className="w-[15%]" />
-          <col className="w-[18%]" />
-          <col className="w-[16%]" />
-          <col className="w-[17%]" />
-          <col className="w-[18%]" />
-          <col className="w-[9%]" />
-        </colgroup>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{businessOwnersText("serial")}</TableHead>
-            <TableHead>{businessOwnersText("businessOwner")}</TableHead>
-            <TableHead>{businessOwnersText("details")}</TableHead>
-            <TableHead>{businessOwnersText("tenant")}</TableHead>
-            <TableHead>{businessOwnersText("subscription")}</TableHead>
-            <TableHead>{common("status")}</TableHead>
-            <TableHead className="text-center">{common("actions")}</TableHead>
-          </TableRow>
-        </TableHeader>
+        <Table className="min-w-[960px] table-fixed">
+          <colgroup>
+            <col className="w-[7%]" />
+            <col className="w-[15%]" />
+            <col className="w-[18%]" />
+            <col className="w-[16%]" />
+            <col className="w-[17%]" />
+            <col className="w-[18%]" />
+            <col className="w-[9%]" />
+          </colgroup>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{businessOwnersText("serial")}</TableHead>
+              <TableHead>{businessOwnersText("businessOwner")}</TableHead>
+              <TableHead>{businessOwnersText("details")}</TableHead>
+              <TableHead>{businessOwnersText("tenant")}</TableHead>
+              <TableHead>{businessOwnersText("subscription")}</TableHead>
+              <TableHead>{common("status")}</TableHead>
+              <TableHead className="text-center">{common("actions")}</TableHead>
+            </TableRow>
+          </TableHeader>
 
-        <TableBody>
-          {isLoading
-            ? skeletonRows.map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell colSpan={tableColSpan}>
-                    <div className="h-10 w-full animate-pulse rounded bg-gray-100" />
-                  </TableCell>
-                </TableRow>
-              ))
-            : businessOwners.map((item: BusinessOwnerRow, i: number) => {
-                const businessOwnerName = item.name || "N/A";
-                const businessName = item.name || "-";
-                const businessSlug = item.slug || "-";
-                const businessBio = item.bio || "-";
-
-                const logoUrl =
-                  typeof item.logoUrl === "string" &&
-                  item.logoUrl !== "[object Object]"
-                    ? item.logoUrl
-                    : null;
-
-                const status = getOverallStatus(item);
-                const planName = item.planName || "N/A";
-                const subscriptionStatus = item.subscriptionStatus || null;
-                const paymentStatus = item.paymentStatus || null;
-                const isActiveUpdating = activeUpdatingId === item.id;
-                const isApprovalUpdating = approvalUpdatingId === item.id;
-                const isApprovedAndVerified =
-                  Boolean(item?.isApproved) && Boolean(item?.isVerified);
-                const canClickApprove =
-                  Boolean(item?.ownerId) &&
-                  (!item?.isApproved || !item?.isVerified);
-                const approveActionTitle = isApprovedAndVerified
-                  ? businessOwnersText("alreadyApproved")
-                  : businessOwnersText("approve");
-                const isActionMenuOpen = openActionId === item.id;
-
-                return (
-                  <TableRow key={item.id} className="align-top">
-                    <TableCell className="pt-5">{i + 1}</TableCell>
-
-                    <TableCell className="pt-5 font-medium capitalize">
-                      <TruncatedWithTooltip
-                        value={businessOwnerName}
-                        tooltip={businessOwnerName}
-                      />
-                    </TableCell>
-
-                    <TableCell className="pt-5 whitespace-normal">
-                      <div className="flex min-w-0 flex-col">
-                        <TruncatedWithTooltip
-                          value={businessName}
-                          tooltip={businessName}
-                          className="font-medium text-gray-900"
-                        />
-                        <TruncatedWithTooltip
-                          value={businessSlug}
-                          tooltip={businessSlug}
-                          className="text-sm text-gray-500"
-                        />
-                        <TruncatedWithTooltip
-                          value={businessBio}
-                          tooltip={businessBio}
-                          className="text-xs text-gray-400"
-                        />
-                      </div>
-                    </TableCell>
-
-                    <TableCell className="pt-5">
-                      <div className="flex min-w-0 items-center gap-2">
-                        {logoUrl ? (
-                          <img
-                            src={logoUrl}
-                            alt={businessName}
-                            className="h-8 w-8 shrink-0 rounded-lg border object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border bg-gray-50 text-xs font-semibold text-gray-500">
-                            {businessName.slice(0, 1).toUpperCase()}
-                          </div>
-                        )}
-
-                        <TruncatedWithTooltip
-                          value={item.id}
-                          tooltip={item.id}
-                          className="text-sm text-gray-600"
-                        />
-                      </div>
-                    </TableCell>
-
-                    <TableCell className="py-4 whitespace-normal">
-                      <div className="grid min-w-0 grid-cols-1 gap-2">
-                        <RequirementBadge
-                          label="Plan"
-                          value={planName}
-                          tone={planName === "N/A" ? "muted" : "primary"}
-                          icon={<Package size={14} />}
-                          title={planName}
-                        />
-                        <RequirementBadge
-                          label="Subscription"
-                          value={formatStatusLabel(subscriptionStatus)}
-                          tone={getSubscriptionTone(subscriptionStatus)}
-                          icon={<Clock3 size={14} />}
-                          title={formatStatusLabel(subscriptionStatus)}
-                        />
-                        <RequirementBadge
-                          label="Payment"
-                          value={formatStatusLabel(paymentStatus)}
-                          tone={getSubscriptionTone(paymentStatus)}
-                          icon={<CreditCard size={14} />}
-                          title={formatStatusLabel(paymentStatus)}
-                        />
-                      </div>
-                    </TableCell>
-
-                    <TableCell className="py-4 whitespace-normal">
-                      <div className="min-w-0 space-y-3">
-                        <div>
-                          <span
-                            className={`inline-flex max-w-full items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ${status.className}`}
-                            title={businessOwnersText(status.labelKey)}
-                          >
-                            {status.icon}
-                            <span className="truncate">
-                              {businessOwnersText(status.labelKey)}
-                            </span>
-                          </span>
-                          <TruncatedWithTooltip
-                            value={businessOwnersText(status.descriptionKey)}
-                            tooltip={businessOwnersText(status.descriptionKey)}
-                            className="mt-1 text-[11px] leading-5 text-gray-500"
-                          />
-                        </div>
-
-                        <div className="grid min-w-0 grid-cols-1 gap-2">
-                          <RequirementBadge
-                            label={businessOwnersText("twoFactor")}
-                            value={item?.isVerified ? businessOwnersText("verified") : businessOwnersText("pending")}
-                            tone={item?.isVerified ? "success" : "warning"}
-                            disabled={!canClickApprove || isApprovalUpdating}
-                            onClick={
-                              canClickApprove
-                                ? () => handleApproveOwner(item)
-                                : undefined
-                            }
-                            title={approveActionTitle}
-                            icon={
-                              isApprovalUpdating ? (
-                                <Loader2 size={14} className="animate-spin" />
-                              ) : item?.isVerified ? (
-                                <ShieldCheck size={14} />
-                              ) : (
-                                <Clock3 size={14} />
-                              )
-                            }
-                          />
-
-                          <RequirementBadge
-                            label={businessOwnersText("approval")}
-                            value={item?.isApproved ? businessOwnersText("approved") : businessOwnersText("required")}
-                            tone={item?.isApproved ? "success" : "primary"}
-                            disabled={!canClickApprove || isApprovalUpdating}
-                            onClick={
-                              canClickApprove
-                                ? () => handleApproveOwner(item)
-                                : undefined
-                            }
-                            title={approveActionTitle}
-                            icon={
-                              isApprovalUpdating ? (
-                                <Loader2 size={14} className="animate-spin" />
-                              ) : item?.isApproved ? (
-                                <UserCheck size={14} />
-                              ) : (
-                                <ShieldCheck size={14} />
-                              )
-                            }
-                          />
-
-                          <RequirementBadge
-                            label={businessOwnersText("access")}
-                            value={item?.isActive ? common("active") : common("disabled")}
-                            tone={item?.isActive ? "success" : "danger"}
-                            disabled={isActiveUpdating}
-                            onClick={() => handleActiveToggle(item, !item?.isActive)}
-                            title={
-                              item?.isActive
-                                ? businessOwnersText("disablePlatformAccess")
-                                : businessOwnersText("enablePlatformAccess")
-                            }
-                            icon={
-                              isActiveUpdating ? (
-                                <Loader2 size={14} className="animate-spin" />
-                              ) : item?.isActive ? (
-                                <CheckCircle2 size={14} />
-                              ) : (
-                                <UserX size={14} />
-                              )
-                            }
-                          />
-                        </div>
-                      </div>
-                    </TableCell>
-
-                    <TableCell className="pt-5 text-center">
-                      <div
-                        className="relative inline-flex justify-center"
-                        ref={isActionMenuOpen ? actionMenuRef : null}
-                      >
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setOpenActionId((prev) =>
-                              prev === item.id ? null : item.id,
-                            )
-                          }
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 hover:text-gray-900"
-                          aria-label={businessOwnersText("openActions")}
-                        >
-                          <MoreVertical size={17} />
-                        </button>
-
-                        {isActionMenuOpen ? (
-                          <div className="absolute right-0 top-10 z-30 w-[230px] overflow-hidden rounded-xl border border-gray-100 bg-white py-1 text-left shadow-xl">
-                            <button
-                              type="button"
-                              onClick={() => handleEdit(item)}
-                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50"
-                            >
-                              <Pencil size={15} />
-                              {businessOwnersText("editBusinessOwner")}
-                            </button>
-
-                            <div className="my-1 h-px bg-gray-100" />
-
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteClick(item)}
-                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 transition hover:bg-red-50"
-                            >
-                              <Trash2 size={15} />
-                              {common("delete")}
-                            </button>
-                          </div>
-                        ) : null}
-                      </div>
+          <TableBody>
+            {isLoading
+              ? skeletonRows.map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell colSpan={tableColSpan}>
+                      <div className="h-10 w-full animate-pulse rounded bg-gray-100" />
                     </TableCell>
                   </TableRow>
-                );
-              })}
-        </TableBody>
-      </Table>
+                ))
+              : businessOwners.map((item: BusinessOwnerRow, i: number) => {
+                  const businessOwnerName = item.name || "N/A";
+                  const businessName = item.name || "-";
+                  const businessSlug = item.slug || "-";
+                  const businessBio = item.bio || "-";
+
+                  const logoUrl =
+                    typeof item.logoUrl === "string" &&
+                    item.logoUrl !== "[object Object]"
+                      ? item.logoUrl
+                      : null;
+
+                  const status = getOverallStatus(item);
+                  const planName = item.planName || "N/A";
+                  const subscriptionStatus = item.subscriptionStatus || null;
+                  const paymentStatus = item.paymentStatus || null;
+                  const isActiveUpdating = activeUpdatingId === item.id;
+                  const isApprovalUpdating = approvalUpdatingId === item.id;
+                  const isApprovedAndVerified =
+                    Boolean(item?.isApproved) && Boolean(item?.isVerified);
+                  const canClickApprove =
+                    Boolean(item?.ownerId) &&
+                    (!item?.isApproved || !item?.isVerified);
+                  const approveActionTitle = isApprovedAndVerified
+                    ? businessOwnersText("alreadyApproved")
+                    : businessOwnersText("approve");
+                  const isPaymentPending = paymentStatus === "PENDING";
+                  const isSendingPaymentRequest =
+                    sendPaymentRequest.isPending &&
+                    sendPaymentRequest.variables?.id === item.subscriptionId;
+                  const isActionMenuOpen = openActionId === item.id;
+
+                  return (
+                    <TableRow key={item.id} className="align-top">
+                      <TableCell className="pt-5">{i + 1}</TableCell>
+
+                      <TableCell className="pt-5 font-medium capitalize">
+                        <TruncatedWithTooltip
+                          value={businessOwnerName}
+                          tooltip={businessOwnerName}
+                        />
+                      </TableCell>
+
+                      <TableCell className="pt-5 whitespace-normal">
+                        <div className="flex min-w-0 flex-col">
+                          <TruncatedWithTooltip
+                            value={businessName}
+                            tooltip={businessName}
+                            className="font-medium text-gray-900"
+                          />
+                          <TruncatedWithTooltip
+                            value={businessSlug}
+                            tooltip={businessSlug}
+                            className="text-sm text-gray-500"
+                          />
+                          <TruncatedWithTooltip
+                            value={businessBio}
+                            tooltip={businessBio}
+                            className="text-xs text-gray-400"
+                          />
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="pt-5">
+                        <div className="flex min-w-0 items-center gap-2">
+                          {logoUrl ? (
+                            <img
+                              src={logoUrl}
+                              alt={businessName}
+                              className="h-8 w-8 shrink-0 rounded-lg border object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border bg-gray-50 text-xs font-semibold text-gray-500">
+                              {businessName.slice(0, 1).toUpperCase()}
+                            </div>
+                          )}
+
+                          <TruncatedWithTooltip
+                            value={item.id}
+                            tooltip={item.id}
+                            className="text-sm text-gray-600"
+                          />
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="py-4 whitespace-normal">
+                        <div className="grid min-w-0 grid-cols-1 gap-2">
+                          <RequirementBadge
+                            label="Plan"
+                            value={planName}
+                            tone={planName === "N/A" ? "muted" : "primary"}
+                            icon={<Package size={14} />}
+                            title={planName}
+                          />
+                          <RequirementBadge
+                            label="Subscription"
+                            value={formatStatusLabel(subscriptionStatus)}
+                            tone={getSubscriptionTone(subscriptionStatus)}
+                            icon={<Clock3 size={14} />}
+                            title={formatStatusLabel(subscriptionStatus)}
+                          />
+                          <RequirementBadge
+                            label="Payment"
+                            value={formatStatusLabel(paymentStatus)}
+                            tone={getSubscriptionTone(paymentStatus)}
+                            icon={<CreditCard size={14} />}
+                            title={formatStatusLabel(paymentStatus)}
+                          />
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="py-4 whitespace-normal">
+                        <div className="min-w-0 space-y-3">
+                          <div>
+                            <span
+                              className={`inline-flex max-w-full items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ${status.className}`}
+                              title={businessOwnersText(status.labelKey)}
+                            >
+                              {status.icon}
+                              <span className="truncate">
+                                {businessOwnersText(status.labelKey)}
+                              </span>
+                            </span>
+                            <TruncatedWithTooltip
+                              value={businessOwnersText(status.descriptionKey)}
+                              tooltip={businessOwnersText(
+                                status.descriptionKey,
+                              )}
+                              className="mt-1 text-[11px] leading-5 text-gray-500"
+                            />
+                          </div>
+
+                          <div className="grid min-w-0 grid-cols-1 gap-2">
+                            <RequirementBadge
+                              label={businessOwnersText("twoFactor")}
+                              value={
+                                item?.isVerified
+                                  ? businessOwnersText("verified")
+                                  : businessOwnersText("pending")
+                              }
+                              tone={item?.isVerified ? "success" : "warning"}
+                              disabled={!canClickApprove || isApprovalUpdating}
+                              onClick={
+                                canClickApprove
+                                  ? () => handleApproveOwner(item)
+                                  : undefined
+                              }
+                              title={approveActionTitle}
+                              icon={
+                                isApprovalUpdating ? (
+                                  <Loader2 size={14} className="animate-spin" />
+                                ) : item?.isVerified ? (
+                                  <ShieldCheck size={14} />
+                                ) : (
+                                  <Clock3 size={14} />
+                                )
+                              }
+                            />
+
+                            <RequirementBadge
+                              label={businessOwnersText("approval")}
+                              value={
+                                item?.isApproved
+                                  ? businessOwnersText("approved")
+                                  : businessOwnersText("required")
+                              }
+                              tone={item?.isApproved ? "success" : "primary"}
+                              disabled={!canClickApprove || isApprovalUpdating}
+                              onClick={
+                                canClickApprove
+                                  ? () => handleApproveOwner(item)
+                                  : undefined
+                              }
+                              title={approveActionTitle}
+                              icon={
+                                isApprovalUpdating ? (
+                                  <Loader2 size={14} className="animate-spin" />
+                                ) : item?.isApproved ? (
+                                  <UserCheck size={14} />
+                                ) : (
+                                  <ShieldCheck size={14} />
+                                )
+                              }
+                            />
+
+                            <RequirementBadge
+                              label={businessOwnersText("access")}
+                              value={
+                                item?.isActive
+                                  ? common("active")
+                                  : common("disabled")
+                              }
+                              tone={item?.isActive ? "success" : "danger"}
+                              disabled={isActiveUpdating}
+                              onClick={() =>
+                                handleActiveToggle(item, !item?.isActive)
+                              }
+                              title={
+                                item?.isActive
+                                  ? businessOwnersText("disablePlatformAccess")
+                                  : businessOwnersText("enablePlatformAccess")
+                              }
+                              icon={
+                                isActiveUpdating ? (
+                                  <Loader2 size={14} className="animate-spin" />
+                                ) : item?.isActive ? (
+                                  <CheckCircle2 size={14} />
+                                ) : (
+                                  <UserX size={14} />
+                                )
+                              }
+                            />
+                          </div>
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="pt-5 text-center">
+                        <div
+                          className="relative inline-flex justify-center"
+                          ref={isActionMenuOpen ? actionMenuRef : null}
+                        >
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setOpenActionId((prev) =>
+                                prev === item.id ? null : item.id,
+                              )
+                            }
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 hover:text-gray-900"
+                            aria-label={businessOwnersText("openActions")}
+                          >
+                            <MoreVertical size={17} />
+                          </button>
+
+                          {isActionMenuOpen ? (
+                            <div className="absolute right-0 top-10 z-30 w-[230px] overflow-hidden rounded-xl border border-gray-100 bg-white py-1 text-left shadow-xl">
+                              {isPaymentPending ? (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleSendPaymentRequest(item)
+                                    }
+                                    disabled={isSendingPaymentRequest}
+                                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50 disabled:opacity-60"
+                                  >
+                                    {isSendingPaymentRequest ? (
+                                      <Loader2
+                                        size={15}
+                                        className="animate-spin"
+                                      />
+                                    ) : (
+                                      <Send size={15} />
+                                    )}
+                                    Send payment request
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenManualPaid(item)}
+                                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50"
+                                  >
+                                    <ReceiptText size={15} />
+                                    Mark manual paid
+                                  </button>
+
+                                  <div className="my-1 h-px bg-gray-100" />
+                                </>
+                              ) : null}
+
+                              <button
+                                type="button"
+                                onClick={() => handleEdit(item)}
+                                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50"
+                              >
+                                <Pencil size={15} />
+                                {businessOwnersText("editBusinessOwner")}
+                              </button>
+
+                              <div className="my-1 h-px bg-gray-100" />
+
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteClick(item)}
+                                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 transition hover:bg-red-50"
+                              >
+                                <Trash2 size={15} />
+                                {common("delete")}
+                              </button>
+                            </div>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+          </TableBody>
+        </Table>
       </div>
 
       {meta ? <Pagination {...meta} onPageChange={setPage} /> : null}
@@ -648,6 +802,93 @@ export default function BusinessOwnerTable({
         title={dialogs("deleteBusinessOwner")}
         description={dialogs("deleteBusinessOwnerDescription")}
       />
+
+      <Dialog
+        open={Boolean(manualPaidRow)}
+        onOpenChange={(open) => {
+          if (!open) setManualPaidRow(null);
+        }}
+      >
+        <DialogContent className="max-w-lg rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>Mark subscription manually paid</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="rounded-xl border border-amber-100 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+              This creates an audit transaction and activates access. Use only
+              after confirming bank/cash receipt.
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="manual-reference">Payment reference</Label>
+              <Input
+                id="manual-reference"
+                value={manualPaidForm.paymentReference}
+                onChange={(event) =>
+                  setManualPaidForm((prev) => ({
+                    ...prev,
+                    paymentReference: event.target.value,
+                  }))
+                }
+                placeholder="Bank transaction id / receipt number"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="manual-receipt">Receipt URL/reference</Label>
+              <Input
+                id="manual-receipt"
+                value={manualPaidForm.receiptUrl}
+                onChange={(event) =>
+                  setManualPaidForm((prev) => ({
+                    ...prev,
+                    receiptUrl: event.target.value,
+                  }))
+                }
+                placeholder="Receipt URL, file id, or counter receipt ref"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="manual-note">Audit note</Label>
+              <Textarea
+                id="manual-note"
+                value={manualPaidForm.note}
+                onChange={(event) =>
+                  setManualPaidForm((prev) => ({
+                    ...prev,
+                    note: event.target.value,
+                  }))
+                }
+                placeholder="Who verified this payment and where it was received"
+                rows={4}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setManualPaidRow(null)}
+                disabled={markManualPaid.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSubmitManualPaid}
+                disabled={markManualPaid.isPending}
+              >
+                {markManualPaid.isPending ? (
+                  <Loader2 size={16} className="mr-2 animate-spin" />
+                ) : null}
+                Mark paid
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <AddBusinessOwnerModal
         open={Boolean(editData)}
