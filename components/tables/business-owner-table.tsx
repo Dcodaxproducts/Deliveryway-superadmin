@@ -9,6 +9,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   CheckCircle2,
   Clock3,
   CreditCard,
@@ -59,6 +64,35 @@ type BusinessOwnerRow = {
   [key: string]: any;
 };
 
+type TruncatedWithTooltipProps = {
+  value: React.ReactNode;
+  tooltip: string;
+  className?: string;
+};
+
+function TruncatedWithTooltip({
+  value,
+  tooltip,
+  className = "",
+}: TruncatedWithTooltipProps) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span
+          className={`block min-w-0 truncate ${className}`}
+          tabIndex={0}
+          title={tooltip}
+        >
+          {value}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-xs whitespace-normal break-words">
+        {tooltip}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 const getToneClasses = (tone: RequirementTone) => {
   const tones: Record<RequirementTone, string> = {
     success: "border-green-100 bg-green-50 text-green-700",
@@ -80,7 +114,7 @@ function RequirementBadge({
   onClick,
   title,
 }: RequirementBadgeProps) {
-  const className = `inline-flex min-w-[118px] items-center gap-2 rounded-xl border px-2.5 py-2 text-left transition ${getToneClasses(
+  const className = `inline-flex min-w-0 max-w-full items-center gap-2 rounded-xl border px-2.5 py-2 text-left transition ${getToneClasses(
     tone,
   )} ${
     onClick
@@ -106,7 +140,7 @@ function RequirementBadge({
   );
 
   if (!onClick) {
-    return <div className={className}>{content}</div>;
+    return <div className={className} title={title || value}>{content}</div>;
   }
 
   return (
@@ -322,16 +356,26 @@ export default function BusinessOwnerTable({
 
   return (
     <>
-      <Table>
+      <div className="max-w-full overflow-hidden rounded-lg border border-gray-100">
+      <Table className="min-w-[960px] table-fixed">
+        <colgroup>
+          <col className="w-[7%]" />
+          <col className="w-[15%]" />
+          <col className="w-[18%]" />
+          <col className="w-[16%]" />
+          <col className="w-[17%]" />
+          <col className="w-[18%]" />
+          <col className="w-[9%]" />
+        </colgroup>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[70px]">{businessOwnersText("serial")}</TableHead>
+            <TableHead>{businessOwnersText("serial")}</TableHead>
             <TableHead>{businessOwnersText("businessOwner")}</TableHead>
             <TableHead>{businessOwnersText("details")}</TableHead>
             <TableHead>{businessOwnersText("tenant")}</TableHead>
             <TableHead>{businessOwnersText("subscription")}</TableHead>
             <TableHead>{common("status")}</TableHead>
-            <TableHead className="w-[90px] text-center">{common("actions")}</TableHead>
+            <TableHead className="text-center">{common("actions")}</TableHead>
           </TableRow>
         </TableHeader>
 
@@ -377,20 +421,29 @@ export default function BusinessOwnerTable({
                     <TableCell className="pt-5">{i + 1}</TableCell>
 
                     <TableCell className="pt-5 font-medium capitalize">
-                      {businessOwnerName}
+                      <TruncatedWithTooltip
+                        value={businessOwnerName}
+                        tooltip={businessOwnerName}
+                      />
                     </TableCell>
 
-                    <TableCell className="pt-5">
+                    <TableCell className="pt-5 whitespace-normal">
                       <div className="flex min-w-0 flex-col">
-                        <span className="font-medium text-gray-900">
-                          {businessName}
-                        </span>
-                        <span className="text-sm text-gray-500">
-                          {businessSlug}
-                        </span>
-                        <span className="line-clamp-1 text-xs text-gray-400">
-                          {businessBio}
-                        </span>
+                        <TruncatedWithTooltip
+                          value={businessName}
+                          tooltip={businessName}
+                          className="font-medium text-gray-900"
+                        />
+                        <TruncatedWithTooltip
+                          value={businessSlug}
+                          tooltip={businessSlug}
+                          className="text-sm text-gray-500"
+                        />
+                        <TruncatedWithTooltip
+                          value={businessBio}
+                          tooltip={businessBio}
+                          className="text-xs text-gray-400"
+                        />
                       </div>
                     </TableCell>
 
@@ -408,50 +461,60 @@ export default function BusinessOwnerTable({
                           </div>
                         )}
 
-                        <span className="max-w-[180px] truncate text-sm text-gray-600">
-                          {item.id}
-                        </span>
+                        <TruncatedWithTooltip
+                          value={item.id}
+                          tooltip={item.id}
+                          className="text-sm text-gray-600"
+                        />
                       </div>
                     </TableCell>
 
-                    <TableCell className="min-w-[260px] py-4">
-                      <div className="flex flex-wrap gap-2">
+                    <TableCell className="py-4 whitespace-normal">
+                      <div className="grid min-w-0 grid-cols-1 gap-2">
                         <RequirementBadge
                           label="Plan"
                           value={planName}
                           tone={planName === "N/A" ? "muted" : "primary"}
                           icon={<Package size={14} />}
+                          title={planName}
                         />
                         <RequirementBadge
                           label="Subscription"
                           value={formatStatusLabel(subscriptionStatus)}
                           tone={getSubscriptionTone(subscriptionStatus)}
                           icon={<Clock3 size={14} />}
+                          title={formatStatusLabel(subscriptionStatus)}
                         />
                         <RequirementBadge
                           label="Payment"
                           value={formatStatusLabel(paymentStatus)}
                           tone={getSubscriptionTone(paymentStatus)}
                           icon={<CreditCard size={14} />}
+                          title={formatStatusLabel(paymentStatus)}
                         />
                       </div>
                     </TableCell>
 
-                    <TableCell className="min-w-[330px] py-4">
-                      <div className="space-y-3">
+                    <TableCell className="py-4 whitespace-normal">
+                      <div className="min-w-0 space-y-3">
                         <div>
                           <span
-                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ${status.className}`}
+                            className={`inline-flex max-w-full items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ${status.className}`}
+                            title={businessOwnersText(status.labelKey)}
                           >
                             {status.icon}
-                            {businessOwnersText(status.labelKey)}
+                            <span className="truncate">
+                              {businessOwnersText(status.labelKey)}
+                            </span>
                           </span>
-                          <p className="mt-1 text-[11px] leading-5 text-gray-500">
-                            {businessOwnersText(status.descriptionKey)}
-                          </p>
+                          <TruncatedWithTooltip
+                            value={businessOwnersText(status.descriptionKey)}
+                            tooltip={businessOwnersText(status.descriptionKey)}
+                            className="mt-1 text-[11px] leading-5 text-gray-500"
+                          />
                         </div>
 
-                        <div className="flex flex-wrap gap-2">
+                        <div className="grid min-w-0 grid-cols-1 gap-2">
                           <RequirementBadge
                             label={businessOwnersText("twoFactor")}
                             value={item?.isVerified ? businessOwnersText("verified") : businessOwnersText("pending")}
@@ -569,6 +632,7 @@ export default function BusinessOwnerTable({
               })}
         </TableBody>
       </Table>
+      </div>
 
       {meta ? <Pagination {...meta} onPageChange={setPage} /> : null}
 

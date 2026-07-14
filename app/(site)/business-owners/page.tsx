@@ -38,7 +38,7 @@ const BusinessOwnerPage = () => {
         onEmployeeSuccess={handleSuccess}
       />
 
-      <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm space-y-6">
+      <div className="min-w-0 space-y-6 rounded-lg bg-white p-4 shadow-sm lg:p-6">
         <StatsSection
           stats={businessOwnerStats}
           loading={statsLoading || statsFetching}
