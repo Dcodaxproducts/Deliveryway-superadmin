@@ -605,6 +605,24 @@ export default function BusinessOwnerForm({
     return component?.[mode] || "";
   };
 
+  const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  const getFirstAddressLine = (place: any) =>
+    String(place?.formatted_address || place?.name || "").split(",")[0]?.trim() || "";
+
+  const stripStreetNumberFromStreet = (street: string, streetNumber: string) => {
+    const trimmedStreet = street.trim();
+
+    if (!streetNumber) return trimmedStreet;
+
+    const escapedStreetNumber = escapeRegExp(streetNumber.trim());
+
+    return trimmedStreet
+      .replace(new RegExp(`^${escapedStreetNumber}\\s+`, "i"), "")
+      .replace(new RegExp(`\\s+${escapedStreetNumber}$`, "i"), "")
+      .trim();
+  };
+
   const composeBranchAddress = (source: any) => {
     return [
       source?.shopNumber,
@@ -686,7 +704,11 @@ export default function BusinessOwnerForm({
       getAddressComponent(components, ["premise"]) ||
       streetNumber;
     const route = getAddressComponent(components, ["route"]);
-    const street = route.trim() || place?.name || "";
+    const fallbackStreet = stripStreetNumberFromStreet(
+      getFirstAddressLine(place),
+      streetNumber
+    );
+    const street = route.trim() || fallbackStreet;
 
     const area =
       getAddressComponent(components, [
