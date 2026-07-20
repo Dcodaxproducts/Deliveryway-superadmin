@@ -12,6 +12,7 @@ import { createLoginSchema, type LoginValues } from "@/validations/auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import Logo from "@/components/logo"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -37,6 +38,9 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="bg-card border border-border rounded-lg shadow-lg p-8">
+          <div className="mb-8 flex justify-center">
+            <Logo />
+          </div>
           <div className="text-center mb-8 space-y-2">
             <h1 className="text-3xl font-bold text-foreground">{auth("welcomeBack")}</h1>
             <p className="text-muted-foreground">{auth("signInToAccount")}</p>

@@ -8,7 +8,13 @@ import { baseURL } from "@/config/constants"
 import ResponseError from '@/components/response-error'
 
 export const metadata: Metadata = {
-  title: 'Super Admin',
+  title: 'DeliveryWay Super Admin',
+  applicationName: 'DeliveryWay Super Admin',
+  icons: {
+    icon: '/deliveryway-logo.jpg',
+    shortcut: '/deliveryway-logo.jpg',
+    apple: '/deliveryway-logo.jpg',
+  },
 }
 
 export default async function RootLayout({

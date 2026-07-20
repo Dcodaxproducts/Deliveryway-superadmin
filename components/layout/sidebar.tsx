@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -172,19 +171,8 @@ export default function Sidebar({ onLinkClick }: SidebarProps) {
 
   return (
     <aside className="flex flex-col w-72 bg-white h-full">
-      <div className="flex items-center justify-center pt-[50px] xl:hidden">
+      <div className="flex items-center justify-center px-6 pb-8 pt-10">
         <Logo />
-      </div>
-
-      <div>
-        <Image
-          src="/gradient.png"
-          alt="Logo"
-          width={256}
-          height={256}
-          className="w-full h-auto pt-[50px] pb-[24px]"
-          priority
-        />
       </div>
 
       <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600">
