@@ -5,7 +5,6 @@ import { Menu, X } from "lucide-react"
 import { Sidebar } from "@/components/layout/sidebar"
 import NotificationBell from "../notification"
 import ProfileSection from "../profile-section"
-import Logo from "../logo"
 import LanguageSelector from "./LanguageSelector"
 
 export function Navbar() {
@@ -23,9 +22,6 @@ export function Navbar() {
             >
               <Menu size={20} />
             </button>
-            <div className="hidden xl:block">
-              <Logo />
-            </div>
           </div>
 
           <div className="flex items-center gap-4 lg:gap-6">
