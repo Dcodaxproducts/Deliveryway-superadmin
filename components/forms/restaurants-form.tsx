@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Info } from "lucide-react"
@@ -16,6 +16,8 @@ import { createRestaurantSchema, type RestaurantValues } from "@/validations/res
 import { useCreateRestaurant, useUpdateRestaurant } from "@/hooks/useRestaurant"
 import { useFileUpload } from '@/hooks/useFileUpload'
 import { PremiumImageDropzone } from "@/components/forms/PremiumImageDropzone"
+import AsyncSelect from "@/components/ui/AsyncSelect"
+import { getTenants } from "@/services/tenants"
 
 interface RestaurantFormProps {
   mode?: 'create' | 'edit'
@@ -24,6 +26,21 @@ interface RestaurantFormProps {
 }
 
 type UploadTarget = 'logo' | 'cover' | null
+
+type TenantOption = {
+  id: string
+  name?: string
+  slug?: string
+}
+
+const getTenantLabel = (tenant: TenantOption) =>
+  tenant.name || tenant.slug || tenant.id
+
+const isTenantOption = (value: unknown): value is TenantOption => {
+  if (!value || typeof value !== "object") return false
+
+  return typeof (value as { id?: unknown }).id === "string"
+}
 
 export default function RestaurantForm({
   mode = 'create',
@@ -43,6 +60,13 @@ export default function RestaurantForm({
   const [openPicker, setOpenPicker] = useState<"primary" | "secondary" | null>(null)
 const [logoPreviewBlob, setLogoPreviewBlob] = useState("")
 const [coverPreviewBlob, setCoverPreviewBlob] = useState("")
+  const [selectedTenant, setSelectedTenant] = useState<TenantOption | null>(
+    initialData?.tenant && isTenantOption(initialData.tenant)
+      ? initialData.tenant
+      : initialData?.tenantId
+        ? { id: initialData.tenantId, name: initialData.tenantName }
+        : null,
+  )
   const mutate =
     mode === 'edit' && restaurantId
       ? (data: RestaurantValues) => updateMutation.mutate({ id: restaurantId, data })
@@ -83,6 +107,38 @@ const logoPreview = logoPreviewBlob || logoUrl
 const coverPreview = coverPreviewBlob || coverImageUrl
   const primaryColor = watch("branding.primaryColor")
   const secondaryColor = watch("branding.secondaryColor")
+
+  const fetchTenantOptions = useCallback(
+    async ({ search, page }: { search: string; page: number }) => {
+      const response: unknown = await getTenants({
+        page,
+        limit: 20,
+        search: search || undefined,
+        sortOrder: "ASC",
+        includeInactive: false,
+        withDeleted: false,
+      })
+      const record = response as {
+        data?: unknown
+        meta?: Record<string, unknown>
+      }
+
+      return {
+        data: Array.isArray(record.data)
+          ? record.data.filter(isTenantOption)
+          : [],
+        meta: record.meta,
+      }
+    },
+    [],
+  )
+
+  useEffect(() => {
+    if (!initialData?.tenant || !isTenantOption(initialData.tenant)) return
+
+    setSelectedTenant(initialData.tenant)
+    setValue("tenantId", initialData.tenant.id, { shouldValidate: true })
+  }, [initialData, setValue])
 
   useEffect(() => {
   return () => {
@@ -162,31 +218,61 @@ const removeCover = () => {
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit, (formErrors) => console.log(formErrors))}
+      onSubmit={handleSubmit(onSubmit)}
       className="p-[30px] space-y-[48px] bg-white rounded-[14px]"
     >
       <FormSection label={restaurants("setupBasicInfo")}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-[24px]">
-          <FormGroup
-            label={`${restaurants("restaurantName")} *`}
-            placeholder="Pizza Hut"
-            error={errors.name?.message}
-            {...register("name")}
-          />
-          <FormGroup
-            label={`${restaurants("slug")} *`}
-            placeholder="pizza-hut"
-            error={errors.slug?.message}
-            {...register("slug")}
-          />
-        </div>
-
         <FormGroup
-          label={`${restaurants("tenantId")} *`}
-          placeholder="cmmoib..."
-          error={errors.tenantId?.message}
-          {...register("tenantId")}
+          label={`${restaurants("restaurantName")} *`}
+          placeholder="Pizza Hut"
+          error={errors.name?.message}
+          {...register("name")}
         />
+
+        <div className="space-y-[6px]">
+          <Label>{restaurants("tenant")} *</Label>
+          {mode === "create" ? (
+            <AsyncSelect
+              value={selectedTenant}
+              onChange={(tenant: TenantOption | null) => {
+                setSelectedTenant(tenant)
+                setValue("tenantId", tenant?.id || "", {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }}
+              placeholder={restaurants("selectTenant")}
+              searchPlaceholder={restaurants("searchTenants")}
+              fetchOptions={fetchTenantOptions}
+              getOptionLabel={getTenantLabel}
+              renderOption={(tenant: TenantOption) => (
+                <div className="min-w-0">
+                  <p className="truncate font-semibold">
+                    {getTenantLabel(tenant)}
+                  </p>
+                  <p className="mt-0.5 truncate text-xs text-gray-400">
+                    {tenant.id}
+                  </p>
+                </div>
+              )}
+            />
+          ) : (
+            <Input
+              value={selectedTenant ? getTenantLabel(selectedTenant) : watch("tenantId")}
+              readOnly
+              aria-readonly="true"
+            />
+          )}
+          <Input type="hidden" {...register("tenantId")} />
+          {errors.tenantId ? (
+            <p className="text-sm text-red-500 mt-1">
+              {errors.tenantId.message}
+            </p>
+          ) : null}
+          <p className="text-xs text-gray-500">
+            {restaurants("tenantSelectionHint")}
+          </p>
+        </div>
 
   <div className="space-y-[6px]">
   <Label>{restaurants("logoUpload")} *</Label>
@@ -436,5 +522,3 @@ function FormGroup({
     </div>
   )
 }
-
-

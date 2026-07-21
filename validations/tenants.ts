@@ -114,7 +114,6 @@ export const createRegisterTenantSchema = (t: TranslationFunction) => z.object({
 
   tenant: z.object({
     name: z.string().min(2, t("tenantNameRequired")),
-    slug: z.string().min(2, t("tenantSlugRequired")),
     logoUrl: optionalString.optional(),
     bio: z.string().max(500, t("bioMax")).optional(),
     socialLinks: recordSchema,
@@ -123,7 +122,6 @@ export const createRegisterTenantSchema = (t: TranslationFunction) => z.object({
 
   restaurant: z.object({
     name: z.string().min(2, t("restaurantNameRequired")),
-    slug: z.string().min(2, t("restaurantSlugRequired")),
     logoUrl: optionalString.optional(),
     coverImage: optionalString.optional(),
     customDomain: optionalString.optional(),
@@ -180,7 +178,6 @@ export type RegisterTenantValues = z.infer<ReturnType<typeof createRegisterTenan
 
 export const createUpdateTenantSchema = (t: TranslationFunction) => z.object({
   name: z.string().min(2, t("tenantNameRequired")),
-  slug: z.string().min(2, t("tenantSlugRequired")),
   bio: z.string().max(500, t("bioMax")).optional(),
   logoUrl: optionalString.optional(),
   socialLinks: recordSchema,

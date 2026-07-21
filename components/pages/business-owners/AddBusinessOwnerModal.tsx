@@ -67,7 +67,6 @@ type FormValues = {
   avatarUrl: string;
   bio: string;
   tenantName: string;
-  tenantSlug: string;
   tenantLogoUrl: string;
   tenantBio: string;
   isActive: boolean;
@@ -154,7 +153,6 @@ export function AddBusinessOwnerModal({
     bio: "",
 
     tenantName: "",
-    tenantSlug: "",
     tenantLogoUrl: "",
     tenantBio: "",
 
@@ -178,7 +176,6 @@ export function AddBusinessOwnerModal({
         bio: initialData.user?.bio || initialData.bio || "",
 
         tenantName: initialData.name || initialData.tenant?.name || "",
-        tenantSlug: initialData.slug || initialData.tenant?.slug || "",
         tenantLogoUrl: initialData.logoUrl || initialData.tenant?.logoUrl || "",
         tenantBio: initialData.bio || initialData.tenant?.bio || "",
 
@@ -200,7 +197,6 @@ export function AddBusinessOwnerModal({
         bio: "",
 
         tenantName: "",
-        tenantSlug: "",
         tenantLogoUrl: "",
         tenantBio: "",
 
@@ -250,7 +246,6 @@ export function AddBusinessOwnerModal({
       if (isEdit) {
         const payload = {
           name: form.tenantName,
-          slug: form.tenantSlug,
           bio: form.tenantBio,
           logoUrl: form.tenantLogoUrl,
           socialLinks: {},
@@ -276,7 +271,6 @@ export function AddBusinessOwnerModal({
         });
       } else {
         const tenantName = form.tenantName.trim();
-        const tenantSlug = form.tenantSlug.trim();
         const tenantLogoUrl = form.tenantLogoUrl.trim();
         const tenantBio = form.tenantBio.trim();
 
@@ -292,7 +286,6 @@ export function AddBusinessOwnerModal({
           },
           tenant: {
             name: tenantName,
-            slug: tenantSlug,
             logoUrl: tenantLogoUrl,
             bio: tenantBio,
             socialLinks: {},
@@ -300,7 +293,6 @@ export function AddBusinessOwnerModal({
           },
           restaurant: {
             name: tenantName,
-            slug: tenantSlug,
             logoUrl: tenantLogoUrl,
             coverImage: "",
             customDomain: "",
@@ -451,12 +443,6 @@ export function AddBusinessOwnerModal({
             label={`${businessOwners("businessName")} *`}
             value={form.tenantName}
             onChange={(v) => handleChange("tenantName", v)}
-          />
-
-          <FormField
-            label={`${businessOwners("businessSlug")} *`}
-            value={form.tenantSlug}
-            onChange={(v) => handleChange("tenantSlug", v)}
           />
 
           <div>

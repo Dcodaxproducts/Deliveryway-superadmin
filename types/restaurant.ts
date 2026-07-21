@@ -23,6 +23,7 @@ export type Restaurant = {
   tenantId: string;
   name: string;
   slug: string;
+  subdomain: string;
   logoUrl: string;
   customDomain: string;
   tagline: string;

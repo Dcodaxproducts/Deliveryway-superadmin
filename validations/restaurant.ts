@@ -6,7 +6,6 @@ export const createRestaurantSchema = (t: TranslationFunction) =>
   z.object({
     name: z.string().min(2, t("restaurantNameRequired")),
     tenantId: z.string().min(1, t("tenantIdRequired")),
-    slug: z.string().min(1, t("slugRequired")),
     logoUrl: z.string().optional().default(""),
     coverImage: z.string().optional().default(""),
     customDomain: z.string().optional(),

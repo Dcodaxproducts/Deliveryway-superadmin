@@ -439,7 +439,6 @@ export default function BusinessOwnerForm({
       },
       tenant: {
         name: "",
-        slug: "",
         logoUrl: "",
         bio: "",
         socialLinks: {
@@ -452,7 +451,6 @@ export default function BusinessOwnerForm({
       },
       restaurant: {
         name: "",
-        slug: "",
         logoUrl: "",
         coverImage: "",
         customDomain: "",
@@ -492,7 +490,6 @@ export default function BusinessOwnerForm({
         lng: "",
       },
       name: "",
-      slug: "",
       bio: "",
       logoUrl: "",
       socialLinks: {},
@@ -503,7 +500,6 @@ export default function BusinessOwnerForm({
   });
 
   const tenantName = watch("tenant.name");
-  const restaurantName = watch("restaurant.name");
   const ownerAvatar = watch("user.avatarUrl");
   const tenantLogo = watch("tenant.logoUrl");
   const restaurantLogo = watch("restaurant.logoUrl");
@@ -1122,7 +1118,6 @@ export default function BusinessOwnerForm({
     if (isEdit) {
       reset({
         name: tenant.name || "",
-        slug: tenant.slug || "",
         bio: tenant.bio || "",
         logoUrl: tenant.logoUrl || "",
         socialLinks: tenant.socialLinks || {},
@@ -1144,7 +1139,6 @@ export default function BusinessOwnerForm({
       },
       tenant: {
         name: initialData.tenant?.name || initialData.name || "",
-        slug: initialData.tenant?.slug || initialData.slug || "",
         logoUrl: initialData.tenant?.logoUrl || initialData.logoUrl || "",
         bio: initialData.tenant?.bio || initialData.bio || "",
         socialLinks: initialData.tenant?.socialLinks || {
@@ -1157,7 +1151,6 @@ export default function BusinessOwnerForm({
       },
       restaurant: {
         name: initialData.restaurant?.name || "",
-        slug: initialData.restaurant?.slug || "",
         logoUrl: initialData.restaurant?.logoUrl || "",
         coverImage: initialData.restaurant?.coverImage || "",
         customDomain: initialData.restaurant?.customDomain || "",
@@ -1208,15 +1201,11 @@ export default function BusinessOwnerForm({
 
   useEffect(() => {
     if (!isEdit && tenantName) {
-      const nextSlug = slugify(tenantName);
-      setValue("tenant.slug", nextSlug, { shouldValidate: true });
-
       const currentRestaurantName = watch("restaurant.name");
       const currentBranchName = watch("branch.name");
 
       if (!currentRestaurantName) {
         setValue("restaurant.name", tenantName, { shouldValidate: false });
-        setValue("restaurant.slug", nextSlug, { shouldValidate: false });
       }
 
       if (!currentBranchName) {
@@ -1226,14 +1215,6 @@ export default function BusinessOwnerForm({
       }
     }
   }, [tenantName, isEdit, setValue, watch]);
-
-  useEffect(() => {
-    if (!isEdit && restaurantName) {
-      setValue("restaurant.slug", slugify(restaurantName), {
-        shouldValidate: true,
-      });
-    }
-  }, [restaurantName, isEdit, setValue]);
 
   useEffect(() => {
     const composed = composeBranchAddress({
@@ -1614,7 +1595,6 @@ export default function BusinessOwnerForm({
       if (isEdit) {
         const payload = {
           name: values.name || values.tenant?.name || "",
-          slug: values.slug || values.tenant?.slug || "",
           bio: values.bio || values.tenant?.bio || "",
           logoUrl: values.logoUrl || values.tenant?.logoUrl || "",
           socialLinks: values.socialLinks || values.tenant?.socialLinks || {},
@@ -1654,7 +1634,6 @@ export default function BusinessOwnerForm({
         },
         tenant: {
           name: trimString(values.tenant.name),
-          slug: trimString(values.tenant.slug),
           logoUrl: trimString(values.tenant.logoUrl),
           bio: trimString(values.tenant.bio),
           socialLinks: compactObject(values.tenant.socialLinks || {}),
@@ -1662,7 +1641,6 @@ export default function BusinessOwnerForm({
         },
         restaurant: {
           name: trimString(values.restaurant.name),
-          slug: trimString(values.restaurant.slug),
           logoUrl: trimString(values.restaurant.logoUrl),
           coverImage: trimString(values.restaurant.coverImage),
           customDomain: trimString(values.restaurant.customDomain),
@@ -1888,20 +1866,12 @@ export default function BusinessOwnerForm({
       )}
 
       <FormSection label={businessOwners("tenantBusiness")}>
-        <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
-          <FormGroup
-            label={`${businessOwners("businessName")} *`}
-            placeholder="Dcodax Foods"
-            error={isEdit ? readError(errors, "name") : readError(errors, "tenant.name")}
-            {...(isEdit ? register("name") : register("tenant.name"))}
-          />
-          <FormGroup
-            label={`${businessOwners("businessSlug")} *`}
-            placeholder="dcodax-foods"
-            error={isEdit ? readError(errors, "slug") : readError(errors, "tenant.slug")}
-            {...(isEdit ? register("slug") : register("tenant.slug"))}
-          />
-        </div>
+        <FormGroup
+          label={`${businessOwners("businessName")} *`}
+          placeholder="Dcodax Foods"
+          error={isEdit ? readError(errors, "name") : readError(errors, "tenant.name")}
+          {...(isEdit ? register("name") : register("tenant.name"))}
+        />
 
         <FormGroup
           label={businessOwners("businessBio")}
@@ -1975,20 +1945,12 @@ export default function BusinessOwnerForm({
       {!isEdit && (
         <>
           <FormSection label={restaurants("restaurantSetup")}>
-            <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
-              <FormGroup
-                label={`${restaurants("restaurantName")} *`}
-                placeholder="Dcodax Kitchen"
-                error={readError(errors, "restaurant.name")}
-                {...register("restaurant.name")}
-              />
-              <FormGroup
-                label={`${restaurants("slug")} *`}
-                placeholder="dcodax-kitchen"
-                error={readError(errors, "restaurant.slug")}
-                {...register("restaurant.slug")}
-              />
-            </div>
+            <FormGroup
+              label={`${restaurants("restaurantName")} *`}
+              placeholder="Dcodax Kitchen"
+              error={readError(errors, "restaurant.name")}
+              {...register("restaurant.name")}
+            />
 
             <FormGroup
               label={restaurants("tagline")}
@@ -3052,16 +3014,6 @@ function UploadBox({
       variant={variant}
     />
   );
-}
-
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/&/g, "and")
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
 }
 
 function readError(errors: any, path: string) {
