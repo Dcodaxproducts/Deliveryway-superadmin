@@ -29,7 +29,16 @@ export interface Product {
   variations: any[];
 }
 
-export const getProducts = async (params?: { page?: number; search?: string; includeInactive?: boolean }) => {
+export interface ProductListParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  restaurantId?: string;
+  includeInactive?: boolean;
+  all?: boolean;
+}
+
+export const getProducts = async (params?: ProductListParams) => {
   const { data } = await api.get("/menu/items", { params });
   return data;
 };

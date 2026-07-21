@@ -24,10 +24,12 @@ export type Restaurant = {
   name: string;
   slug: string;
   subdomain: string;
-  logoUrl: string;
-  customDomain: string;
-  tagline: string;
-  bio: string;
+  logoUrl: string | null;
+  coverImage?: string | null;
+  customDomain: string | null;
+  customDomainVerifiedAt?: string | null;
+  tagline: string | null;
+  bio: string | null;
   supportContact: SupportContact;
   branding: Branding;
   socialMedia: SocialMedia;

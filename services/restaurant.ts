@@ -1,6 +1,7 @@
 import api from "@/lib/axios";
 import { RestaurantValues } from "@/validations/restaurant";
 import { ApiResponse, RestaurantTrend, TopRestaurantsResponse } from "@/types/stats";
+import type { Branch, Restaurant } from "@/types/restaurant";
 
 // RESTAURANT APIS
 export const createRestaurant = async (payload: RestaurantValues) => {
@@ -18,7 +19,7 @@ export const getRestaurants = async (params?: {
   return data;
 };
 
-export const getRestaurant = async (id: string) => {
+export const getRestaurant = async (id: string): Promise<Restaurant> => {
   const { data } = await api.get(`/restaurants/${id}`);
   return data.data;
 };
@@ -48,7 +49,7 @@ export const updateRestaurantServiceCharge = async (
 };
 
 // BRANCH APIS
-export const getRestaurantBranches = async (id: string) => {
+export const getRestaurantBranches = async (id: string): Promise<Branch[]> => {
   const { data } = await api.get(`/branches?restaurantId=${id}`);
   return data.data;
 };
