@@ -15,6 +15,8 @@ interface SidebarItemProps {
   item: SidebarMenuItem;
   pathname: string;
   isActive?: boolean;
+  isOpen?: boolean;
+  onOpenChange?: () => void;
   onLinkClick?: () => void;
 }
 
@@ -38,20 +40,14 @@ const SidebarItem = ({
   item,
   pathname,
   isActive = false,
+  isOpen = false,
+  onOpenChange,
   onLinkClick,
 }: SidebarItemProps) => {
   const t = useTranslations();
   const Icon = item.icon;
   const hasChildren = Boolean(item.children?.length);
   const title = t(item.titleKey);
-
-  const [isOpen, setIsOpen] = useState(isActive);
-
-  useEffect(() => {
-    if (isActive) {
-      setIsOpen(true);
-    }
-  }, [isActive]);
 
   const parentClasses = `
     flex items-center gap-[12px] w-full transition-all pl-[23px] pr-[18px]
@@ -74,7 +70,8 @@ const SidebarItem = ({
       <div className="w-full">
         <button
           type="button"
-          onClick={() => setIsOpen((prev) => !prev)}
+          aria-expanded={isOpen}
+          onClick={onOpenChange}
           className={parentClasses}
         >
           <div className={iconClasses}>
@@ -143,12 +140,16 @@ interface SidebarProps {
   onLinkClick?: () => void;
 }
 
-export default function Sidebar({ onLinkClick }: SidebarProps) {
+export function Sidebar({ onLinkClick }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const t = useTranslations();
 
   const [authUser, setAuthUser] = useState<AuthUserLike | null>(null);
+  const [menuState, setMenuState] = useState<{
+    pathname: string;
+    openKey: string | null;
+  }>({ pathname, openKey: null });
 
   useEffect(() => {
     try {
@@ -160,6 +161,12 @@ export default function Sidebar({ onLinkClick }: SidebarProps) {
   }, []);
 
   const visibleMenuItems = filterSidebarItemsForUser(menuItems, authUser);
+  const openMenuKey = menuState.pathname === pathname ? menuState.openKey : null;
+
+  const handleLinkClick = () => {
+    setMenuState({ pathname, openKey: null });
+    onLinkClick?.();
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -170,12 +177,12 @@ export default function Sidebar({ onLinkClick }: SidebarProps) {
   };
 
   return (
-    <aside className="flex flex-col w-72 bg-white h-full">
+    <aside className="flex h-full w-72 flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-center px-6 pb-8 pt-10">
         <Logo />
       </div>
 
-      <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600">
+      <div className="flex-1 overflow-y-auto overscroll-contain xl:overflow-y-hidden xl:hover:overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600">
         <nav className="flex flex-col gap-[12px]">
           {visibleMenuItems.map((item) => {
             const isParentRouteActive = isRouteActive(pathname, item.href);
@@ -192,7 +199,14 @@ export default function Sidebar({ onLinkClick }: SidebarProps) {
                 item={item}
                 pathname={pathname}
                 isActive={isActive}
-                onLinkClick={onLinkClick}
+                isOpen={openMenuKey === item.titleKey}
+                onOpenChange={() =>
+                  setMenuState({
+                    pathname,
+                    openKey: openMenuKey === item.titleKey ? null : item.titleKey,
+                  })
+                }
+                onLinkClick={handleLinkClick}
               />
             );
           })}

@@ -2,13 +2,13 @@
 
 import { useState } from "react"
 import { Menu, X } from "lucide-react"
-import Sidebar from "@/components/layout/sidebar"
+import { Sidebar } from "@/components/layout/sidebar"
 import NotificationBell from "../notification"
 import ProfileSection from "../profile-section"
 import Logo from "../logo"
 import LanguageSelector from "./LanguageSelector"
 
-export default function Navbar() {
+export function Navbar() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   return (
