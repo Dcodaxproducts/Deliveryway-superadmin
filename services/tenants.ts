@@ -167,6 +167,16 @@ export const getTenant = async (id: string) => {
   return data;
 };
 
+export const resetBusinessOwnerPassword = async (
+  tenantId: string,
+  password: string,
+) => {
+  const { data } = await api.patch(`/tenants/${tenantId}/owner-password`, {
+    password,
+  });
+  return data;
+};
+
 export type BusinessOwnerStats = {
   totalBusinessOwners: number;
   activeBusinessOwners: number;

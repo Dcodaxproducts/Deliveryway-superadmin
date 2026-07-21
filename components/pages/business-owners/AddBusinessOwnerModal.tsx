@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { PremiumImageDropzone } from "@/components/forms/PremiumImageDropzone";
 
 import { useEffect, useState } from "react";
@@ -436,6 +437,7 @@ export function AddBusinessOwnerModal({
               label={`${auth("password")} *`}
               value={form.password}
               onChange={(v) => handleChange("password", v)}
+              password
             />
           )}
 
@@ -520,25 +522,36 @@ function FormField({
   value,
   onChange,
   disabled = false,
+  password = false,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   disabled?: boolean;
+  password?: boolean;
 }) {
   return (
     <div className="space-y-1">
       <label className="text-sm font-medium">{label}</label>
-      <Input
-        value={value}
-        disabled={disabled}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-[44px] rounded-lg border border-gray-400 transition-all duration-200
+      {password ? (
+        <PasswordInput
+          value={value}
+          disabled={disabled}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-[44px] rounded-lg border border-gray-400 transition-all duration-200
 focus-visible:border-red-500
 focus-visible:outline-none
 focus-visible:ring-2
 focus-visible:ring-red-500"
-      />
+        />
+      ) : (
+        <Input
+          value={value}
+          disabled={disabled}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-[44px] rounded-lg border border-gray-400 transition-all duration-200 focus-visible:border-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        />
+      )}
     </div>
   );
 }

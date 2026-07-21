@@ -38,6 +38,8 @@ import { useUser } from "@/hooks/useAuth";
 import { isSuperAdmin } from "@/lib/auth-role";
 import { DEFAULT_DISPLAY_CURRENCY } from "@/lib/currency";
 import { TaxTypesSection } from "@/components/forms/tax-types-section";
+import { PremiumImageDropzone } from "@/components/forms/PremiumImageDropzone";
+import { useFileUpload } from "@/hooks/useFileUpload";
 import {
   useGlobalPaymentMethodsQuery,
   useUpdateGlobalPaymentMethodsMutation,
@@ -66,6 +68,21 @@ type SettingsFormValues = {
   isCommissionEnforced: boolean;
   isCurrencyEnforced: boolean;
   isLocalizationEnforced: boolean;
+  landingPageSettings: {
+    businessName: string;
+    logoUrl: string;
+    footerDescription: string;
+    supportEmail: string;
+    supportPhone: string;
+    address: string;
+    copyrightText: string;
+    socialLinks: {
+      facebook: string;
+      twitter: string;
+      instagram: string;
+      youtube: string;
+    };
+  };
 };
 
 const LANGUAGE_OPTIONS: SelectOption[] = [
@@ -176,6 +193,7 @@ export function SettingsForm() {
   const { data } = useGetGlobalSettings();
   const { data: user } = useUser();
   const { mutate, isPending } = useUpdateGlobalSettings();
+  const { uploadFile, uploading, progress } = useFileUpload();
   const {
     data: paymentMethodsResponse,
     isLoading: isPaymentMethodsLoading,
@@ -203,6 +221,21 @@ export function SettingsForm() {
     isCommissionEnforced: false,
     isCurrencyEnforced: false,
     isLocalizationEnforced: false,
+    landingPageSettings: {
+      businessName: "DeliveryWay",
+      logoUrl: "",
+      footerDescription: "",
+      supportEmail: "",
+      supportPhone: "",
+      address: "",
+      copyrightText: "",
+      socialLinks: {
+        facebook: "",
+        twitter: "",
+        instagram: "",
+        youtube: "",
+      },
+    },
   });
 
   const [currencyFormat, setCurrencyFormat] = useState("suffix");
@@ -237,6 +270,24 @@ export function SettingsForm() {
       fontFamily: rest.fontFamily || "Inter",
       dateFormat: rest.dateFormat || "DD_MM_YYYY",
       currencyDisplayFormat: rest.currencyDisplayFormat || "AMOUNT_CODE",
+      landingPageSettings: {
+        businessName:
+          rest.landingPageSettings?.businessName ||
+          form.landingPageSettings.businessName,
+        logoUrl: rest.landingPageSettings?.logoUrl || "",
+        footerDescription:
+          rest.landingPageSettings?.footerDescription || "",
+        supportEmail: rest.landingPageSettings?.supportEmail || "",
+        supportPhone: rest.landingPageSettings?.supportPhone || "",
+        address: rest.landingPageSettings?.address || "",
+        copyrightText: rest.landingPageSettings?.copyrightText || "",
+        socialLinks: {
+          facebook: rest.landingPageSettings?.socialLinks.facebook || "",
+          twitter: rest.landingPageSettings?.socialLinks.twitter || "",
+          instagram: rest.landingPageSettings?.socialLinks.instagram || "",
+          youtube: rest.landingPageSettings?.socialLinks.youtube || "",
+        },
+      },
     };
 
     setForm(nextForm);
@@ -313,9 +364,44 @@ export function SettingsForm() {
       isCommissionEnforced: form.isCommissionEnforced,
       isCurrencyEnforced: form.isCurrencyEnforced,
       isLocalizationEnforced: form.isLocalizationEnforced,
+      landingPageSettings: form.landingPageSettings,
     };
 
     mutate(payload);
+  };
+
+  const updateLandingField = (
+    key: keyof Omit<SettingsFormValues["landingPageSettings"], "socialLinks">,
+    value: string,
+  ) => {
+    setForm((current) => ({
+      ...current,
+      landingPageSettings: {
+        ...current.landingPageSettings,
+        [key]: value,
+      },
+    }));
+  };
+
+  const updateLandingSocialLink = (
+    key: keyof SettingsFormValues["landingPageSettings"]["socialLinks"],
+    value: string,
+  ) => {
+    setForm((current) => ({
+      ...current,
+      landingPageSettings: {
+        ...current.landingPageSettings,
+        socialLinks: {
+          ...current.landingPageSettings.socialLinks,
+          [key]: value,
+        },
+      },
+    }));
+  };
+
+  const uploadLandingLogo = async (file: File) => {
+    const logoUrl = await uploadFile(file);
+    if (logoUrl) updateLandingField("logoUrl", logoUrl);
   };
 
   const updatePaymentMethod = (
@@ -613,6 +699,87 @@ export function SettingsForm() {
       </div>
       </div>
 
+      <section className="rounded-[18px] border border-[#EAECF0] bg-white p-5 shadow-sm lg:p-7">
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-dark">
+            {globalSettings("landingPageSettings")}
+          </h2>
+          <p className="mt-1 text-sm text-gray">
+            {globalSettings("landingPageSettingsDescription")}
+          </p>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
+          <div>
+            <Label>{globalSettings("landingLogo")}</Label>
+            <div className="mt-2">
+              <PremiumImageDropzone
+                alt={globalSettings("landingLogo")}
+                emptyHint={globalSettings("landingLogoHint")}
+                emptyTitle={globalSettings("landingLogoUpload")}
+                onFileSelect={uploadLandingLogo}
+                onRemove={() => updateLandingField("logoUrl", "")}
+                preview={form.landingPageSettings.logoUrl}
+                progress={progress}
+                selectedText={globalSettings("landingLogoSelected")}
+                uploading={uploading}
+                uploadText={globalSettings("landingLogoUploading")}
+                variant="logo"
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <LandingInput
+              label={globalSettings("landingBusinessName")}
+              value={form.landingPageSettings.businessName}
+              onChange={(value) => updateLandingField("businessName", value)}
+            />
+            <LandingInput
+              label={globalSettings("landingSupportEmail")}
+              value={form.landingPageSettings.supportEmail}
+              onChange={(value) => updateLandingField("supportEmail", value)}
+            />
+            <LandingInput
+              label={globalSettings("landingSupportPhone")}
+              value={form.landingPageSettings.supportPhone}
+              onChange={(value) => updateLandingField("supportPhone", value)}
+            />
+            <LandingInput
+              label={globalSettings("landingAddress")}
+              value={form.landingPageSettings.address}
+              onChange={(value) => updateLandingField("address", value)}
+            />
+            <LandingInput
+              label={globalSettings("landingFooterDescription")}
+              value={form.landingPageSettings.footerDescription}
+              onChange={(value) => updateLandingField("footerDescription", value)}
+            />
+            <LandingInput
+              label={globalSettings("landingCopyright")}
+              value={form.landingPageSettings.copyrightText}
+              onChange={(value) => updateLandingField("copyrightText", value)}
+            />
+            {(["facebook", "twitter", "instagram", "youtube"] as const).map(
+              (network) => (
+                <LandingInput
+                  key={network}
+                  label={globalSettings(`landing${network[0].toUpperCase()}${network.slice(1)}`)}
+                  value={form.landingPageSettings.socialLinks[network]}
+                  onChange={(value) => updateLandingSocialLink(network, value)}
+                />
+              ),
+            )}
+          </div>
+        </div>
+
+        <div className="mt-6 flex justify-end">
+          <Button onClick={handleSubmit} disabled={isPending || uploading}>
+            {isPending ? common("saving") : globalSettings("saveLandingSettings")}
+          </Button>
+        </div>
+      </section>
+
       <section className="overflow-hidden rounded-[18px] border border-[#EAECF0] bg-white shadow-sm">
         <div className="flex flex-col gap-4 border-b border-[#EAECF0] bg-gradient-to-r from-primary/10 via-white to-white p-5 lg:flex-row lg:items-start lg:justify-between lg:p-7">
           <div className="flex gap-4">
@@ -829,6 +996,23 @@ function FormGroup({
           />
         </div>
       )}
+    </div>
+  );
+}
+
+function LandingInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <Input value={value} onChange={(event) => onChange(event.target.value)} />
     </div>
   );
 }

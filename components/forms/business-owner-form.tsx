@@ -29,6 +29,7 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 
 import {
@@ -2926,14 +2927,24 @@ function FormGroup({
   return (
     <div className="w-full space-y-[8px]">
       <Label>{label}</Label>
-      <Input
-        type={type}
-        placeholder={placeholder}
-        className={`h-[52px] border-[#BBBBBB] focus:border-primary ${
-          error ? "border-red-500" : ""
-        }`}
-        {...props}
-      />
+      {type === "password" ? (
+        <PasswordInput
+          placeholder={placeholder}
+          className={`h-[52px] border-[#BBBBBB] focus:border-primary ${
+            error ? "border-red-500" : ""
+          }`}
+          {...props}
+        />
+      ) : (
+        <Input
+          type={type}
+          placeholder={placeholder}
+          className={`h-[52px] border-[#BBBBBB] focus:border-primary ${
+            error ? "border-red-500" : ""
+          }`}
+          {...props}
+        />
+      )}
       {error ? <p className="mt-1 text-sm text-red-500">{error}</p> : null}
     </div>
   );

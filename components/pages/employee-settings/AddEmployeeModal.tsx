@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PremiumImageDropzone } from "@/components/forms/PremiumImageDropzone";
 
@@ -312,6 +313,7 @@ export default function EmployeeInvitationModal({
               label={employeeSettings("passwordRequired")}
               value={form.password}
               onChange={(v) => handleChange("password", v)}
+              password
             />
             {/* )} */}
           </div>
@@ -463,24 +465,29 @@ function FormField({
   label,
   value,
   onChange,
+  password = false,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
+  password?: boolean;
 }) {
   return (
     <div className="space-y-1">
       <label className="text-sm font-medium">{label}</label>
-      <Input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-[44px] rounded-lg border border-gray-400 
-focus-visible:outline-none 
-focus-visible:ring-2 
-focus-visible:ring-red-500 
-focus-visible:border-red-500 
-transition-all duration-200"
-      />
+      {password ? (
+        <PasswordInput
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-[44px] rounded-lg border border-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:border-red-500 transition-all duration-200"
+        />
+      ) : (
+        <Input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-[44px] rounded-lg border border-gray-400 transition-all duration-200 focus-visible:border-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        />
+      )}
     </div>
   );
 }

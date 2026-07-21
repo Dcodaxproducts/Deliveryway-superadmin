@@ -10,6 +10,7 @@ import {
   approveBusinessAdmin,
   getTenant,
   getBusinessOwnerStats,
+  resetBusinessOwnerPassword,
 } from "@/services/tenants";
 
 export const TENANTS_QUERY_KEY = ["tenants"] as const;
@@ -134,6 +135,23 @@ export const useGetTenant = (id: string) => {
     queryKey: ["tenant", id],
     queryFn: () => getTenant(id),
     enabled: !!id,
+  });
+};
+
+export const useResetBusinessOwnerPassword = () => {
+  const toasts = useTranslations("toasts");
+
+  return useMutation({
+    mutationFn: ({ tenantId, password }: { tenantId: string; password: string }) =>
+      resetBusinessOwnerPassword(tenantId, password),
+    onSuccess: (response) => {
+      toast.success(response?.message || toasts("businessOwnerPasswordUpdated"));
+    },
+    onError: (error: any) => {
+      toast.error(
+        error?.response?.data?.message || toasts("businessOwnerPasswordUpdateFailed"),
+      );
+    },
   });
 };
 

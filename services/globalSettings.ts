@@ -25,6 +25,21 @@ export type GlobalSettingsValues = {
   isCommissionEnforced: boolean;
   isCurrencyEnforced: boolean;
   isLocalizationEnforced: boolean;
+  landingPageSettings: {
+    businessName: string;
+    logoUrl: string | null;
+    footerDescription: string | null;
+    supportEmail: string | null;
+    supportPhone: string | null;
+    address: string | null;
+    copyrightText: string;
+    socialLinks: {
+      facebook: string | null;
+      twitter: string | null;
+      instagram: string | null;
+      youtube: string | null;
+    };
+  };
 };
 
 type GlobalSettingsResponse = Partial<GlobalSettingsValues> & {
