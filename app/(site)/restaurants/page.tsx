@@ -15,7 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import StatusBadge from "@/utils/status-badge";
 import Image from "@/components/MyImage";
 import { formatDate } from "@/utils/format-date";
-import { Edit2, Trash2 } from "lucide-react";
+import { Edit2, Eye, Trash2 } from "lucide-react";
 import DeleteDialog from "@/components/dialogs/delete-dialog";
 import SortHeader from "@/components/tables/sort-header";
 import { sortData } from "@/utils/sort-data";
@@ -121,8 +121,16 @@ export default function RestaurantsPage() {
                                 <TableCell className="text-right">
                                     <div className="flex justify-end items-center px-[11px] py-[10px] border border-[#E6E7EC] rounded-sm w-fit ml-auto divide-x divide-[#E6E7EC]">
                                         <Link
-                                            href={`/restaurants/${item.id}/edit`}
+                                            href={`/restaurants/${item.id}`}
                                             className="pr-[11px] text-gray-400 hover:text-dark transition-colors"
+                                            aria-label={`${restaurantsText("detailsTitle")}: ${item.name}`}
+                                        >
+                                            <Eye size={20} />
+                                        </Link>
+
+                                        <Link
+                                            href={`/restaurants/${item.id}/edit`}
+                                            className="px-[11px] text-gray-400 hover:text-dark transition-colors"
                                         >
                                             <Edit2 size={18} />
                                         </Link>
