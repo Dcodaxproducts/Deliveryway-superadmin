@@ -774,7 +774,13 @@ export function SettingsForm() {
         </div>
 
         <div className="mt-6 flex justify-end">
-          <Button onClick={handleSubmit} disabled={isPending || uploading}>
+          <Button
+            variant="primary"
+            onClick={handleSubmit}
+            disabled={isPending || uploading}
+            className="w-full shadow-sm active:scale-[0.98] sm:w-auto"
+          >
+            <Save size={16} />
             {isPending ? common("saving") : globalSettings("saveLandingSettings")}
           </Button>
         </div>
