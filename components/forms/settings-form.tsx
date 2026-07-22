@@ -45,6 +45,7 @@ import {
   useUpdateGlobalPaymentMethodsMutation,
 } from "@/hooks/useGlobalPaymentMethods";
 import type { GlobalPaymentMethod } from "@/types/global-settings";
+import { getStorageViewUrl } from "@/services/storage";
 
 type SelectOption = {
   label: string;
@@ -240,6 +241,7 @@ export function SettingsForm() {
 
   const [currencyFormat, setCurrencyFormat] = useState("suffix");
   const [dateFormat, setDateFormat] = useState("dd/mm/yyyy");
+  const [landingLogoPreview, setLandingLogoPreview] = useState("");
   const [paymentMethods, setPaymentMethods] = useState<GlobalPaymentMethod[]>(
     []
   );
@@ -316,6 +318,24 @@ export function SettingsForm() {
     setPaymentMethods(loadedMethods);
   }, [paymentMethodsResponse]);
 
+  useEffect(() => {
+    const logoUrl = data?.landingPageSettings?.logoUrl;
+    let isCurrent = true;
+
+    if (!logoUrl) {
+      setLandingLogoPreview("");
+      return;
+    }
+
+    void getStorageViewUrl(logoUrl).then((viewUrl) => {
+      if (isCurrent) setLandingLogoPreview(viewUrl);
+    });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [data?.landingPageSettings?.logoUrl]);
+
   const updateField = <Key extends keyof SettingsFormValues>(
     key: Key,
     value: SettingsFormValues[Key]
@@ -331,8 +351,8 @@ export function SettingsForm() {
     return Number.isNaN(numberValue) ? 0 : numberValue;
   };
 
-  const handleSubmit = () => {
-    const payload = {
+  const buildGlobalSettingsPayload = () => {
+    return {
       globalTaxPercentage: toNumber(form.globalTaxPercentage),
       vatHandlingRule: form.vatHandlingRule,
       defaultCommissionPercentage: toNumber(form.defaultCommissionPercentage),
@@ -366,8 +386,16 @@ export function SettingsForm() {
       isLocalizationEnforced: form.isLocalizationEnforced,
       landingPageSettings: form.landingPageSettings,
     };
+  };
 
-    mutate(payload);
+  const handleSubmit = () => {
+    mutate(buildGlobalSettingsPayload());
+  };
+
+  const handleLandingSettingsSubmit = () => {
+    mutate({
+      landingPageSettings: form.landingPageSettings,
+    });
   };
 
   const updateLandingField = (
@@ -401,7 +429,10 @@ export function SettingsForm() {
 
   const uploadLandingLogo = async (file: File) => {
     const logoUrl = await uploadFile(file);
-    if (logoUrl) updateLandingField("logoUrl", logoUrl);
+    if (!logoUrl) return;
+
+    updateLandingField("logoUrl", logoUrl);
+    setLandingLogoPreview(await getStorageViewUrl(logoUrl));
   };
 
   const updatePaymentMethod = (
@@ -718,8 +749,11 @@ export function SettingsForm() {
                 emptyHint={globalSettings("landingLogoHint")}
                 emptyTitle={globalSettings("landingLogoUpload")}
                 onFileSelect={uploadLandingLogo}
-                onRemove={() => updateLandingField("logoUrl", "")}
-                preview={form.landingPageSettings.logoUrl}
+                onRemove={() => {
+                  updateLandingField("logoUrl", "");
+                  setLandingLogoPreview("");
+                }}
+                preview={landingLogoPreview}
                 progress={progress}
                 selectedText={globalSettings("landingLogoSelected")}
                 uploading={uploading}
@@ -776,7 +810,7 @@ export function SettingsForm() {
         <div className="mt-6 flex justify-end">
           <Button
             variant="primary"
-            onClick={handleSubmit}
+            onClick={handleLandingSettingsSubmit}
             disabled={isPending || uploading}
             className="w-full shadow-sm active:scale-[0.98] sm:w-auto"
           >

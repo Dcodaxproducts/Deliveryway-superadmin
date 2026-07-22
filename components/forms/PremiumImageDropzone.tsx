@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Image from "next/image";
 import {
   CheckCircle2,
   ImagePlus,
@@ -118,13 +117,10 @@ export function PremiumImageDropzone({
     >
       {hasPreview && isCover ? (
         <>
-          <Image
+          <img
             src={previewSrc}
             alt={alt}
-            fill
-            unoptimized
-            sizes="(max-width: 768px) 100vw, 720px"
-            className="object-cover"
+            className="h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/10" />
         </>
@@ -145,13 +141,10 @@ export function PremiumImageDropzone({
             )}
           >
             {hasPreview ? (
-              <Image
+              <img
                 src={previewSrc}
                 alt={alt}
-                fill
-                unoptimized
-                sizes="96px"
-                className="object-cover"
+                className="h-full w-full object-cover"
               />
             ) : (
               <UploadCloud className="h-9 w-9 text-primary" />
