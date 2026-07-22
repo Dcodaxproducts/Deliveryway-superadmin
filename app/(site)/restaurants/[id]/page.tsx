@@ -6,10 +6,8 @@ import BranchList from "@/components/pages/profile/branch-list-section"
 import Hero from "@/components/pages/profile/hero"
 import { RestaurantDomainPanel } from "@/components/pages/restaurants/restaurant-domain-panel";
 import { RestaurantMenuItemsPanel } from "@/components/pages/restaurants/restaurant-menu-items-panel";
-import { ServiceChargePanel } from "@/components/pages/restaurants/service-charge-panel"
-import { RestaurantPayoutPanel } from "@/components/pages/restaurants/restaurant-payout-panel"
+import { FinancialControls } from "@/components/pages/restaurants/financial-controls"
 import Header from "@/components/header"
-import { StripeAccountPanel } from "@/components/pages/restaurants/stripe-account-panel";
 import { useGetRestaurant, useGetRestaurantBranches } from "@/hooks/useRestaurant";
 import { useParams } from "next/navigation";
 import RestaurantDetailsSkeleton from "@/components/skeleton/restaurant-details-skeleton";
@@ -52,13 +50,7 @@ const RestaurantDetailsPage = () => {
                 <RestaurantMenuItemsPanel restaurantId={id} />
                 <SummarySection data={restaurantData} />
                 <BranchList branches={branchesData ?? []} />
-                <div className="border-t border-[#eef0f2] pt-8">
-                    <h2 className="text-xl font-semibold tracking-[-0.02em] text-dark">{restaurants("financialControls")}</h2>
-                    <p className="mt-1 text-sm leading-6 text-gray">{restaurants("financialControlsDescription")}</p>
-                </div>
-                <ServiceChargePanel restaurant={restaurantData} />
-                <RestaurantPayoutPanel restaurantId={id} />
-                <StripeAccountPanel restaurantId={id} />
+                <FinancialControls restaurant={restaurantData} />
             </div>
         </Container>
     )

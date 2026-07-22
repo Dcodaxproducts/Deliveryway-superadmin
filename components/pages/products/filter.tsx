@@ -1,20 +1,22 @@
 "use client";
 
-import { Search , ListFilter} from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import ExportSection from "../../export";
-import { Button } from "../../ui/button";
 import { useTranslations } from "next-intl";
 
 type Props = {
     search?: string;
     onSearchChange?: (val: string) => void;
+    status: "all" | "active" | "inactive";
+    onStatusChange: (status: "all" | "active" | "inactive") => void;
 };
 
-export default function Filters({ search, onSearchChange }: Props) {
+export default function Filters({ search, onSearchChange, status, onStatusChange }: Props) {
     const common = useTranslations("common");
     const filters = useTranslations("filters");
+    const products = useTranslations("products");
 
     return (
         <div className="bg-white p-4 lg:p-[24px] rounded-[14px] lg:border-2 border-[#F3F4F6] space-y-[30px]">
@@ -36,15 +38,17 @@ export default function Filters({ search, onSearchChange }: Props) {
                 </div>
 
                 <div className="w-full md:w-[230px] space-y-[6px]">
-                    <Button
-                        variant="primary"
-                        className="w-full font-normal h-[52px] rounded-[14px]"
+                    <Label htmlFor="product-status">{common("status")}</Label>
+                    <select
+                        id="product-status"
+                        value={status}
+                        onChange={(event) => onStatusChange(event.target.value as Props["status"])}
+                        className="h-[52px] w-full rounded-[14px] border border-[#BBBBBB] bg-white px-4 text-sm text-dark outline-none transition-shadow focus:ring-2 focus:ring-primary/30"
                     >
-                        <>
-                            <ListFilter size={18} />
-                            {filters("filter")}
-                        </>
-                    </Button>
+                        <option value="all">{products("allProducts")}</option>
+                        <option value="active">{common("active")}</option>
+                        <option value="inactive">{common("inactive")}</option>
+                    </select>
                 </div>
             </div>
             <ExportSection />

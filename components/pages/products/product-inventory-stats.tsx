@@ -9,13 +9,21 @@ import {
 } from "@/components/ui/chart";
 import { useTranslations } from "next-intl";
 
-const chartData = [
-    { status: "active", count: 7234, fill: "var(--color-active)" },
-    { status: "inactive", count: 2411, fill: "var(--color-inactive)" },
-];
+type ProductInventoryStatsProps = {
+    activeCount: number;
+    inactiveCount: number;
+    isLoading?: boolean;
+};
 
-export default function ProductInventoryStats() {
+export default function ProductInventoryStats({ activeCount, inactiveCount, isLoading }: ProductInventoryStatsProps) {
     const products = useTranslations("products");
+    const totalCount = activeCount + inactiveCount;
+    const activePercentage = totalCount ? (activeCount / totalCount) * 100 : 0;
+    const inactivePercentage = totalCount ? (inactiveCount / totalCount) * 100 : 0;
+    const chartData = [
+        { status: "active", count: activeCount, fill: "var(--color-active)" },
+        { status: "inactive", count: inactiveCount, fill: "var(--color-inactive)" },
+    ];
     const chartConfig = {
         count: {
             label: products("products"),
@@ -74,7 +82,7 @@ export default function ProductInventoryStats() {
                                                     y={(viewBox.cy as number) + 24}
                                                     className="fill-dark text-[26px] font-semibold"
                                                 >
-                                                    75%
+                                                    {isLoading ? "—" : `${activePercentage.toFixed(1)}%`}
                                                 </tspan>
                                             </text>
                                         );
@@ -93,30 +101,30 @@ export default function ProductInventoryStats() {
                 <div className="space-y-[12px]">
                     <div className="flex justify-between items-end">
                         <span className="text-base text-dark">{products("activeProducts")}</span>
-                        <span className="text-lg font-semibold text-dark">7,234</span>
+                        <span className="text-lg font-semibold text-dark">{isLoading ? "—" : activeCount.toLocaleString()}</span>
                     </div>
                     <div className="h-[10px] w-full bg-[#E5E7EB] rounded-full overflow-hidden">
                         <div
                             className="h-full bg-[#CE181B] rounded-full"
-                            style={{ width: "85.6%" }}
+                            style={{ width: `${activePercentage}%` }}
                         />
                     </div>
-                    <p className="text-base text-dark">{products("ofTotalInventory", { percentage: "85.6%" })}</p>
+                    <p className="text-base text-dark">{products("ofTotalInventory", { percentage: `${activePercentage.toFixed(1)}%` })}</p>
                 </div>
 
                 {/* Inactive Products Row */}
                 <div className="space-y-[12px]">
                     <div className="flex justify-between items-end">
                         <span className="text-base text-dark">{products("inactiveProducts")}</span>
-                        <span className="text-lg font-semibold text-dark">892</span>
+                        <span className="text-lg font-semibold text-dark">{isLoading ? "—" : inactiveCount.toLocaleString()}</span>
                     </div>
                     <div className="h-[10px] w-full bg-[#E5E7EB] rounded-full overflow-hidden">
                         <div
                             className="h-full bg-[#CE181B] rounded-full"
-                            style={{ width: "35%" }}
+                            style={{ width: `${inactivePercentage}%` }}
                         />
                     </div>
-                    <p className="text-base text-dark">{products("ofTotalInventory", { percentage: "86.6%" })}</p>
+                    <p className="text-base text-dark">{products("ofTotalInventory", { percentage: `${inactivePercentage.toFixed(1)}%` })}</p>
                 </div>
             </div>
         </div>
