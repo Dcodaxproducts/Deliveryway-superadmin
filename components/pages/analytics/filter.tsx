@@ -525,7 +525,7 @@ const drawPdfHeader = ({
   doc.setTextColor(107, 114, 128);
   doc.text(rowsExportedLabel, 32, 50);
 
-  doc.text(new Date().toLocaleString(), pageWidth - 32, 50, {
+  doc.text(new Date().toLocaleString("en-GB", { hour12: false }), pageWidth - 32, 50, {
     align: "right",
   });
 

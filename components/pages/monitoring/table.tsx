@@ -133,7 +133,7 @@ const WebhookLogsTableBody = ({
       {logs.map((log, i) => (
         <TableRow key={i} className="border-none h-[60px]">
           <TableCell className="text-xs">
-            {log.timestamp ? new Date(String(log.timestamp)).toLocaleString() : "-"}
+            {log.timestamp ? new Date(String(log.timestamp)).toLocaleString("en-GB", { hour12: false }) : "-"}
           </TableCell>
           <TableCell>{String(log.eventType || "-")}</TableCell>
           <TableCell
@@ -231,7 +231,7 @@ const PrinterLogsTableBody = ({
           <TableCell>{String(log.status || "-")}</TableCell>
           <TableCell>
             {log.lastConnected
-              ? new Date(String(log.lastConnected)).toLocaleString()
+              ? new Date(String(log.lastConnected)).toLocaleString("en-GB", { hour12: false })
               : "-"}
           </TableCell>
           <TableCell

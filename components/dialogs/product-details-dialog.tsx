@@ -3,7 +3,6 @@
 import {
     CalendarDays,
     Clock3,
-    Hash,
     Layers3,
     PackageCheck,
     Store,
@@ -63,19 +62,21 @@ export default function ProductDetailsDialog({ open, onOpenChange, product }: Pr
                 </DialogHeader>
 
                 <div className="grid bg-white lg:grid-cols-[380px_minmax(0,1fr)]">
-                    <div className="relative min-h-[320px] overflow-hidden bg-[#f1f1f2] lg:min-h-[430px]">
-                        <Image
-                            src={product.imageUrl}
-                            alt={product.name}
-                            width={760}
-                            height={860}
-                            className="h-full w-full rounded-none object-cover"
-                            fallbackSrc="/fallback.png"
-                        />
-                        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/45 to-transparent" />
-                        <span className="absolute bottom-5 left-5 rounded-full border border-white/30 bg-black/35 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
-                            {product.isActive ? common("active") : common("inactive")}
-                        </span>
+                    <div className="bg-white p-4 md:p-5 lg:p-6">
+                        <div className="relative min-h-[288px] overflow-hidden rounded-[18px] bg-[#f1f1f2] lg:min-h-[382px]">
+                            <Image
+                                src={product.imageUrl}
+                                alt={product.name}
+                                width={760}
+                                height={860}
+                                className="h-full w-full object-cover"
+                                fallbackSrc="/fallback.png"
+                            />
+                            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/45 to-transparent" />
+                            <span className="absolute bottom-5 left-5 rounded-full border border-white/30 bg-black/35 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
+                                {product.isActive ? common("active") : common("inactive")}
+                            </span>
+                        </div>
                     </div>
 
                     <div className="flex min-w-0 flex-col justify-between p-6 md:p-8 lg:p-10">
@@ -96,8 +97,7 @@ export default function ProductDetailsDialog({ open, onOpenChange, product }: Pr
                             </p>
                         </div>
 
-                        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                            <HeroMetric icon={Hash} label={products("productNo")} value={product.sku || "—"} />
+                        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
                             <HeroMetric
                                 icon={Clock3}
                                 label={products("prepTime")}
@@ -116,14 +116,6 @@ export default function ProductDetailsDialog({ open, onOpenChange, product }: Pr
                         <DetailRow label={products("cuisines")} value={joinNames(product.cuisines)} fallback={common("notAvailable")} />
                         <DetailRow label={products("menus")} value={joinNames(menuNames)} fallback={common("notAvailable")} />
                         <DetailRow label={products("slug")} value={product.slug} fallback={common("notAvailable")} />
-                    </DetailCard>
-
-                    <DetailCard icon={PackageCheck} title={products("operationalDetails")}>
-                        <DetailRow label={products("pricingMode")} value={humanize(product.pricingMode)} fallback={common("notAvailable")} />
-                        <DetailRow label={products("sortOrder")} value={product.sortOrder != null ? String(product.sortOrder) : null} fallback={common("notAvailable")} />
-                        <DetailRow label={products("quantityRange")} value={formatRange(product.minQuantity, product.maxQuantity, products("unlimited"))} fallback={common("notAvailable")} />
-                        <DetailRow label={products("selectionRange")} value={formatRange(product.minSelect, product.maxSelect, products("unlimited"))} fallback={common("notAvailable")} />
-                        <DetailRow label={products("requiredSelection")} value={product.isRequired ? common("yes") : common("no")} fallback={common("notAvailable")} />
                     </DetailCard>
 
                     {(product.ingredients || product.nutritionalInformation) ? (
@@ -170,7 +162,7 @@ export default function ProductDetailsDialog({ open, onOpenChange, product }: Pr
     );
 }
 
-function HeroMetric({ icon: Icon, label, value }: { icon: typeof Hash; label: string; value: string }) {
+function HeroMetric({ icon: Icon, label, value }: { icon: typeof Clock3; label: string; value: string }) {
     return (
         <div className="rounded-xl border border-[#ececef] bg-[#fafafa] p-3">
             <Icon className="size-4 text-primary" />
@@ -236,9 +228,4 @@ function toLabelList(value: unknown): string[] {
 function humanize(value?: string | null) {
     if (!value) return null;
     return value.toLowerCase().split("_").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
-}
-
-function formatRange(minimum?: number, maximum?: number | null, unlimited = "Unlimited") {
-    if (minimum == null && maximum == null) return null;
-    return `${minimum ?? 0} – ${maximum ?? unlimited}`;
 }

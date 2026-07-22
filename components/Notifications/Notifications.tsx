@@ -190,7 +190,11 @@ export default function Notifications({
                 {notification.createdAt
                   ? new Date(
                       notification.createdAt
-                    ).toLocaleTimeString()
+                    ).toLocaleTimeString("en-GB", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    })
                   : ""}
               </span>
             </CardContent>
