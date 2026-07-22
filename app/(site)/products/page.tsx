@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Container from "@/components/container";
 import Filters from "@/components/pages/products/filter";
 import Header from "@/components/header";
@@ -21,6 +21,10 @@ import { Product } from "@/services/product";
 import { useTranslations } from "next-intl";
 import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
 import { formatMoney } from "@/lib/currency";
+import Image from "@/components/MyImage";
+import { getRestaurants } from "@/services/restaurant";
+import type { Restaurant } from "@/types/restaurant";
+import type { ProductListMeta } from "@/services/product";
 
 type SortKey = "name" | "sku" | "restaurantId" | "isActive" | "basePrice";
 
@@ -35,17 +39,19 @@ const ProductsPage = () => {
     const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [deleteId, setDeleteId] = useState<string | null>(null);
+    const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
 
     const debouncedSearch = useDebounce(search, 500);
     const { data, isLoading, isError } = useGetProducts({
         page,
         search: debouncedSearch || undefined,
+        restaurantId: selectedRestaurant?.id,
         all: status === "all" || undefined,
         inactive: status === "inactive" || undefined,
     });
-    const totalQuery = useGetProducts({ page: 1, limit: 1, all: true });
-    const activeQuery = useGetProducts({ page: 1, limit: 1 });
-    const inactiveQuery = useGetProducts({ page: 1, limit: 1, inactive: true });
+    const totalQuery = useGetProducts({ page: 1, limit: 1, restaurantId: selectedRestaurant?.id, all: true });
+    const activeQuery = useGetProducts({ page: 1, limit: 1, restaurantId: selectedRestaurant?.id });
+    const inactiveQuery = useGetProducts({ page: 1, limit: 1, restaurantId: selectedRestaurant?.id, inactive: true });
     const updateStatus = useUpdateProductStatus();
     const deleteProduct = useDeleteProduct();
 
@@ -63,13 +69,16 @@ const ProductsPage = () => {
     const totalCount = totalQuery.data?.meta.total ?? 0;
     const activeCount = activeQuery.data?.meta.total ?? 0;
     const inactiveCount = inactiveQuery.data?.meta.total ?? 0;
+    const inventoryScope = selectedRestaurant
+        ? productsText("forRestaurant", { name: selectedRestaurant.name })
+        : productsText("acrossRestaurants");
     const stats = [
         {
             _id: "total-products",
             titleKey: "products.totalProducts",
             value: totalCount.toLocaleString(),
             footerType: "plain",
-            descriptionKey: "products.acrossRestaurants",
+            description: inventoryScope,
             routeHref: "/products",
         },
         {
@@ -95,6 +104,20 @@ const ProductsPage = () => {
         deleteProduct.mutate(deleteId, { onSuccess: () => setDeleteId(null) });
     };
 
+    const fetchRestaurantOptions = useCallback(async ({ search, page }: { search: string; page: number }) => {
+        const response = await getRestaurants({
+            page,
+            limit: 20,
+            search: search || undefined,
+            includeInactive: true,
+        }) as { data?: Restaurant[]; meta?: ProductListMeta };
+
+        return {
+            data: Array.isArray(response.data) ? response.data : [],
+            meta: response.meta,
+        };
+    }, []);
+
     if (isError) return <p className="text-center p-10 text-red-500 font-medium">{productsText("loadError")}</p>;
 
     return (
@@ -118,6 +141,9 @@ const ProductsPage = () => {
                     onSearchChange={(val) => { setSearch(val); setPage(1); }}
                     status={status}
                     onStatusChange={(value) => { setStatus(value); setPage(1); }}
+                    restaurant={selectedRestaurant}
+                    onRestaurantChange={(restaurant) => { setSelectedRestaurant(restaurant); setPage(1); }}
+                    fetchRestaurantOptions={fetchRestaurantOptions}
                 />
 
                 {isLoading ? (
@@ -138,9 +164,24 @@ const ProductsPage = () => {
                         }
                         row={(product: Product) => (
                             <>
-                                <TableCell className="capitalize">{product.name}</TableCell>
-                                <TableCell>#{product.sku}</TableCell>
-                                <TableCell className="capitalize">{product.restaurant.name || "-"}</TableCell>
+                                <TableCell>
+                                    <div className="flex min-w-[220px] items-center gap-3">
+                                        <Image
+                                            src={product.imageUrl}
+                                            alt={product.name}
+                                            width={52}
+                                            height={52}
+                                            className="size-[52px] shrink-0 rounded-xl border border-[#ececef] bg-[#f7f7f8] object-cover"
+                                            fallbackSrc="/fallback.png"
+                                        />
+                                        <div className="min-w-0">
+                                            <p className="truncate font-semibold capitalize text-dark">{product.name}</p>
+                                            <p className="mt-1 truncate text-xs text-gray">{product.category?.name || productsText("uncategorized")}</p>
+                                        </div>
+                                    </div>
+                                </TableCell>
+                                <TableCell>{product.sku ? `#${product.sku}` : "—"}</TableCell>
+                                <TableCell className="capitalize">{product.restaurant?.name || "-"}</TableCell>
                                 <TableCell className={`text-center ${product.isActive ? "text-green" : "text-primary"}`}>
                                         {product.isActive ? common("active") : common("inactive")}
                                 </TableCell>
@@ -161,6 +202,7 @@ const ProductsPage = () => {
                                         <button
                                             className="hover:text-dark transition-colors cursor-pointer"
                                             onClick={() => setSelectedProduct(product)}
+                                            aria-label={productsText("viewProduct", { name: product.name })}
                                         >
                                             <Eye size={20} />
                                         </button>

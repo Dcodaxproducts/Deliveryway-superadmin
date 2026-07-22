@@ -15,14 +15,23 @@ export interface Product {
   categoryId: string;
   name: string;
   slug: string;
-  description: string;
-  imageUrl: string;
-  sku: string;
+  description?: string | null;
+  ingredients?: string | null;
+  nutritionalInformation?: string | null;
+  allergenPdfUrl?: string | null;
+  imageUrl?: string | null;
+  sku?: string | null;
+  sortOrder?: number;
+  pricingMode?: string;
   basePrice: string;
-  taxTypeCode?: string | null;
-  prepTimeMinutes: number;
-  dietaryFlags: string[];
-  allergenFlags: string[];
+  prepTimeMinutes?: number | null;
+  dietaryFlags?: unknown;
+  allergenFlags?: unknown;
+  isRequired?: boolean;
+  minSelect?: number;
+  maxSelect?: number | null;
+  minQuantity?: number;
+  maxQuantity?: number | null;
   isActive: boolean;
   deletedAt: null | string;
   createdAt: string;
@@ -30,12 +39,38 @@ export interface Product {
   category: {
     id: string;
     name: string;
+    slug?: string;
+    imageUrl?: string | null;
   };
   restaurant: {
     id: string;
     name: string;
+    slug?: string;
+    logoUrl?: string | null;
   };
-  variations: unknown[];
+  categories?: ProductNamedEntity[];
+  cuisines?: ProductNamedEntity[];
+  variations?: ProductNamedEntity[];
+  modifiers?: ProductNamedEntity[];
+  modifierGroups?: ProductNamedEntity[];
+  menuLinks?: Array<{
+    restaurantMenu?: ProductNamedEntity;
+  }>;
+  _count?: {
+    menuLinks?: number;
+    variations?: number;
+    modifiers?: number;
+    modifierGroups?: number;
+  };
+}
+
+export interface ProductNamedEntity {
+  id: string;
+  name: string;
+  slug?: string;
+  isActive?: boolean;
+  isDefault?: boolean;
+  sortOrder?: number;
 }
 
 export interface ProductListResponse {
