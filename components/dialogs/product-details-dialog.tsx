@@ -118,6 +118,18 @@ export default function ProductDetailsDialog({ open, onOpenChange, product }: Pr
                         <DetailRow label={products("slug")} value={product.slug} fallback={common("notAvailable")} />
                     </DetailCard>
 
+                    <DetailCard icon={Layers3} title={products("configuration")}>
+                        {(product.variations?.length || product.modifiers?.length || product.modifierGroups?.length) ? (
+                            <>
+                                <EntitySection label={products("variations")} entities={product.variations} />
+                                <EntitySection label={products("modifierGroups")} entities={product.modifierGroups} />
+                                <EntitySection label={products("modifiers")} entities={product.modifiers} />
+                            </>
+                        ) : (
+                            <p className="text-sm text-gray">{common("notAvailable")}</p>
+                        )}
+                    </DetailCard>
+
                     {(product.ingredients || product.nutritionalInformation) ? (
                         <DetailCard icon={Utensils} title={products("productContent")}>
                             {product.ingredients ? <TextBlock label={products("ingredients")} value={product.ingredients} /> : null}
@@ -135,16 +147,6 @@ export default function ProductDetailsDialog({ open, onOpenChange, product }: Pr
                                 </a>
                             ) : null}
                         </DetailCard>
-                    ) : null}
-
-                    {(product.variations?.length || product.modifiers?.length || product.modifierGroups?.length) ? (
-                        <div className="lg:col-span-2">
-                            <DetailCard icon={Layers3} title={products("configuration")}>
-                                <EntitySection label={products("variations")} entities={product.variations} />
-                                <EntitySection label={products("modifierGroups")} entities={product.modifierGroups} />
-                                <EntitySection label={products("modifiers")} entities={product.modifiers} />
-                            </DetailCard>
-                        </div>
                     ) : null}
 
                     <div className="lg:col-span-2">

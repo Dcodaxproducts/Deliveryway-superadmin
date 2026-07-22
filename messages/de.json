@@ -492,6 +492,8 @@
   },
   "products": {
     "overview": "Produktübersicht",
+    "exportCsv": "CSV exportieren",
+    "exportingCsv": "CSV wird exportiert...",
     "description": "Produktverfügbarkeit auf der gesamten Plattform überwachen",
     "products": "Produkte",
     "totalProducts": "Produkte insgesamt",

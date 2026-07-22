@@ -492,6 +492,8 @@
   },
   "products": {
     "overview": "Product Overview",
+    "exportCsv": "Export CSV",
+    "exportingCsv": "Exporting CSV...",
     "description": "Monitor product availability across the platform",
     "products": "Products",
     "totalProducts": "Total Products",

@@ -1,9 +1,9 @@
 "use client";
 
-import { Search, X } from "lucide-react";
+import { FileText, LoaderCircle, Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import ExportSection from "../../export";
+import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import AsyncSelect from "@/components/ui/AsyncSelect";
 import Image from "@/components/MyImage";
@@ -15,6 +15,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import type { Restaurant } from "@/types/restaurant";
+import { useExportMenuReport } from "@/hooks/useReports";
 
 type RestaurantFetchOptions = (params: {
     search: string;
@@ -52,6 +53,14 @@ export default function Filters({
     const common = useTranslations("common");
     const filters = useTranslations("filters");
     const products = useTranslations("products");
+    const exportMenu = useExportMenuReport();
+
+    const handleExportCsv = () => {
+        exportMenu.mutate({
+            restaurantId: restaurant?.id,
+            includeInactive: status !== "active",
+        });
+    };
 
     return (
         <div className="space-y-6 rounded-[18px] border border-[#ececef] bg-white p-4 md:p-5">
@@ -130,7 +139,23 @@ export default function Filters({
                     </Select>
                 </div>
             </div>
-            <ExportSection />
+            <div className="space-y-3 border-t border-[#ececef] pt-5">
+                <h3 className="text-sm font-semibold text-dark">{common("exportReports")}</h3>
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleExportCsv}
+                    disabled={exportMenu.isPending}
+                    className="h-12 min-w-[180px] gap-3 rounded-xl border-[#d8d8dc] font-semibold text-dark transition hover:border-primary hover:bg-primary/5 hover:text-primary"
+                >
+                    {exportMenu.isPending ? (
+                        <LoaderCircle className="size-5 animate-spin" />
+                    ) : (
+                        <FileText className="size-5" />
+                    )}
+                    {products(exportMenu.isPending ? "exportingCsv" : "exportCsv")}
+                </Button>
+            </div>
         </div>
     );
 }
