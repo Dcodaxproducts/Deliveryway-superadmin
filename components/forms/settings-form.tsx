@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -25,8 +26,12 @@ import {
   Info,
   Landmark,
   Loader2,
+  Plus,
   Save,
   Smartphone,
+  Trash2,
+  ArrowDown,
+  ArrowUp,
   WalletCards,
 } from "lucide-react";
 
@@ -46,6 +51,7 @@ import {
 } from "@/hooks/useGlobalPaymentMethods";
 import type { GlobalPaymentMethod } from "@/types/global-settings";
 import { getStorageViewUrl } from "@/services/storage";
+import type { LandingPageFaq } from "@/services/globalSettings";
 
 type SelectOption = {
   label: string;
@@ -83,6 +89,7 @@ type SettingsFormValues = {
       instagram: string;
       youtube: string;
     };
+    faqs: LandingPageFaq[];
   };
 };
 
@@ -236,6 +243,7 @@ export function SettingsForm() {
         instagram: "",
         youtube: "",
       },
+      faqs: [],
     },
   });
 
@@ -289,6 +297,10 @@ export function SettingsForm() {
           instagram: rest.landingPageSettings?.socialLinks.instagram || "",
           youtube: rest.landingPageSettings?.socialLinks.youtube || "",
         },
+        faqs: (rest.landingPageSettings?.faqs ?? []).map((faq, index) => ({
+          ...faq,
+          sortOrder: index,
+        })),
       },
     };
 
@@ -399,7 +411,10 @@ export function SettingsForm() {
   };
 
   const updateLandingField = (
-    key: keyof Omit<SettingsFormValues["landingPageSettings"], "socialLinks">,
+    key: keyof Omit<
+      SettingsFormValues["landingPageSettings"],
+      "socialLinks" | "faqs"
+    >,
     value: string,
   ) => {
     setForm((current) => ({
@@ -410,6 +425,89 @@ export function SettingsForm() {
       },
     }));
   };
+
+  const updateLandingFaq = (
+    id: string,
+    updates: Partial<Omit<LandingPageFaq, "id">>,
+  ) => {
+    setForm((current) => ({
+      ...current,
+      landingPageSettings: {
+        ...current.landingPageSettings,
+        faqs: current.landingPageSettings.faqs.map((faq) =>
+          faq.id === id ? { ...faq, ...updates } : faq,
+        ),
+      },
+    }));
+  };
+
+  const addLandingFaq = () => {
+    setForm((current) => {
+      const nextIndex = current.landingPageSettings.faqs.length;
+      const nextFaq: LandingPageFaq = {
+        id: `faq-${Date.now()}-${nextIndex}`,
+        questionEn: "",
+        answerEn: "",
+        questionDe: "",
+        answerDe: "",
+        isActive: true,
+        sortOrder: nextIndex,
+      };
+
+      return {
+        ...current,
+        landingPageSettings: {
+          ...current.landingPageSettings,
+          faqs: [...current.landingPageSettings.faqs, nextFaq],
+        },
+      };
+    });
+  };
+
+  const removeLandingFaq = (id: string) => {
+    setForm((current) => ({
+      ...current,
+      landingPageSettings: {
+        ...current.landingPageSettings,
+        faqs: current.landingPageSettings.faqs
+          .filter((faq) => faq.id !== id)
+          .map((faq, index) => ({ ...faq, sortOrder: index })),
+      },
+    }));
+  };
+
+  const moveLandingFaq = (id: string, direction: -1 | 1) => {
+    setForm((current) => {
+      const faqs = [...current.landingPageSettings.faqs];
+      const currentIndex = faqs.findIndex((faq) => faq.id === id);
+      const nextIndex = currentIndex + direction;
+
+      if (currentIndex < 0 || nextIndex < 0 || nextIndex >= faqs.length) {
+        return current;
+      }
+
+      [faqs[currentIndex], faqs[nextIndex]] = [
+        faqs[nextIndex],
+        faqs[currentIndex],
+      ];
+
+      return {
+        ...current,
+        landingPageSettings: {
+          ...current.landingPageSettings,
+          faqs: faqs.map((faq, index) => ({ ...faq, sortOrder: index })),
+        },
+      };
+    });
+  };
+
+  const hasInvalidLandingFaq = form.landingPageSettings.faqs.some(
+    (faq) =>
+      !faq.questionEn.trim() ||
+      !faq.answerEn.trim() ||
+      !faq.questionDe.trim() ||
+      !faq.answerDe.trim(),
+  );
 
   const updateLandingSocialLink = (
     key: keyof SettingsFormValues["landingPageSettings"]["socialLinks"],
@@ -807,11 +905,141 @@ export function SettingsForm() {
           </div>
         </div>
 
+        <div className="mt-8 border-t border-[#EAECF0] pt-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="font-semibold text-dark">
+                {globalSettings("landingFaqs")}
+              </h3>
+              <p className="mt-1 text-sm text-gray">
+                {globalSettings("landingFaqsDescription")}
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={addLandingFaq}
+              className="w-full sm:w-auto"
+            >
+              <Plus size={16} />
+              {globalSettings("addLandingFaq")}
+            </Button>
+          </div>
+
+          <div className="mt-5 space-y-4">
+            {form.landingPageSettings.faqs.length === 0 ? (
+              <div className="rounded-[14px] border border-dashed border-[#D0D5DD] bg-[#F8FAFC] px-5 py-8 text-center text-sm text-gray">
+                {globalSettings("noLandingFaqs")}
+              </div>
+            ) : (
+              form.landingPageSettings.faqs.map((faq, index) => (
+                <div
+                  key={faq.id}
+                  className="rounded-[16px] border border-[#EAECF0] bg-[#F8FAFC] p-4"
+                >
+                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <Badge variant="outline">
+                        {globalSettings("landingFaqNumber", {
+                          number: index + 1,
+                        })}
+                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={faq.isActive}
+                          onCheckedChange={(isActive) =>
+                            updateLandingFaq(faq.id, { isActive })
+                          }
+                        />
+                        <span className="text-sm text-gray">
+                          {faq.isActive
+                            ? globalSettings("landingFaqActive")
+                            : globalSettings("landingFaqInactive")}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        disabled={index === 0}
+                        aria-label={globalSettings("moveLandingFaqUp")}
+                        onClick={() => moveLandingFaq(faq.id, -1)}
+                      >
+                        <ArrowUp size={16} />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        disabled={
+                          index === form.landingPageSettings.faqs.length - 1
+                        }
+                        aria-label={globalSettings("moveLandingFaqDown")}
+                        onClick={() => moveLandingFaq(faq.id, 1)}
+                      >
+                        <ArrowDown size={16} />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label={globalSettings("removeLandingFaq")}
+                        onClick={() => removeLandingFaq(faq.id)}
+                        className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <FaqLanguageFields
+                      languageLabel={globalSettings("landingFaqEnglish")}
+                      questionLabel={globalSettings("landingFaqQuestion")}
+                      answerLabel={globalSettings("landingFaqAnswer")}
+                      question={faq.questionEn}
+                      answer={faq.answerEn}
+                      onQuestionChange={(questionEn) =>
+                        updateLandingFaq(faq.id, { questionEn })
+                      }
+                      onAnswerChange={(answerEn) =>
+                        updateLandingFaq(faq.id, { answerEn })
+                      }
+                    />
+                    <FaqLanguageFields
+                      languageLabel={globalSettings("landingFaqGerman")}
+                      questionLabel={globalSettings("landingFaqQuestion")}
+                      answerLabel={globalSettings("landingFaqAnswer")}
+                      question={faq.questionDe}
+                      answer={faq.answerDe}
+                      onQuestionChange={(questionDe) =>
+                        updateLandingFaq(faq.id, { questionDe })
+                      }
+                      onAnswerChange={(answerDe) =>
+                        updateLandingFaq(faq.id, { answerDe })
+                      }
+                    />
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {hasInvalidLandingFaq ? (
+            <p className="mt-3 text-sm text-red-600">
+              {globalSettings("landingFaqRequired")}
+            </p>
+          ) : null}
+        </div>
+
         <div className="mt-6 flex justify-end">
           <Button
             variant="primary"
             onClick={handleLandingSettingsSubmit}
-            disabled={isPending || uploading}
+            disabled={isPending || uploading || hasInvalidLandingFaq}
             className="w-full shadow-sm active:scale-[0.98] sm:w-auto"
           >
             <Save size={16} />
@@ -1053,6 +1281,48 @@ function LandingInput({
     <div className="space-y-2">
       <Label>{label}</Label>
       <Input value={value} onChange={(event) => onChange(event.target.value)} />
+    </div>
+  );
+}
+
+function FaqLanguageFields({
+  languageLabel,
+  questionLabel,
+  answerLabel,
+  question,
+  answer,
+  onQuestionChange,
+  onAnswerChange,
+}: {
+  languageLabel: string;
+  questionLabel: string;
+  answerLabel: string;
+  question: string;
+  answer: string;
+  onQuestionChange: (value: string) => void;
+  onAnswerChange: (value: string) => void;
+}) {
+  return (
+    <div className="rounded-[14px] border border-[#EAECF0] bg-white p-4">
+      <p className="mb-3 text-sm font-semibold text-dark">{languageLabel}</p>
+      <div className="space-y-3">
+        <div>
+          <Label>{questionLabel}</Label>
+          <Input
+            value={question}
+            onChange={(event) => onQuestionChange(event.target.value)}
+            className="mt-1.5"
+          />
+        </div>
+        <div>
+          <Label>{answerLabel}</Label>
+          <Textarea
+            value={answer}
+            onChange={(event) => onAnswerChange(event.target.value)}
+            className="mt-1.5 min-h-24 bg-white"
+          />
+        </div>
+      </div>
     </div>
   );
 }

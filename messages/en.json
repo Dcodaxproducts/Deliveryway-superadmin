@@ -662,7 +662,22 @@
     "landingTwitter": "Twitter/X URL",
     "landingInstagram": "Instagram URL",
     "landingYoutube": "YouTube URL",
-    "saveLandingSettings": "Save Landing Settings"
+    "saveLandingSettings": "Save Landing Settings",
+    "landingFaqs": "Landing Page FAQs",
+    "landingFaqsDescription": "Manage the ordered English and German questions shown on the public landing page.",
+    "addLandingFaq": "Add FAQ",
+    "noLandingFaqs": "No managed FAQs yet. The landing page will use its translated fallback content.",
+    "landingFaqNumber": "FAQ {number}",
+    "landingFaqActive": "Visible",
+    "landingFaqInactive": "Hidden",
+    "landingFaqEnglish": "English",
+    "landingFaqGerman": "German",
+    "landingFaqQuestion": "Question",
+    "landingFaqAnswer": "Answer",
+    "landingFaqRequired": "Complete the English and German question and answer for every FAQ before saving.",
+    "moveLandingFaqUp": "Move FAQ up",
+    "moveLandingFaqDown": "Move FAQ down",
+    "removeLandingFaq": "Remove FAQ"
   },
   "employeeSettings": {
     "staffRoleRequired": "Staff role is required",

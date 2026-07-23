@@ -8,6 +8,16 @@ import type {
   UpdatePaymentMethodsResponse,
 } from "@/types/global-settings";
 
+export type LandingPageFaq = {
+  id: string;
+  questionEn: string;
+  answerEn: string;
+  questionDe: string;
+  answerDe: string;
+  isActive: boolean;
+  sortOrder: number;
+};
+
 export type GlobalSettingsValues = {
   globalTaxPercentage: number;
   vatHandlingRule: string;
@@ -39,6 +49,7 @@ export type GlobalSettingsValues = {
       instagram: string | null;
       youtube: string | null;
     };
+    faqs: LandingPageFaq[];
   };
 };
 

@@ -662,7 +662,22 @@
     "landingTwitter": "Twitter/X-URL",
     "landingInstagram": "Instagram-URL",
     "landingYoutube": "YouTube-URL",
-    "saveLandingSettings": "Landingpage-Einstellungen speichern"
+    "saveLandingSettings": "Landingpage-Einstellungen speichern",
+    "landingFaqs": "Landingpage-FAQs",
+    "landingFaqsDescription": "Verwalte die sortierten englischen und deutschen Fragen auf der öffentlichen Landingpage.",
+    "addLandingFaq": "FAQ hinzufügen",
+    "noLandingFaqs": "Noch keine verwalteten FAQs. Die Landingpage verwendet die übersetzten Standardinhalte.",
+    "landingFaqNumber": "FAQ {number}",
+    "landingFaqActive": "Sichtbar",
+    "landingFaqInactive": "Ausgeblendet",
+    "landingFaqEnglish": "Englisch",
+    "landingFaqGerman": "Deutsch",
+    "landingFaqQuestion": "Frage",
+    "landingFaqAnswer": "Antwort",
+    "landingFaqRequired": "Fülle für jede FAQ die englische und deutsche Frage und Antwort aus.",
+    "moveLandingFaqUp": "FAQ nach oben verschieben",
+    "moveLandingFaqDown": "FAQ nach unten verschieben",
+    "removeLandingFaq": "FAQ entfernen"
   },
   "employeeSettings": {
     "staffRoleRequired": "Staff role is required",
