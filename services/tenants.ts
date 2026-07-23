@@ -177,6 +177,95 @@ export const resetBusinessOwnerPassword = async (
   return data;
 };
 
+export type BusinessOwnerDetails = {
+  id: string;
+  name: string;
+  slug: string;
+  bio?: string | null;
+  logoUrl?: string | null;
+  socialLinks?: {
+    website?: string;
+    facebook?: string;
+    instagram?: string;
+    linkedin?: string;
+  } | null;
+  brandingConfig?: Record<string, unknown> | null;
+  settings?: Record<string, unknown> | null;
+  isActive: boolean;
+  isApproved?: boolean;
+  isVerified?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  owner?: {
+    id: string;
+    email: string;
+    role?: string;
+    isActive: boolean;
+    isApproved: boolean;
+    isVerified: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+    profile?: {
+      firstName: string;
+      lastName: string;
+      phone?: string | null;
+      avatarUrl?: string | null;
+      bio?: string | null;
+    } | null;
+  } | null;
+  tenantSubscriptions?: Array<{
+    id: string;
+    status: string;
+    paymentStatus: string;
+    startsAt?: string;
+    endsAt?: string | null;
+    nextBillingAt?: string | null;
+    packagePlan?: {
+      id: string;
+      name: string;
+      billingModel?: string;
+      billingInterval?: string;
+      currency?: string;
+      planPrice?: string | number;
+    } | null;
+  }>;
+};
+
+export type UpdateBusinessOwnerDetailsPayload = {
+  owner: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    phone?: string;
+    avatarUrl?: string;
+    bio?: string;
+    isActive: boolean;
+    isApproved: boolean;
+    isVerified: boolean;
+    password?: string;
+  };
+  tenant: {
+    name: string;
+    bio?: string;
+    logoUrl?: string;
+    socialLinks?: Record<string, string>;
+    brandingConfig?: Record<string, unknown>;
+    settings?: Record<string, unknown>;
+    isActive: boolean;
+  };
+};
+
+export const updateBusinessOwnerDetails = async (
+  tenantId: string,
+  payload: UpdateBusinessOwnerDetailsPayload,
+) => {
+  const { data } = await api.patch(
+    `/tenants/${tenantId}/business-owner`,
+    payload,
+  );
+  return data;
+};
+
 export type BusinessOwnerStats = {
   totalBusinessOwners: number;
   activeBusinessOwners: number;

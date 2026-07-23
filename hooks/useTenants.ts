@@ -11,6 +11,8 @@ import {
   getTenant,
   getBusinessOwnerStats,
   resetBusinessOwnerPassword,
+  updateBusinessOwnerDetails,
+  UpdateBusinessOwnerDetailsPayload,
 } from "@/services/tenants";
 
 export const TENANTS_QUERY_KEY = ["tenants"] as const;
@@ -151,6 +153,48 @@ export const useResetBusinessOwnerPassword = () => {
       toast.error(
         error?.response?.data?.message || toasts("businessOwnerPasswordUpdateFailed"),
       );
+    },
+  });
+};
+
+export const useUpdateBusinessOwnerDetails = () => {
+  const queryClient = useQueryClient();
+  const toasts = useTranslations("toasts");
+
+  return useMutation({
+    mutationFn: ({
+      tenantId,
+      data,
+    }: {
+      tenantId: string;
+      data: UpdateBusinessOwnerDetailsPayload;
+    }) => updateBusinessOwnerDetails(tenantId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: TENANTS_QUERY_KEY });
+      queryClient.invalidateQueries({
+        queryKey: ["tenant", variables.tenantId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: BUSINESS_OWNER_STATS_QUERY_KEY,
+      });
+      toast.success(toasts("businessOwnerUpdated"));
+    },
+    onError: (error: unknown) => {
+      const message =
+        typeof error === "object" &&
+        error !== null &&
+        "response" in error &&
+        typeof error.response === "object" &&
+        error.response !== null &&
+        "data" in error.response &&
+        typeof error.response.data === "object" &&
+        error.response.data !== null &&
+        "message" in error.response.data &&
+        typeof error.response.data.message === "string"
+          ? error.response.data.message
+          : toasts("tenantUpdateFailed");
+
+      toast.error(message);
     },
   });
 };

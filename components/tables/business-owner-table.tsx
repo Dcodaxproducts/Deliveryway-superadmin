@@ -25,6 +25,7 @@ import {
   Send,
   ShieldCheck,
   Trash2,
+  Eye,
   UserCheck,
   UserX,
 } from "lucide-react";
@@ -445,6 +446,11 @@ export default function BusinessOwnerTable({
     router.push(`/business-owners/${item.id}/edit`);
   };
 
+  const handleView = (item: BusinessOwnerRow) => {
+    setOpenActionId(null);
+    router.push(`/business-owners/${item.id}`);
+  };
+
   const handleDeleteClick = (item: BusinessOwnerRow) => {
     setOpenActionId(null);
     setDeleteId(item.id);
@@ -757,6 +763,15 @@ export default function BusinessOwnerTable({
                                   <div className="my-1 h-px bg-gray-100" />
                                 </>
                               ) : null}
+
+                              <button
+                                type="button"
+                                onClick={() => handleView(item)}
+                                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50"
+                              >
+                                <Eye size={15} />
+                                {common("view")}
+                              </button>
 
                               <button
                                 type="button"
