@@ -18,6 +18,49 @@ export type LandingPageFaq = {
   sortOrder: number;
 };
 
+export type LandingPageHero = {
+  eyebrowEn: string | null;
+  eyebrowDe: string | null;
+  headingEn: string | null;
+  headingDe: string | null;
+  subheadingEn: string | null;
+  subheadingDe: string | null;
+};
+
+export type LandingPageContent = {
+  hero: LandingPageHero;
+  contentEn: string | null;
+  contentDe: string | null;
+};
+
+export type LandingPagePages = {
+  services: LandingPageContent;
+  pricing: LandingPageContent;
+  about: LandingPageContent;
+  privacyPolicy: LandingPageContent;
+  support: LandingPageContent;
+  termsOfService: LandingPageContent;
+  contact: LandingPageContent;
+};
+
+export type LandingPageSettings = {
+  businessName: string;
+  logoUrl: string | null;
+  footerDescription: string | null;
+  supportEmail: string | null;
+  supportPhone: string | null;
+  address: string | null;
+  copyrightText: string;
+  socialLinks: {
+    facebook: string | null;
+    twitter: string | null;
+    instagram: string | null;
+    youtube: string | null;
+  };
+  pages: LandingPagePages;
+  faqs: LandingPageFaq[];
+};
+
 export type GlobalSettingsValues = {
   globalTaxPercentage: number;
   vatHandlingRule: string;
@@ -35,22 +78,7 @@ export type GlobalSettingsValues = {
   isCommissionEnforced: boolean;
   isCurrencyEnforced: boolean;
   isLocalizationEnforced: boolean;
-  landingPageSettings: {
-    businessName: string;
-    logoUrl: string | null;
-    footerDescription: string | null;
-    supportEmail: string | null;
-    supportPhone: string | null;
-    address: string | null;
-    copyrightText: string;
-    socialLinks: {
-      facebook: string | null;
-      twitter: string | null;
-      instagram: string | null;
-      youtube: string | null;
-    };
-    faqs: LandingPageFaq[];
-  };
+  landingPageSettings: LandingPageSettings;
 };
 
 type GlobalSettingsResponse = Partial<GlobalSettingsValues> & {
@@ -78,10 +106,31 @@ export const getGlobalSettings = async (): Promise<GlobalSettingsResponse> => {
  * Update global settings
  */
 export const updateGlobalSettings = async (
-  payload: Partial<GlobalSettingsValues>
+  payload: Omit<Partial<GlobalSettingsValues>, "landingPageSettings"> & {
+    landingPageSettings?: Partial<LandingPageSettings>;
+  },
 ) => {
   const { data } = await api.patch("/admin/global-settings", payload);
   return data;
+};
+
+export const getLandingPageSettings =
+  async (): Promise<LandingPageSettings> => {
+    const { data } = await api.get<{
+      data: LandingPageSettings;
+    }>("/admin/global-settings/landing-page");
+
+    return data.data;
+  };
+
+export const updateLandingPageSettings = async (
+  payload: Partial<LandingPageSettings>,
+): Promise<LandingPageSettings> => {
+  const { data } = await api.patch<{
+    data: LandingPageSettings;
+  }>("/admin/global-settings/landing-page", payload);
+
+  return data.data;
 };
 
 /**
@@ -100,11 +149,11 @@ export const getGlobalPaymentMethods =
  * Update platform payment methods
  */
 export const updateGlobalPaymentMethods = async (
-  payload: UpdatePaymentMethodsPayload
+    payload: UpdatePaymentMethodsPayload
 ): Promise<UpdatePaymentMethodsResponse> => {
   const { data } = await api.patch<UpdatePaymentMethodsResponse>(
     "/admin/global-settings/payment-methods",
-    payload
+      payload
   );
 
   return data;

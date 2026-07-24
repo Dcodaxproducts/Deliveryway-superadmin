@@ -23,6 +23,7 @@ const ACCESS_ALIASES: Record<string, string> = {
   "employee-management": "employees",
   "employee-settings": "employees",
   "global-settings": "storefront-settings",
+  "landing-content": "storefront-settings",
   "invoice": "reports-payouts",
   "invoices": "reports-payouts",
   "invoicing": "reports-payouts",

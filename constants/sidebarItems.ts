@@ -19,6 +19,7 @@ import {
   FileText,
   Building2,
   Utensils,
+  PanelsTopLeft,
 } from "lucide-react";
 import { PiUsersThree } from "react-icons/pi";
 
@@ -48,6 +49,12 @@ export const menuItems: SidebarMenuItem[] = [
     titleKey: "navigation.globalSettings",
     icon: Globe,
     href: "/global-settings",
+    permissionAccess: "storefront-settings",
+  },
+  {
+    titleKey: "navigation.landingContent",
+    icon: PanelsTopLeft,
+    href: "/landing-content",
     permissionAccess: "storefront-settings",
   },
   {

@@ -11,6 +11,7 @@ const extraRouteAccesses: Array<{ href: string; access: string | string[] }> = [
   { href: "/branch", access: "branch-management" },
   { href: "/notifications", access: "notifications" },
   { href: "/theme-settings", access: "storefront-settings" },
+  { href: "/landing-content", access: "storefront-settings" },
 ];
 
 const isRouteMatch = (pathname: string, href?: string) => {
