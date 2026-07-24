@@ -67,6 +67,8 @@
     "monthlySubscription": "Subscriptions"
   },
   "auth": {
+    "accessDenied": "Access denied",
+    "accessDeniedDescription": "Your staff role does not include permission for this page.",
     "login": "Login",
     "logout": "Logout",
     "email": "Email",
@@ -236,6 +238,15 @@
     "viewItem": "View {name}"
   },
   "businessOwners": {
+    "manualPaidTitle": "Mark subscription manually paid",
+    "manualPaidDescription": "This creates an audit transaction and activates access. Use only after confirming bank or cash receipt.",
+    "paymentReference": "Payment reference",
+    "paymentReferencePlaceholder": "Bank transaction ID or receipt number",
+    "receiptReference": "Receipt URL or reference",
+    "receiptReferencePlaceholder": "Receipt URL, file ID, or counter receipt reference",
+    "auditNote": "Audit note",
+    "auditNotePlaceholder": "Who verified this payment and where it was received",
+    "markPaid": "Mark paid",
     "title": "Business Owners",
     "description": "View and manage all business owners from here",
     "businessOwner": "Business Owner",
@@ -723,6 +734,9 @@
     "assignAllRestaurants": "Assign all restaurants"
   },
   "rbac": {
+    "save": "Save",
+    "saving": "Saving...",
+    "selectAtLeastOnePermission": "Select at least one permission action.",
     "rolesList": "Roles List",
     "description": "Create and manage predefined roles to control access across different areas of the platform.",
     "addNewRole": "Add New Role",

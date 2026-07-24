@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button";
 import { ShieldCheck } from "lucide-react";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { usePermissionModules, useStaffRole, useUpdateStaffRole } from "@/hooks/useRbac";
+import {
+  usePermissionModules,
+  useStaffRole,
+  useUpdateStaffRole,
+} from "@/hooks/useRbac";
 import { useParams, useSearchParams } from "next/navigation";
 import {
   canonicalizePermissionAccess,
@@ -20,11 +24,15 @@ function RolePermissionsContent() {
   const rbac = useTranslations("rbac");
   const params = useParams();
   const searchParams = useSearchParams();
-  const roleId = searchParams.get("role") || params?.id as string;
+  const roleId = searchParams.get("role") || (params?.id as string);
   const { data: role, isLoading, error } = useStaffRole(roleId);
-  const { data: modulesData = [], isLoading: modulesLoading } = usePermissionModules();
+  const { data: modulesData = [], isLoading: modulesLoading } =
+    usePermissionModules();
   const updateRole = useUpdateStaffRole();
-  const permissionModules = useMemo(() => sortPermissionModules(modulesData), [modulesData]);
+  const permissionModules = useMemo(
+    () => sortPermissionModules(modulesData),
+    [modulesData],
+  );
   const [permissions, setPermissions] = useState<Record<string, string[]>>({});
   const [permissionError, setPermissionError] = useState(false);
 
@@ -33,7 +41,8 @@ function RolePermissionsContent() {
       const rolePermissions = permissionModules.map((module) => {
         const rolePermission = role.permissions.find(
           (permission: { access?: string; operations?: string[] }) =>
-            canonicalizePermissionAccess(permission.access) === canonicalizePermissionAccess(module.accessKey),
+            canonicalizePermissionAccess(permission.access) ===
+            canonicalizePermissionAccess(module.accessKey),
         );
 
         return {
@@ -56,17 +65,24 @@ function RolePermissionsContent() {
 
   const toPayloadPermissions = (nextPermissions = permissions) =>
     sanitizePermissions(
-      Object.entries(nextPermissions).map(([access, operations]) => ({ access, operations })),
+      Object.entries(nextPermissions).map(([access, operations]) => ({
+        access,
+        operations,
+      })),
       permissionModules,
     );
 
-  const handlePermissionChange = (access: string, operation: string, checked: boolean) => {
+  const handlePermissionChange = (
+    access: string,
+    operation: string,
+    checked: boolean,
+  ) => {
     setPermissionError(false);
-    setPermissions(prev => {
+    setPermissions((prev) => {
       const currentChecked = prev[access] || [];
       const nextOperations = checked
         ? Array.from(new Set([...currentChecked, operation]))
-        : currentChecked.filter(op => op !== operation);
+        : currentChecked.filter((op) => op !== operation);
 
       if (nextOperations.length === 0) {
         const next = { ...prev };
@@ -107,14 +123,16 @@ function RolePermissionsContent() {
     );
   }
 
-  if (isLoading || modulesLoading) return <div>{rbac("loadingPermissions")}</div>;
+  if (isLoading || modulesLoading)
+    return <div>{rbac("loadingPermissions")}</div>;
   if (error) return <div>{rbac("errorLoadingPermissions")}</div>;
 
   return (
     <Card className="p-4 lg:p-[30px] border-none gap-0 shadow-sm rounded-[14px] bg-white h-full">
       <div className="flex justify-between items-center mb-[6px]">
         <h2 className="text-lg font-semibold">
-          {rbac("permission")} <span className="text-primary">{role?.name || rbac("manager")}</span>
+          {rbac("permission")}{" "}
+          <span className="text-primary">{role?.name || rbac("manager")}</span>
         </h2>
         <Button
           variant="primary"
@@ -122,12 +140,16 @@ function RolePermissionsContent() {
           onClick={handleSave}
           disabled={updateRole.isPending}
         >
-          {updateRole.isPending ? "Saving..." : "Save"}
+          {updateRole.isPending ? rbac("saving") : rbac("save")}
         </Button>
       </div>
-      <p className="text-gray-400 text-sm mb-[24px]">{rbac("permissionsHelp")}</p>
+      <p className="text-gray-400 text-sm mb-[24px]">
+        {rbac("permissionsHelp")}
+      </p>
       {permissionError ? (
-        <p className="mb-3 text-sm text-primary">Select at least one permission action.</p>
+        <p className="mb-3 text-sm text-primary">
+          {rbac("selectAtLeastOnePermission")}
+        </p>
       ) : null}
 
       <div className="w-full">
@@ -141,7 +163,9 @@ function RolePermissionsContent() {
             <div
               key={item.accessKey}
               className="grid py-[24px] items-center"
-              style={{ gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 2fr)" }}
+              style={{
+                gridTemplateColumns: "minmax(0, 1fr) 1px minmax(0, 2fr)",
+              }}
             >
               <div className="flex items-start gap-[12px] pr-4">
                 <ShieldCheck size={20} className="text-primary shrink-0 mt-1" />
@@ -167,8 +191,17 @@ function RolePermissionsContent() {
                   >
                     <Checkbox
                       id={`${item.accessKey}-${operation}`}
-                      checked={permissions[item.accessKey]?.includes(operation) || false}
-                      onCheckedChange={(checked) => handlePermissionChange(item.accessKey, operation, checked as boolean)}
+                      checked={
+                        permissions[item.accessKey]?.includes(operation) ||
+                        false
+                      }
+                      onCheckedChange={(checked) =>
+                        handlePermissionChange(
+                          item.accessKey,
+                          operation,
+                          checked as boolean,
+                        )
+                      }
                       className="w-[20px] h-[20px] data-[state=checked]:bg-primary data-[state=checked]:border-primary shrink-0"
                     />
                     <label

@@ -2,7 +2,7 @@ export const SUPPORTED_LOCALES = ["en", "de"] as const;
 
 export type AppLocale = (typeof SUPPORTED_LOCALES)[number];
 
-export const DEFAULT_LOCALE: AppLocale = "en";
+export const DEFAULT_LOCALE: AppLocale = "de";
 
 export const LANGUAGE_LABELS: Record<AppLocale, string> = {
   en: "English",
@@ -17,8 +17,6 @@ export const isAppLocale = (
   return SUPPORTED_LOCALES.some((locale) => locale === value);
 };
 
-export const getSafeLocale = (
-  value: string | null | undefined,
-): AppLocale => {
+export const getSafeLocale = (value: string | null | undefined): AppLocale => {
   return isAppLocale(value) ? value : DEFAULT_LOCALE;
 };

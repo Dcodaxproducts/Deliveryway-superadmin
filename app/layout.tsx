@@ -1,26 +1,26 @@
-import type { Metadata } from 'next'
-import './globals.css'
-import { onest } from '@/lib/fonts'
-import Provider from '@/components/providers/provider'
-import AuthGuard from '@/components/auth-guard'
-import TopLoader from '@/components/ui/toploader'
-import { baseURL } from "@/config/constants"
-import ResponseError from '@/components/response-error'
+import type { Metadata } from "next";
+import "./globals.css";
+import { onest } from "@/lib/fonts";
+import Provider from "@/components/providers/provider";
+import AuthGuard from "@/components/auth-guard";
+import TopLoader from "@/components/ui/toploader";
+import { baseURL } from "@/config/constants";
+import ResponseError from "@/components/response-error";
 
 export const metadata: Metadata = {
-  title: 'DeliveryWay Super Admin',
-  applicationName: 'DeliveryWay Super Admin',
+  title: "DeliveryWay Super Admin",
+  applicationName: "DeliveryWay Super Admin",
   icons: {
-    icon: '/deliveryway-logo.jpg',
-    shortcut: '/deliveryway-logo.jpg',
-    apple: '/deliveryway-logo.jpg',
+    icon: "/deliveryway-logo.jpg",
+    shortcut: "/deliveryway-logo.jpg",
+    apple: "/deliveryway-logo.jpg",
   },
-}
+};
 
 export default async function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   let isServerConnected = false;
   let error: string | null = null;
@@ -48,19 +48,17 @@ export default async function RootLayout({
     }
   }
   return (
-    <html lang="en">
+    <html lang="de">
       <body className={`${onest.className} bg-[#F5F5F5]`}>
         {error ? (
           <ResponseError className="h-screen" error={error} />
         ) : (
           <Provider>
-            <AuthGuard>
-              {children}
-            </AuthGuard>
+            <AuthGuard>{children}</AuthGuard>
             <TopLoader />
           </Provider>
         )}
       </body>
     </html>
-  )
+  );
 }

@@ -67,6 +67,8 @@
     "monthlySubscription": "Abonnements"
   },
   "auth": {
+    "accessDenied": "Zugriff verweigert",
+    "accessDeniedDescription": "Ihre Mitarbeiterrolle enthält keine Berechtigung für diese Seite.",
     "login": "Anmelden",
     "logout": "Abmelden",
     "email": "E-Mail",
@@ -236,6 +238,15 @@
     "viewItem": "{name} anzeigen"
   },
   "businessOwners": {
+    "manualPaidTitle": "Abonnement manuell als bezahlt markieren",
+    "manualPaidDescription": "Dadurch wird eine Audit-Transaktion erstellt und der Zugriff aktiviert. Nur nach Bestätigung des Bank- oder Barbelegs verwenden.",
+    "paymentReference": "Zahlungsreferenz",
+    "paymentReferencePlaceholder": "Banktransaktions-ID oder Belegnummer",
+    "receiptReference": "Beleg-URL oder Referenz",
+    "receiptReferencePlaceholder": "Beleg-URL, Datei-ID oder Kassenbeleg-Referenz",
+    "auditNote": "Audit-Notiz",
+    "auditNotePlaceholder": "Wer hat diese Zahlung geprüft und wo wurde sie empfangen?",
+    "markPaid": "Als bezahlt markieren",
     "title": "Geschäftsinhaber",
     "description": "Alle Geschäftsinhaber von hier anzeigen und verwalten",
     "businessOwner": "Geschäftsinhaber",
@@ -723,6 +734,9 @@
     "assignAllRestaurants": "Allen Restaurants zuweisen"
   },
   "rbac": {
+    "save": "Speichern",
+    "saving": "Wird gespeichert...",
+    "selectAtLeastOnePermission": "Wählen Sie mindestens eine Berechtigungsaktion aus.",
     "rolesList": "Rollenliste",
     "description": "Erstelle und verwalte vordefinierte Rollen, um den Zugriff auf verschiedene Plattformbereiche zu steuern.",
     "addNewRole": "Neue Rolle hinzufügen",

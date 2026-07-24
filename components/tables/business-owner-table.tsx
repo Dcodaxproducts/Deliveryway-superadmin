@@ -826,17 +826,18 @@ export default function BusinessOwnerTable({
       >
         <DialogContent className="max-w-lg rounded-2xl">
           <DialogHeader>
-            <DialogTitle>Mark subscription manually paid</DialogTitle>
+            <DialogTitle>{businessOwnersText("manualPaidTitle")}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="rounded-xl border border-amber-100 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-              This creates an audit transaction and activates access. Use only
-              after confirming bank/cash receipt.
+              {businessOwnersText("manualPaidDescription")}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="manual-reference">Payment reference</Label>
+              <Label htmlFor="manual-reference">
+                {businessOwnersText("paymentReference")}
+              </Label>
               <Input
                 id="manual-reference"
                 value={manualPaidForm.paymentReference}
@@ -846,12 +847,14 @@ export default function BusinessOwnerTable({
                     paymentReference: event.target.value,
                   }))
                 }
-                placeholder="Bank transaction id / receipt number"
+                placeholder={businessOwnersText("paymentReferencePlaceholder")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="manual-receipt">Receipt URL/reference</Label>
+              <Label htmlFor="manual-receipt">
+                {businessOwnersText("receiptReference")}
+              </Label>
               <Input
                 id="manual-receipt"
                 value={manualPaidForm.receiptUrl}
@@ -861,12 +864,14 @@ export default function BusinessOwnerTable({
                     receiptUrl: event.target.value,
                   }))
                 }
-                placeholder="Receipt URL, file id, or counter receipt ref"
+                placeholder={businessOwnersText("receiptReferencePlaceholder")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="manual-note">Audit note</Label>
+              <Label htmlFor="manual-note">
+                {businessOwnersText("auditNote")}
+              </Label>
               <Textarea
                 id="manual-note"
                 value={manualPaidForm.note}
@@ -876,7 +881,7 @@ export default function BusinessOwnerTable({
                     note: event.target.value,
                   }))
                 }
-                placeholder="Who verified this payment and where it was received"
+                placeholder={businessOwnersText("auditNotePlaceholder")}
                 rows={4}
               />
             </div>
@@ -888,7 +893,7 @@ export default function BusinessOwnerTable({
                 onClick={() => setManualPaidRow(null)}
                 disabled={markManualPaid.isPending}
               >
-                Cancel
+                {common("cancel")}
               </Button>
               <Button
                 type="button"
@@ -898,7 +903,7 @@ export default function BusinessOwnerTable({
                 {markManualPaid.isPending ? (
                   <Loader2 size={16} className="mr-2 animate-spin" />
                 ) : null}
-                Mark paid
+                {businessOwnersText("markPaid")}
               </Button>
             </div>
           </div>
