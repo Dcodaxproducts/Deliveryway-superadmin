@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { ServiceChargePanel } from "@/components/pages/restaurants/service-charge-panel";
 import { RestaurantPayoutPanel } from "@/components/pages/restaurants/restaurant-payout-panel";
 import { StripeAccountPanel } from "@/components/pages/restaurants/stripe-account-panel";
+import { PayoutProviderPanel } from "@/components/pages/restaurants/payout-provider-panel";
 
 type FinancialTab = "service-charge" | "payouts" | "stripe";
 
@@ -68,9 +69,18 @@ export function FinancialControls({ restaurant }: { restaurant: Restaurant }) {
         role="tabpanel"
         className="bg-white p-3 md:p-5"
       >
-        {activeTab === "service-charge" ? <ServiceChargePanel restaurant={restaurant} /> : null}
-        {activeTab === "payouts" ? <RestaurantPayoutPanel restaurantId={restaurant.id} /> : null}
-        {activeTab === "stripe" ? <StripeAccountPanel restaurantId={restaurant.id} /> : null}
+        {activeTab === "service-charge" ? (
+          <ServiceChargePanel restaurant={restaurant} />
+        ) : null}
+        {activeTab === "payouts" ? (
+          <>
+            <RestaurantPayoutPanel restaurantId={restaurant.id} />
+            <PayoutProviderPanel restaurantId={restaurant.id} />
+          </>
+        ) : null}
+        {activeTab === "stripe" ? (
+          <StripeAccountPanel restaurantId={restaurant.id} />
+        ) : null}
       </div>
     </section>
   );

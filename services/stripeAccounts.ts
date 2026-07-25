@@ -38,41 +38,39 @@ export type CreateStripeTransferPayload = {
   amount: number;
   currency?: string;
   description?: string;
+  idempotencyKey: string;
 };
 
 export type StripeTransferResponse = {
-  data: {
-    restaurantId: string;
-    transfer: Record<string, unknown>;
-  };
+  data: Record<string, unknown>;
   message?: string;
 };
 
 export const getRestaurantStripeAccount = async (restaurantId: string) => {
   const { data } = await api.get<StripeRestaurantAccountResponse>(
-    `/payments/stripe/restaurants/${restaurantId}/account`
+    `/payments/stripe/restaurants/${restaurantId}/account`,
   );
   return data;
 };
 
 export const updateRestaurantStripeAccount = async (
   restaurantId: string,
-  payload: UpdateStripeAccountPayload
+  payload: UpdateStripeAccountPayload,
 ) => {
   const { data } = await api.patch<StripeRestaurantAccountResponse>(
     `/payments/stripe/restaurants/${restaurantId}/account`,
-    payload
+    payload,
   );
   return data;
 };
 
 export const createRestaurantStripeTransfer = async (
   restaurantId: string,
-  payload: CreateStripeTransferPayload
+  payload: CreateStripeTransferPayload,
 ) => {
   const { data } = await api.post<StripeTransferResponse>(
     `/payments/stripe/restaurants/${restaurantId}/transfers`,
-    payload
+    payload,
   );
   return data;
 };

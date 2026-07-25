@@ -35,6 +35,7 @@ export function StripeAccountPanel({ restaurantId }: StripeAccountPanelProps) {
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState(DEFAULT_DISPLAY_CURRENCY);
   const [description, setDescription] = useState("");
+  const [idempotencyKey, setIdempotencyKey] = useState("");
   const stripe = accountQuery.data?.data.stripe;
   const parsedAmount = Number(amount);
   const transferDisabled =
@@ -80,6 +81,8 @@ export function StripeAccountPanel({ restaurantId }: StripeAccountPanelProps) {
 
   const submitTransfer = () => {
     if (transferDisabled || !restaurantId) return;
+    const key = idempotencyKey || crypto.randomUUID();
+    setIdempotencyKey(key);
 
     createTransfer.mutate(
       {
@@ -88,14 +91,16 @@ export function StripeAccountPanel({ restaurantId }: StripeAccountPanelProps) {
           amount: parsedAmount,
           currency: currency.trim() || undefined,
           description: description.trim() || undefined,
+          idempotencyKey: key,
         },
       },
       {
         onSuccess: () => {
           setAmount("");
           setDescription("");
+          setIdempotencyKey("");
         },
-      }
+      },
     );
   };
 
@@ -201,7 +206,9 @@ export function StripeAccountPanel({ restaurantId }: StripeAccountPanelProps) {
                 Create transfer
               </h4>
               <p className="text-xs text-gray">
-                Requires a connected account ID and payouts enabled.
+                Requires a connected account ID and payouts enabled. The
+                restaurant wallet is debited only after Stripe confirms the
+                transfer.
               </p>
             </div>
             <div className="grid gap-4 md:grid-cols-[1fr_120px]">
