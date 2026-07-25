@@ -17,8 +17,20 @@ const toUrl = (domain: string) =>
     ? domain
     : `https://${domain}`;
 
-export const getRestaurantStorefrontUrl = (restaurant?: Pick<Restaurant, "subdomain"> | null) =>
-  restaurant?.subdomain ? `https://${restaurant.subdomain}.${CUSTOMER_BASE_DOMAIN}` : null;
+export const getRestaurantStorefrontHost = (
+  restaurant?: Pick<Restaurant, "subdomain"> | null,
+) =>
+  restaurant?.subdomain
+    ? `${restaurant.subdomain}.${CUSTOMER_BASE_DOMAIN}`
+    : null;
+
+export const getRestaurantStorefrontUrl = (
+  restaurant?: Pick<Restaurant, "subdomain"> | null,
+) => {
+  const host = getRestaurantStorefrontHost(restaurant);
+
+  return host ? `https://${host}` : null;
+};
 
 export function RestaurantDomainPanel({ restaurant }: { restaurant: Restaurant }) {
   const text = useTranslations("restaurants");

@@ -20,8 +20,9 @@ import DeleteDialog from "@/components/dialogs/delete-dialog";
 import SortHeader from "@/components/tables/sort-header";
 import { sortData } from "@/utils/sort-data";
 import Link from "next/link";
+import { getRestaurantStorefrontHost } from "@/components/pages/restaurants/restaurant-domain-panel";
 
-type SortKey = "name" | "customDomain" | "tagline" | "createdAt" | "isActive";
+type SortKey = "name" | "subdomain" | "tagline" | "createdAt" | "isActive";
 type SortDir = "asc" | "desc";
 
 export default function RestaurantsPage() {
@@ -88,7 +89,7 @@ export default function RestaurantsPage() {
                             <>
                                 <TableHead><span className="text-sm font-medium">{restaurantsText("serial")}</span></TableHead>
                                 <SortHeader label={restaurantsText("restaurantName")} sortKey="name" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
-                                <SortHeader label={restaurantsText("domain")} sortKey="customDomain" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
+                                <SortHeader label={restaurantsText("domain")} sortKey="subdomain" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
                                 <SortHeader label={restaurantsText("tagline")} sortKey="tagline" activeKey={sortKey} direction={sortDir} onSort={handleSort} className="text-center" />
                                 <SortHeader label={restaurantsText("createdDate")} sortKey="createdAt" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
                                 <SortHeader label={common("status")} sortKey="isActive" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
@@ -112,7 +113,9 @@ export default function RestaurantsPage() {
                                         <span className="text-gray capitalize">{item.name}</span>
                                     </div>
                                 </TableCell>
-                                <TableCell className="text-gray text-sm">{item.customDomain || common("notAvailable")}</TableCell>
+                                <TableCell className="text-gray text-sm">
+                                    {item.customDomain || getRestaurantStorefrontHost(item) || common("notAvailable")}
+                                </TableCell>
                                 <TableCell className="text-gray text-sm capitalize">{item.tagline}</TableCell>
                                 <TableCell className="text-gray text-sm">{formatDate(item.createdAt)}</TableCell>
                                 <TableCell>
