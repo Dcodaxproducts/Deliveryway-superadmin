@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Building2, Landmark, Search, WalletCards } from "lucide-react";
+import {
+  Building2,
+  ExternalLink,
+  Landmark,
+  Search,
+  WalletCards,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { PayoutProviderPanel } from "@/components/pages/restaurants/payout-provider-panel";
@@ -32,6 +38,9 @@ export function RestaurantPayoutConfigurationSection() {
   const selectedRestaurant = restaurants.find(
     (restaurant) => restaurant.id === restaurantId,
   );
+  const restaurantAdminBaseUrl = (
+    process.env.NEXT_PUBLIC_RESTAURANT_ADMIN_URL ?? ""
+  ).replace(/\/+$/, "");
 
   return (
     <section className="overflow-hidden rounded-[18px] border border-[#EAECF0] bg-white shadow-sm">
@@ -112,6 +121,21 @@ export function RestaurantPayoutConfigurationSection() {
                   {text("restaurantSpecificConfiguration")}
                 </p>
               </div>
+            </div>
+
+            <div className="flex flex-col gap-3 rounded-[14px] border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950 sm:flex-row sm:items-center sm:justify-between">
+              <p>{text("ownerPayoutSetupDescription")}</p>
+              {restaurantAdminBaseUrl ? (
+                <a
+                  href={`${restaurantAdminBaseUrl}/payment-settings`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-amber-900 px-4 py-2 font-semibold text-white transition hover:bg-amber-800"
+                >
+                  {text("openOwnerPayoutSetup")}
+                  <ExternalLink className="size-4" aria-hidden="true" />
+                </a>
+              ) : null}
             </div>
 
             <PayoutProviderPanel restaurantId={selectedRestaurant.id} />

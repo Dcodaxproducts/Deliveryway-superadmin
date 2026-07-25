@@ -99,6 +99,18 @@ export const rejectPayoutProviderRequest = async (
   return data;
 };
 
+export const setPayoutProviderEnabled = async (
+  restaurantId: string,
+  provider: PayoutProvider,
+  enabled: boolean,
+) => {
+  const { data } = await api.patch(
+    `/payments/restaurants/${restaurantId}/payout-providers/${provider}`,
+    { enabled },
+  );
+  return data;
+};
+
 export const createProviderPayout = async (
   restaurantId: string,
   payload: {

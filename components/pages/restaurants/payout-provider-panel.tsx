@@ -5,11 +5,13 @@ import { Check, Loader2, RefreshCw, Send, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import {
   useApprovePayoutProviderRequest,
   useCreateProviderPayout,
   usePayoutProviderSettings,
   useRejectPayoutProviderRequest,
+  useSetPayoutProviderEnabled,
 } from "@/hooks/usePayoutProviders";
 import type { PayoutProvider } from "@/services/payoutProviders";
 
@@ -21,6 +23,7 @@ export function PayoutProviderPanel({
   const settings = usePayoutProviderSettings(restaurantId);
   const approve = useApprovePayoutProviderRequest(restaurantId);
   const reject = useRejectPayoutProviderRequest(restaurantId);
+  const setProviderEnabled = useSetPayoutProviderEnabled(restaurantId);
   const payout = useCreateProviderPayout(restaurantId);
   const [reviewNote, setReviewNote] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
@@ -174,6 +177,56 @@ export function PayoutProviderPanel({
         ) : (
           <p className="rounded-[10px] bg-gray-50 px-3 py-3 text-sm text-gray">
             No Stripe or PayPal configuration requests submitted.
+          </p>
+        )}
+      </div>
+
+      <div className="space-y-3">
+        <div>
+          <h4 className="text-sm font-semibold text-dark">
+            Approved provider activation
+          </h4>
+          <p className="mt-1 text-xs text-gray">
+            Enable or disable each approved gateway for this restaurant.
+            Disabled providers cannot be used for automated payouts.
+          </p>
+        </div>
+        {settings.data?.configurations.length ? (
+          settings.data.configurations.map((configuration) => (
+            <div
+              key={configuration.provider}
+              className="flex items-center justify-between gap-4 rounded-[10px] border border-[#e9eaee] p-3"
+            >
+              <div>
+                <p className="font-semibold text-dark">
+                  {configuration.provider === "PAYPAL" ? "PayPal" : "Stripe"}
+                </p>
+                <p className="text-xs text-gray">
+                  Credentials configured:{" "}
+                  {configuration.credentialsConfigured ? "Yes" : "No"}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-semibold text-gray">
+                  {configuration.enabled ? "Enabled" : "Disabled"}
+                </span>
+                <Switch
+                  checked={configuration.enabled}
+                  onCheckedChange={(enabled) =>
+                    setProviderEnabled.mutate({
+                      provider: configuration.provider,
+                      enabled,
+                    })
+                  }
+                  disabled={setProviderEnabled.isPending}
+                  aria-label={`${configuration.enabled ? "Disable" : "Enable"} ${configuration.provider} payouts`}
+                />
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="rounded-[10px] bg-gray-50 px-3 py-3 text-sm text-gray">
+            Approve a Stripe or PayPal request before enabling it.
           </p>
         )}
       </div>

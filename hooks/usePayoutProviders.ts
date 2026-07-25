@@ -6,6 +6,7 @@ import {
   createProviderPayout,
   getPayoutProviderSettings,
   rejectPayoutProviderRequest,
+  setPayoutProviderEnabled,
   type PayoutProvider,
 } from "@/services/payoutProviders";
 import { payoutRequestKeys } from "@/hooks/usePayoutRequests";
@@ -66,6 +67,34 @@ export const useRejectPayoutProviderRequest = (
     },
     onError: (error: ApiError) =>
       toast.error(errorMessage(error, "Unable to reject payout provider")),
+  });
+};
+
+export const useSetPayoutProviderEnabled = (
+  restaurantId?: string | null,
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      provider,
+      enabled,
+    }: {
+      provider: PayoutProvider;
+      enabled: boolean;
+    }) =>
+      setPayoutProviderEnabled(
+        restaurantId as string,
+        provider,
+        enabled,
+      ),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: keys.detail(restaurantId) });
+      toast.success(
+        `${variables.provider} payouts ${variables.enabled ? "enabled" : "disabled"}`,
+      );
+    },
+    onError: (error: ApiError) =>
+      toast.error(errorMessage(error, "Unable to update payout provider")),
   });
 };
 

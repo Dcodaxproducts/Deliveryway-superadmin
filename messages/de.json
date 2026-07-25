@@ -651,6 +651,8 @@
     "restaurantsLoadFailed": "Restaurants konnten nicht geladen werden. Bitte versuche es erneut.",
     "noRestaurantsFound": "Keine Restaurants entsprechen dieser Suche.",
     "restaurantSpecificConfiguration": "Die Stripe- und PayPal-Konfiguration gilt nur für dieses Restaurant.",
+    "ownerPayoutSetupDescription": "Restaurantinhaber senden ihre Stripe-Konto-ID oder PayPal-Client-Zugangsdaten sicher unter Restaurant Admin → Zahlungseinstellungen. Super Admin prüft und aktiviert den eingereichten Anbieter hier; geheime Werte werden nie angezeigt.",
+    "openOwnerPayoutSetup": "Inhaber-Setup öffnen",
     "manualPayoutFallback": "Wenn dieses Restaurant keinen freigegebenen automatischen Anbieter hat, kann es eine manuelle Bankauszahlung beantragen. Sobald die Überweisung als bezahlt markiert wird, wird das Restaurant-Guthaben belastet.",
     "selectRestaurantToConfigure": "Wähle ein Restaurant aus, um die Auszahlungskonfiguration und ausstehende Anfragen anzuzeigen.",
     "taxTypes": "Steuertypen",
