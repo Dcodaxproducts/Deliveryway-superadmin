@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -18,21 +17,12 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
-  AlertCircle,
-  Banknote,
-  CheckCircle2,
-  CreditCard,
-  Globe2,
   Info,
-  Landmark,
-  Loader2,
   Plus,
   Save,
-  Smartphone,
   Trash2,
   ArrowDown,
   ArrowUp,
-  WalletCards,
 } from "lucide-react";
 
 import {
@@ -45,13 +35,9 @@ import { DEFAULT_DISPLAY_CURRENCY } from "@/lib/currency";
 import { TaxTypesSection } from "@/components/forms/tax-types-section";
 import { PremiumImageDropzone } from "@/components/forms/PremiumImageDropzone";
 import { useFileUpload } from "@/hooks/useFileUpload";
-import {
-  useGlobalPaymentMethodsQuery,
-  useUpdateGlobalPaymentMethodsMutation,
-} from "@/hooks/useGlobalPaymentMethods";
-import type { GlobalPaymentMethod } from "@/types/global-settings";
 import { getStorageViewUrl } from "@/services/storage";
 import type { LandingPageFaq } from "@/services/globalSettings";
+import { RestaurantPayoutConfigurationSection } from "@/components/forms/restaurant-payout-configuration-section";
 
 type SelectOption = {
   label: string;
@@ -131,70 +117,6 @@ const getCurrencySymbol = (currency: string) => {
   );
 };
 
-const formatPaymentMethodCode = (code: string) => {
-  return code.replaceAll("_", " ");
-};
-
-const PAYMENT_METHOD_VISUALS: Record<
-  string,
-  {
-    icon: typeof CreditCard;
-    accent: string;
-    surface: string;
-  }
-> = {
-  COD: {
-    icon: Banknote,
-    accent: "text-emerald-700",
-    surface: "bg-emerald-50",
-  },
-  CARD_ON_DELIVERY: {
-    icon: CreditCard,
-    accent: "text-sky-700",
-    surface: "bg-sky-50",
-  },
-  STRIPE: {
-    icon: CreditCard,
-    accent: "text-violet-700",
-    surface: "bg-violet-50",
-  },
-  PAYPAL: {
-    icon: Globe2,
-    accent: "text-blue-700",
-    surface: "bg-blue-50",
-  },
-  EASYPAISA: {
-    icon: Smartphone,
-    accent: "text-lime-700",
-    surface: "bg-lime-50",
-  },
-  JAZZCASH: {
-    icon: Smartphone,
-    accent: "text-rose-700",
-    surface: "bg-rose-50",
-  },
-  BANK_TRANSFER: {
-    icon: Landmark,
-    accent: "text-slate-700",
-    surface: "bg-slate-100",
-  },
-  WALLET: {
-    icon: WalletCards,
-    accent: "text-amber-700",
-    surface: "bg-amber-50",
-  },
-};
-
-const DEFAULT_PAYMENT_METHOD_VISUAL = {
-  icon: CreditCard,
-  accent: "text-primary",
-  surface: "bg-primary/10",
-};
-
-const getPaymentMethodVisual = (code: string) => {
-  return PAYMENT_METHOD_VISUALS[code.toUpperCase()] ?? DEFAULT_PAYMENT_METHOD_VISUAL;
-};
-
 export function SettingsForm() {
   const globalSettings = useTranslations("globalSettings");
   const common = useTranslations("common");
@@ -202,16 +124,6 @@ export function SettingsForm() {
   const { data: user } = useUser();
   const { mutate, isPending } = useUpdateGlobalSettings();
   const { uploadFile, uploading, progress } = useFileUpload();
-  const {
-    data: paymentMethodsResponse,
-    isLoading: isPaymentMethodsLoading,
-    isError: isPaymentMethodsError,
-  } = useGlobalPaymentMethodsQuery();
-  const {
-    mutate: updatePaymentMethods,
-    isPending: isPaymentMethodsPending,
-  } = useUpdateGlobalPaymentMethodsMutation();
-
   const [form, setForm] = useState<SettingsFormValues>({
     globalTaxPercentage: "",
     vatHandlingRule: "EXCLUSIVE",
@@ -250,10 +162,6 @@ export function SettingsForm() {
   const [currencyFormat, setCurrencyFormat] = useState("suffix");
   const [dateFormat, setDateFormat] = useState("dd/mm/yyyy");
   const [landingLogoPreview, setLandingLogoPreview] = useState("");
-  const [paymentMethods, setPaymentMethods] = useState<GlobalPaymentMethod[]>(
-    []
-  );
-
   useEffect(() => {
     if (!data) return;
 
@@ -323,12 +231,6 @@ export function SettingsForm() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
-
-  useEffect(() => {
-    const loadedMethods = paymentMethodsResponse?.data ?? [];
-
-    setPaymentMethods(loadedMethods);
-  }, [paymentMethodsResponse]);
 
   useEffect(() => {
     const logoUrl = data?.landingPageSettings?.logoUrl;
@@ -533,42 +435,6 @@ export function SettingsForm() {
     setLandingLogoPreview(await getStorageViewUrl(logoUrl));
   };
 
-  const updatePaymentMethod = (
-    code: string,
-    value: Partial<Omit<GlobalPaymentMethod, "code">>
-  ) => {
-    setPaymentMethods((prev) =>
-      prev.map((method) =>
-        method.code === code ? { ...method, ...value } : method
-      )
-    );
-  };
-
-  const hasDuplicatePaymentMethods = () => {
-    return new Set(paymentMethods.map((method) => method.code)).size !==
-      paymentMethods.length;
-  };
-
-  const handlePaymentMethodsSave = () => {
-    if (hasDuplicatePaymentMethods()) {
-      return;
-    }
-
-    updatePaymentMethods({
-      paymentMethods: paymentMethods.map((method) => ({
-        code: method.code,
-        label: method.label,
-        isActive: method.isActive,
-      })),
-    });
-  };
-
-  const paymentMethodsValidationMessage = hasDuplicatePaymentMethods()
-    ? globalSettings("duplicatePaymentMethods")
-    : "";
-  const activePaymentMethodsCount = paymentMethods.filter(
-    (method) => method.isActive
-  ).length;
   const canManageTaxTypes = isSuperAdmin(user);
 
   return (
@@ -1048,163 +914,7 @@ export function SettingsForm() {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[18px] border border-[#EAECF0] bg-white shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-[#EAECF0] bg-gradient-to-r from-primary/10 via-white to-white p-5 lg:flex-row lg:items-start lg:justify-between lg:p-7">
-          <div className="flex gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-primary text-white shadow-[0_10px_24px_rgba(255,107,0,0.24)]">
-              <WalletCards size={22} />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-lg font-semibold text-dark">
-                {globalSettings("platformPaymentMethods")}
-              </Label>
-              <p className="max-w-2xl text-sm leading-6 text-gray">
-                {globalSettings("paymentMethodsDescription")}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex w-fit items-center gap-2 rounded-full border border-primary/20 bg-white px-4 py-2 text-sm text-gray shadow-sm">
-            <CheckCircle2 size={16} className="text-primary" />
-            <span className="font-semibold text-dark">
-              {activePaymentMethodsCount}
-            </span>
-            {globalSettings("activeCount", { total: paymentMethods.length })}
-          </div>
-        </div>
-
-        <div className="space-y-5 p-5 lg:p-7">
-          {isPaymentMethodsLoading ? (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="h-40 animate-pulse rounded-[16px] border border-[#EAECF0] bg-[#F8FAFC]"
-                />
-              ))}
-            </div>
-          ) : isPaymentMethodsError ? (
-            <Alert variant="destructive" className="rounded-[14px]">
-              <AlertCircle size={16} />
-              <AlertDescription>
-                {globalSettings("paymentMethodsLoadFailed")}
-              </AlertDescription>
-            </Alert>
-          ) : paymentMethods.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-[16px] border border-dashed border-[#D0D5DD] bg-[#F9FAFB] p-8 text-center">
-              <WalletCards size={28} className="text-gray" />
-              <p className="mt-3 text-sm font-medium text-dark">
-                {globalSettings("noPaymentMethods")}
-              </p>
-            </div>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {paymentMethods.map((method) => {
-                const visual = getPaymentMethodVisual(method.code);
-                const MethodIcon = visual.icon;
-
-                return (
-                  <div
-                    key={method.code}
-                    className={`rounded-[16px] border bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(15,23,42,0.08)] ${
-                      method.isActive
-                        ? "border-primary/30 ring-4 ring-primary/5"
-                        : "border-[#EAECF0]"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex min-w-0 items-start gap-3">
-                        <div
-                          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] ${visual.surface} ${visual.accent}`}
-                        >
-                          <MethodIcon size={20} />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-dark">
-                            {method.label || formatPaymentMethodCode(method.code)}
-                          </p>
-                          <p className="mt-1 truncate text-xs text-gray">
-                            {globalSettings("apiManagedCode")}: {formatPaymentMethodCode(method.code)}
-                          </p>
-                        </div>
-                      </div>
-
-                      <Switch
-                        checked={method.isActive}
-                        onCheckedChange={(checked) =>
-                          updatePaymentMethod(method.code, { isActive: checked })
-                        }
-                      />
-                    </div>
-
-                    <div className="mt-4 flex items-center justify-between gap-3">
-                      <Badge
-                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                          method.isActive
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "bg-slate-100 text-slate-500"
-                        }`}
-                      >
-                        {method.isActive ? common("active") : common("inactive")}
-                      </Badge>
-                    </div>
-
-                    <div className="mt-4 space-y-2">
-                      <Label className="text-xs font-semibold uppercase tracking-wide text-gray">
-                        {globalSettings("displayLabel")}
-                      </Label>
-                      <Input
-                        value={method.label}
-                        onChange={(event) =>
-                          updatePaymentMethod(method.code, {
-                            label: event.target.value,
-                          })
-                        }
-                        className="h-11 rounded-[12px] border-[#D0D5DD] bg-[#FCFCFD] focus:border-primary"
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {paymentMethodsValidationMessage ? (
-            <Alert variant="destructive" className="rounded-[14px]">
-              <AlertCircle size={16} />
-              <AlertDescription>
-                {paymentMethodsValidationMessage}
-              </AlertDescription>
-            </Alert>
-          ) : null}
-
-          <div className="flex flex-col gap-3 border-t border-[#EAECF0] pt-5 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs leading-5 text-gray">
-              {globalSettings("paymentMethodsDescription")}
-            </p>
-            <Button
-              onClick={handlePaymentMethodsSave}
-              disabled={
-                isPaymentMethodsPending ||
-                isPaymentMethodsLoading ||
-                isPaymentMethodsError ||
-                paymentMethods.length === 0 ||
-                Boolean(paymentMethodsValidationMessage)
-              }
-              className="h-12 rounded-[12px] px-7"
-            >
-              {isPaymentMethodsPending ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <Save size={16} />
-              )}
-              {isPaymentMethodsPending
-                ? common("saving")
-                : globalSettings("savePaymentMethods")}
-            </Button>
-          </div>
-        </div>
-      </section>
+      <RestaurantPayoutConfigurationSection />
 
       <TaxTypesSection canManage={canManageTaxTypes} />
     </div>
