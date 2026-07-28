@@ -27,8 +27,30 @@ const methodLabelKeys: Record<RestaurantPaymentMethodCode, string> = {
   WALLET: "restaurantPaymentMethodWallet",
 };
 
+const methodGroups: Array<{
+  titleKey: string;
+  descriptionKey: string;
+  methods: RestaurantPaymentMethodCode[];
+}> = [
+  {
+    titleKey: "paymentTypePayAtFulfillment",
+    descriptionKey: "paymentTypePayAtFulfillmentDescription",
+    methods: ["COD", "CARD_ON_DELIVERY"],
+  },
+  {
+    titleKey: "paymentTypeDigital",
+    descriptionKey: "paymentTypeDigitalDescription",
+    methods: ["STRIPE", "PAYPAL", "EASYPAISA", "JAZZCASH"],
+  },
+  {
+    titleKey: "paymentTypeTransferAndWallet",
+    descriptionKey: "paymentTypeTransferAndWalletDescription",
+    methods: ["BANK_TRANSFER", "WALLET"],
+  },
+];
+
 export function RestaurantPaymentMethodsPanel({ restaurantId }: Props) {
-  const text = useTranslations("restaurants");
+  const text = useTranslations("globalSettings");
   const methodsQuery = useRestaurantPaymentMethods(restaurantId);
   const updateMethods = useUpdateRestaurantPaymentMethods(restaurantId);
   const [selectedMethods, setSelectedMethods] = useState<
@@ -80,21 +102,40 @@ export function RestaurantPaymentMethodsPanel({ restaurantId }: Props) {
 
       {!methodsQuery.isLoading && !methodsQuery.isError ? (
         activeMethods.length > 0 ? (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {activeMethods.map((method) => (
-              <label
-                key={method}
-                className="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-medium text-dark"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedMethods.includes(method)}
-                  onChange={() => toggleMethod(method)}
-                  className="size-4 accent-primary"
-                />
-                {text(methodLabelKeys[method])}
-              </label>
-            ))}
+          <div className="space-y-5">
+            {methodGroups.map((group) => {
+              const visibleMethods = group.methods.filter((method) =>
+                activeMethods.includes(method),
+              );
+              if (visibleMethods.length === 0) return null;
+
+              return (
+                <section key={group.titleKey}>
+                  <h4 className="text-sm font-semibold text-dark">
+                    {text(group.titleKey)}
+                  </h4>
+                  <p className="mt-1 text-xs leading-5 text-gray">
+                    {text(group.descriptionKey)}
+                  </p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    {visibleMethods.map((method) => (
+                      <label
+                        key={method}
+                        className="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-medium text-dark"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedMethods.includes(method)}
+                          onChange={() => toggleMethod(method)}
+                          className="size-4 accent-primary"
+                        />
+                        {text(methodLabelKeys[method])}
+                      </label>
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
           </div>
         ) : (
           <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700">

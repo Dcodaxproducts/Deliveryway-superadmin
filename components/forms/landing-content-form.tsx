@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { LandingRichTextEditor } from "@/components/forms/landing-rich-text-editor";
+import { PremiumImageDropzone } from "@/components/forms/PremiumImageDropzone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +27,7 @@ import {
   useLandingPageSettings,
   useUpdateLandingPageSettings,
 } from "@/hooks/useLandingPageSettings";
+import { useFileUpload } from "@/hooks/useFileUpload";
 import type {
   LandingHomeSettings,
   LandingPageFaq,
@@ -38,6 +40,8 @@ import { getRestaurants } from "@/services/restaurant";
 type PageKey = keyof LandingPagePages;
 type Language = "en" | "de";
 type RestaurantChoice = { id: string; name: string };
+type ManagedImageKey =
+  "logo" | "hero" | "growth" | "orderManagement" | "appDownload";
 
 const PAGE_KEYS: PageKey[] = [
   "services",
@@ -60,7 +64,11 @@ export function LandingContentForm() {
   const t = useTranslations("landingContent");
   const { data, isLoading, isError } = useLandingPageSettings();
   const { mutate, isPending } = useUpdateLandingPageSettings();
+  const { uploadFile, uploading, progress } = useFileUpload();
   const [draft, setDraft] = useState<LandingPageSettings | null>(null);
+  const [uploadingImage, setUploadingImage] = useState<ManagedImageKey | null>(
+    null,
+  );
   const [activePage, setActivePage] = useState<PageKey>("about");
   const [language, setLanguage] = useState<Language>("de");
   const [restaurantChoices, setRestaurantChoices] = useState<
@@ -171,6 +179,54 @@ export function LandingContentForm() {
     setDraft((current) => (current ? { ...current, [key]: value } : current));
   };
 
+  const updateManagedImage = (
+    key: ManagedImageKey,
+    imageUrl: string | null,
+  ) => {
+    setDraft((current) => {
+      if (!current) return current;
+      if (key === "logo") return { ...current, logoUrl: imageUrl };
+      if (key === "hero") {
+        return {
+          ...current,
+          home: {
+            ...current.home,
+            hero: { ...current.home.hero, imageUrl },
+          },
+        };
+      }
+      if (key === "appDownload") {
+        return {
+          ...current,
+          home: {
+            ...current.home,
+            appDownload: {
+              ...current.home.appDownload,
+              backgroundImageUrl: imageUrl,
+            },
+          },
+        };
+      }
+      return {
+        ...current,
+        home: {
+          ...current.home,
+          [key]: { ...current.home[key], imageUrl },
+        },
+      };
+    });
+  };
+
+  const uploadManagedImage = async (key: ManagedImageKey, file: File) => {
+    setUploadingImage(key);
+    try {
+      const imageUrl = await uploadFile(file);
+      if (imageUrl) updateManagedImage(key, imageUrl);
+    } finally {
+      setUploadingImage(null);
+    }
+  };
+
   const updateFaq = (
     id: string,
     updates: Partial<Omit<LandingPageFaq, "id">>,
@@ -245,6 +301,93 @@ export function LandingContentForm() {
 
   return (
     <div className="space-y-6">
+      <section className="rounded-[18px] border border-[#EAECF0] bg-white p-5 shadow-sm lg:p-7">
+        <div>
+          <h2 className="text-lg font-semibold text-dark">
+            {t("brandAndFooter")}
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-gray">
+            {t("brandAndFooterDescription")}
+          </p>
+        </div>
+        <div className="mt-5 grid gap-5 lg:grid-cols-[280px_1fr]">
+          <PremiumImageDropzone
+            alt={t("businessLogo")}
+            emptyTitle={t("uploadImage")}
+            emptyHint={t("uploadImageHint")}
+            selectedText={t("imageSelected")}
+            uploadText={t("uploadingImage")}
+            removeLabel={t("removeImage")}
+            preview={draft.logoUrl ?? undefined}
+            uploading={uploading && uploadingImage === "logo"}
+            progress={progress}
+            variant="logo"
+            onFileSelect={(file) => void uploadManagedImage("logo", file)}
+            onRemove={() => updateManagedImage("logo", null)}
+          />
+          <div className="grid gap-4 md:grid-cols-2">
+            <ContentInput
+              label={t("businessName")}
+              value={draft.businessName}
+              onChange={(businessName) =>
+                setDraft((current) =>
+                  current ? { ...current, businessName } : current,
+                )
+              }
+              maxLength={200}
+            />
+            <ContentInput
+              label={t("copyrightText")}
+              value={draft.copyrightText}
+              onChange={(copyrightText) =>
+                setDraft((current) =>
+                  current ? { ...current, copyrightText } : current,
+                )
+              }
+              maxLength={300}
+            />
+            <div className="md:col-span-2">
+              <Label>{t("footerDescription")}</Label>
+              <Textarea
+                value={draft.footerDescription ?? ""}
+                onChange={(event) =>
+                  setDraft((current) =>
+                    current
+                      ? { ...current, footerDescription: event.target.value }
+                      : current,
+                  )
+                }
+                rows={3}
+                className="mt-2"
+              />
+            </div>
+            {(["facebook", "twitter", "instagram", "youtube"] as const).map(
+              (network) => (
+                <ContentInput
+                  key={network}
+                  label={t(`social.${network}`)}
+                  value={draft.socialLinks[network] ?? ""}
+                  onChange={(value) =>
+                    setDraft((current) =>
+                      current
+                        ? {
+                            ...current,
+                            socialLinks: {
+                              ...current.socialLinks,
+                              [network]: value || null,
+                            },
+                          }
+                        : current,
+                    )
+                  }
+                  maxLength={1000}
+                />
+              ),
+            )}
+          </div>
+        </div>
+      </section>
+
       <HomepageSettingsEditor
         home={draft.home}
         language={language}
@@ -253,6 +396,11 @@ export function LandingContentForm() {
         onChange={(home) =>
           setDraft((current) => (current ? { ...current, home } : current))
         }
+        uploading={uploading}
+        uploadingImage={uploadingImage}
+        progress={progress}
+        onImageUpload={uploadManagedImage}
+        onImageRemove={(key) => updateManagedImage(key, null)}
       />
 
       <section className="overflow-hidden rounded-[18px] border border-[#EAECF0] bg-white shadow-sm">
@@ -492,7 +640,7 @@ export function LandingContentForm() {
         <Button
           type="button"
           variant="primary"
-          disabled={isPending || hasInvalidFaq}
+          disabled={isPending || uploading || hasInvalidFaq}
           onClick={() => mutate(draft)}
           className="h-12 min-w-44 rounded-[12px] px-7 shadow-[0_16px_34px_rgba(220,38,38,0.24)]"
         >
@@ -514,21 +662,29 @@ function HomepageSettingsEditor({
   onLanguageChange,
   restaurantChoices,
   onChange,
+  uploading,
+  uploadingImage,
+  progress,
+  onImageUpload,
+  onImageRemove,
 }: {
   home: LandingHomeSettings;
   language: Language;
   onLanguageChange: (language: Language) => void;
   restaurantChoices: RestaurantChoice[];
   onChange: (home: LandingHomeSettings) => void;
+  uploading: boolean;
+  uploadingImage: ManagedImageKey | null;
+  progress: number;
+  onImageUpload: (key: ManagedImageKey, file: File) => Promise<void>;
+  onImageRemove: (key: ManagedImageKey) => void;
 }) {
+  const t = useTranslations("landingContent");
   const suffix = language === "de" ? "De" : "En";
   const headingKey = `heading${suffix}` as "headingEn" | "headingDe";
   const descriptionKey = `description${suffix}` as
-    | "descriptionEn"
-    | "descriptionDe";
-  const checklistKey = `checklist${suffix}` as
-    | "checklistEn"
-    | "checklistDe";
+    "descriptionEn" | "descriptionDe";
+  const checklistKey = `checklist${suffix}` as "checklistEn" | "checklistDe";
   const updateBlock = (
     key: "growth" | "orderManagement",
     updates: Partial<LandingHomeSettings[typeof key]>,
@@ -538,11 +694,10 @@ function HomepageSettingsEditor({
     <section className="rounded-[18px] border border-[#EAECF0] bg-white p-5 shadow-sm lg:p-7">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-dark">Homepage content</h2>
-          <p className="mt-1 text-sm text-gray">
-            Manage the hero, featured restaurants, feature sections, and app
-            download panel shown on the public landing page.
-          </p>
+          <h2 className="text-lg font-semibold text-dark">
+            {t("homepageTitle")}
+          </h2>
+          <p className="mt-1 text-sm text-gray">{t("homepageDescription")}</p>
         </div>
         <div className="flex items-center gap-1 rounded-[12px] border border-[#EAECF0] bg-[#F8FAFC] p-1">
           {(["de", "en"] as const).map((locale) => (
@@ -551,20 +706,22 @@ function HomepageSettingsEditor({
               type="button"
               onClick={() => onLanguageChange(locale)}
               className={`rounded-lg px-4 py-2 text-sm font-semibold ${
-                language === locale ? "bg-white text-dark shadow-sm" : "text-gray"
+                language === locale
+                  ? "bg-white text-dark shadow-sm"
+                  : "text-gray"
               }`}
             >
-              {locale.toUpperCase()}
+              {t(`languages.${locale}`)}
             </button>
           ))}
         </div>
       </div>
 
       <div className="mt-6 space-y-6">
-        <HomePanel title="Hero">
+        <HomePanel title={t("heroTitle")}>
           <div className="grid gap-4 md:grid-cols-2">
             <ContentInput
-              label="Badge"
+              label={t("badge")}
               value={home.hero[`badge${suffix}`] ?? ""}
               onChange={(value) =>
                 onChange({
@@ -575,7 +732,7 @@ function HomepageSettingsEditor({
               maxLength={100}
             />
             <ContentInput
-              label="Heading"
+              label={t("heading")}
               value={home.hero[headingKey] ?? ""}
               onChange={(value) =>
                 onChange({
@@ -586,7 +743,7 @@ function HomepageSettingsEditor({
               maxLength={250}
             />
             <ContentInput
-              label="Subheading"
+              label={t("subheading")}
               value={home.hero[`subheading${suffix}`] ?? ""}
               onChange={(value) =>
                 onChange({
@@ -596,16 +753,18 @@ function HomepageSettingsEditor({
               }
               maxLength={600}
             />
-            <ContentInput
-              label="Hero image URL"
-              value={home.hero.imageUrl ?? ""}
-              onChange={(imageUrl) =>
-                onChange({ ...home, hero: { ...home.hero, imageUrl } })
-              }
-              maxLength={1000}
+            <ManagedImageDropzone
+              label={t("heroImage")}
+              preview={home.hero.imageUrl}
+              imageKey="hero"
+              uploading={uploading}
+              uploadingImage={uploadingImage}
+              progress={progress}
+              onImageUpload={onImageUpload}
+              onImageRemove={onImageRemove}
             />
             <ContentInput
-              label="Primary button label"
+              label={t("primaryButtonLabel")}
               value={home.hero[`primaryCta${suffix}`] ?? ""}
               onChange={(value) =>
                 onChange({
@@ -616,7 +775,7 @@ function HomepageSettingsEditor({
               maxLength={100}
             />
             <ContentInput
-              label="Primary button URL"
+              label={t("primaryButtonUrl")}
               value={home.hero.primaryCtaUrl ?? ""}
               onChange={(primaryCtaUrl) =>
                 onChange({ ...home, hero: { ...home.hero, primaryCtaUrl } })
@@ -624,7 +783,7 @@ function HomepageSettingsEditor({
               maxLength={1000}
             />
             <ContentInput
-              label="Secondary button label"
+              label={t("secondaryButtonLabel")}
               value={home.hero[`secondaryCta${suffix}`] ?? ""}
               onChange={(value) =>
                 onChange({
@@ -635,7 +794,7 @@ function HomepageSettingsEditor({
               maxLength={100}
             />
             <ContentInput
-              label="Secondary button URL"
+              label={t("secondaryButtonUrl")}
               value={home.hero.secondaryCtaUrl ?? ""}
               onChange={(secondaryCtaUrl) =>
                 onChange({ ...home, hero: { ...home.hero, secondaryCtaUrl } })
@@ -645,10 +804,10 @@ function HomepageSettingsEditor({
           </div>
         </HomePanel>
 
-        <HomePanel title="Featured restaurants">
+        <HomePanel title={t("featuredRestaurantsTitle")}>
           <div className="grid gap-4 md:grid-cols-2">
             <ContentInput
-              label="Section heading"
+              label={t("sectionHeading")}
               value={home.featuredRestaurants[headingKey] ?? ""}
               onChange={(value) =>
                 onChange({
@@ -674,10 +833,10 @@ function HomepageSettingsEditor({
                   })
                 }
               />
-              Show this section
+              {t("showSection")}
             </label>
           </div>
-          <Label className="mt-4 block">Restaurants</Label>
+          <Label className="mt-4 block">{t("restaurants")}</Label>
           <select
             multiple
             value={home.featuredRestaurants.restaurantIds}
@@ -701,31 +860,37 @@ function HomepageSettingsEditor({
               </option>
             ))}
           </select>
-          <p className="mt-2 text-xs text-gray">
-            Hold Ctrl/Cmd to select multiple restaurants.
-          </p>
+          <p className="mt-2 text-xs text-gray">{t("multiSelectHint")}</p>
         </HomePanel>
 
         {(["growth", "orderManagement"] as const).map((key) => (
           <HomePanel
             key={key}
-            title={key === "growth" ? "Growth section" : "Order management section"}
+            title={
+              key === "growth"
+                ? t("growthSectionTitle")
+                : t("orderManagementSectionTitle")
+            }
           >
             <div className="grid gap-4 md:grid-cols-2">
               <ContentInput
-                label="Heading"
+                label={t("heading")}
                 value={home[key][headingKey] ?? ""}
                 onChange={(value) => updateBlock(key, { [headingKey]: value })}
                 maxLength={250}
               />
-              <ContentInput
-                label="Image URL"
-                value={home[key].imageUrl ?? ""}
-                onChange={(imageUrl) => updateBlock(key, { imageUrl })}
-                maxLength={1000}
+              <ManagedImageDropzone
+                label={t("sectionImage")}
+                preview={home[key].imageUrl}
+                imageKey={key}
+                uploading={uploading}
+                uploadingImage={uploadingImage}
+                progress={progress}
+                onImageUpload={onImageUpload}
+                onImageRemove={onImageRemove}
               />
               <div>
-                <Label>Description</Label>
+                <Label>{t("sectionDescription")}</Label>
                 <Textarea
                   value={home[key][descriptionKey] ?? ""}
                   onChange={(event) =>
@@ -736,7 +901,7 @@ function HomepageSettingsEditor({
                 />
               </div>
               <div>
-                <Label>Checklist (one item per line)</Label>
+                <Label>{t("checklist")}</Label>
                 <Textarea
                   value={home[key][checklistKey].join("\n")}
                   onChange={(event) =>
@@ -757,15 +922,15 @@ function HomepageSettingsEditor({
                 checked={home[key].isVisible}
                 onCheckedChange={(isVisible) => updateBlock(key, { isVisible })}
               />
-              Show this section
+              {t("showSection")}
             </label>
           </HomePanel>
         ))}
 
-        <HomePanel title="App download section">
+        <HomePanel title={t("appDownloadSectionTitle")}>
           <div className="grid gap-4 md:grid-cols-2">
             <ContentInput
-              label="Heading"
+              label={t("heading")}
               value={home.appDownload[headingKey] ?? ""}
               onChange={(value) =>
                 onChange({
@@ -775,19 +940,18 @@ function HomepageSettingsEditor({
               }
               maxLength={250}
             />
-            <ContentInput
-              label="Background image URL"
-              value={home.appDownload.backgroundImageUrl ?? ""}
-              onChange={(backgroundImageUrl) =>
-                onChange({
-                  ...home,
-                  appDownload: { ...home.appDownload, backgroundImageUrl },
-                })
-              }
-              maxLength={1000}
+            <ManagedImageDropzone
+              label={t("backgroundImage")}
+              preview={home.appDownload.backgroundImageUrl}
+              imageKey="appDownload"
+              uploading={uploading}
+              uploadingImage={uploadingImage}
+              progress={progress}
+              onImageUpload={onImageUpload}
+              onImageRemove={onImageRemove}
             />
             <ContentInput
-              label="Description"
+              label={t("sectionDescription")}
               value={home.appDownload[descriptionKey] ?? ""}
               onChange={(value) =>
                 onChange({
@@ -801,7 +965,7 @@ function HomepageSettingsEditor({
               maxLength={600}
             />
             <ContentInput
-              label="Google Play URL"
+              label={t("googlePlayUrl")}
               value={home.appDownload.googlePlayUrl ?? ""}
               onChange={(googlePlayUrl) =>
                 onChange({
@@ -812,7 +976,7 @@ function HomepageSettingsEditor({
               maxLength={1000}
             />
             <ContentInput
-              label="App Store URL"
+              label={t("appStoreUrl")}
               value={home.appDownload.appStoreUrl ?? ""}
               onChange={(appStoreUrl) =>
                 onChange({
@@ -833,11 +997,54 @@ function HomepageSettingsEditor({
                 })
               }
             />
-            Show this section
+            {t("showSection")}
           </label>
         </HomePanel>
       </div>
     </section>
+  );
+}
+
+function ManagedImageDropzone({
+  label,
+  preview,
+  imageKey,
+  uploading,
+  uploadingImage,
+  progress,
+  onImageUpload,
+  onImageRemove,
+}: {
+  label: string;
+  preview: string | null;
+  imageKey: ManagedImageKey;
+  uploading: boolean;
+  uploadingImage: ManagedImageKey | null;
+  progress: number;
+  onImageUpload: (key: ManagedImageKey, file: File) => Promise<void>;
+  onImageRemove: (key: ManagedImageKey) => void;
+}) {
+  const t = useTranslations("landingContent");
+
+  return (
+    <div>
+      <Label>{label}</Label>
+      <PremiumImageDropzone
+        alt={label}
+        className="mt-2"
+        emptyTitle={t("uploadImage")}
+        emptyHint={t("uploadImageHint")}
+        selectedText={t("imageSelected")}
+        uploadText={t("uploadingImage")}
+        removeLabel={t("removeImage")}
+        preview={preview ?? undefined}
+        uploading={uploading && uploadingImage === imageKey}
+        progress={progress}
+        variant="cover"
+        onFileSelect={(file) => void onImageUpload(imageKey, file)}
+        onRemove={() => onImageRemove(imageKey)}
+      />
+    </div>
   );
 }
 

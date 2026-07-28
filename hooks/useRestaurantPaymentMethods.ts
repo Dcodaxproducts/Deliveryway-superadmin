@@ -24,7 +24,7 @@ export const useUpdateRestaurantPaymentMethods = (
   restaurantId?: string | null,
 ) => {
   const queryClient = useQueryClient();
-  const text = useTranslations("restaurants");
+  const text = useTranslations("globalSettings");
 
   return useMutation({
     mutationFn: (allowedPaymentMethods: RestaurantPaymentMethodCode[]) =>

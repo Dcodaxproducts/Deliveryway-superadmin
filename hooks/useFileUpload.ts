@@ -32,7 +32,9 @@ export const useFileUpload = () => {
       setProgress(0);
 
       if (file.size > MAX_UPLOAD_FILE_SIZE_BYTES) {
-        throw new Error(`File size must be less than or equal to ${MAX_UPLOAD_FILE_SIZE_MB}MB`);
+        throw new Error(
+          `File size must be less than or equal to ${MAX_UPLOAD_FILE_SIZE_MB}MB`,
+        );
       }
 
       const prepared = await prepareUploadFile(file);
@@ -64,7 +66,7 @@ export const useFileUpload = () => {
       });
 
       setProgress(100);
-      toast.success(toasts("fileUploaded"));
+      toast.success(toasts("imageUploaded"));
       return fileUrl;
     } catch (err: unknown) {
       toast.error(getUploadErrorMessage(err, toasts("uploadFailed")));
@@ -75,7 +77,7 @@ export const useFileUpload = () => {
   };
 
   const handleFileChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ): Promise<string | null> => {
     const file = e.target.files?.[0];
     if (!file) return null;
