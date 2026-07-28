@@ -43,6 +43,53 @@ export type LandingPagePages = {
   contact: LandingPageContent;
 };
 
+export type LandingHomeContentBlock = {
+  headingEn: string | null;
+  headingDe: string | null;
+  descriptionEn: string | null;
+  descriptionDe: string | null;
+  checklistEn: string[];
+  checklistDe: string[];
+  imageUrl: string | null;
+  isVisible: boolean;
+};
+
+export type LandingHomeSettings = {
+  hero: {
+    badgeEn: string | null;
+    badgeDe: string | null;
+    headingEn: string | null;
+    headingDe: string | null;
+    subheadingEn: string | null;
+    subheadingDe: string | null;
+    imageUrl: string | null;
+    primaryCtaEn: string | null;
+    primaryCtaDe: string | null;
+    primaryCtaUrl: string | null;
+    secondaryCtaEn: string | null;
+    secondaryCtaDe: string | null;
+    secondaryCtaUrl: string | null;
+  };
+  featuredRestaurants: {
+    headingEn: string | null;
+    headingDe: string | null;
+    restaurantIds: string[];
+    isVisible: boolean;
+  };
+  growth: LandingHomeContentBlock;
+  orderManagement: LandingHomeContentBlock;
+  appDownload: {
+    headingEn: string | null;
+    headingDe: string | null;
+    descriptionEn: string | null;
+    descriptionDe: string | null;
+    backgroundImageUrl: string | null;
+    googlePlayUrl: string | null;
+    appStoreUrl: string | null;
+    isVisible: boolean;
+  };
+};
+
 export type LandingPageSettings = {
   businessName: string;
   logoUrl: string | null;
@@ -57,6 +104,7 @@ export type LandingPageSettings = {
     instagram: string | null;
     youtube: string | null;
   };
+  home: LandingHomeSettings;
   pages: LandingPagePages;
   faqs: LandingPageFaq[];
 };

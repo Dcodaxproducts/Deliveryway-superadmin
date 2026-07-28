@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { FileText, Loader2, Search } from "lucide-react";
+import { ExternalLink, FileText, Loader2, Search } from "lucide-react";
+import { toast } from "sonner";
 
 import AsyncSelect from "@/components/ui/AsyncSelect";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +27,7 @@ import { useGetGeneratedInvoices } from "@/hooks/useGeneratedInvoices";
 import { formatMoney } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 import { getRestaurants } from "@/services/restaurant";
+import { getGeneratedInvoicePdf } from "@/services/generatedInvoices";
 import type {
   GeneratedInvoice,
   GeneratedInvoiceKind,
@@ -193,6 +195,7 @@ export function GeneratedInvoicesHistoryTab() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [restaurant, setRestaurant] = useState<RestaurantOption | null>(null);
+  const [openingInvoiceId, setOpeningInvoiceId] = useState<string | null>(null);
 
   const params = useMemo(() => {
     return {
@@ -237,6 +240,23 @@ export function GeneratedInvoicesHistoryTab() {
     setFromDate("");
     setToDate("");
     setRestaurant(null);
+  };
+
+  const openInvoice = async (invoice: GeneratedInvoice) => {
+    setOpeningInvoiceId(invoice.id);
+
+    try {
+      const blob = await getGeneratedInvoicePdf(invoice.id, {
+        restaurantId: invoice.restaurant?.id ?? restaurant?.id,
+      });
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch {
+      toast.error("Unable to open this invoice document.");
+    } finally {
+      setOpeningInvoiceId(null);
+    }
   };
 
   return (
@@ -475,7 +495,9 @@ export function GeneratedInvoicesHistoryTab() {
                           {numericValue(invoice.sentCount).toLocaleString()}x ·
                           Downloaded{" "}
                           {numericValue(
-                            invoice.downloadCount ?? invoice.downloadsCount,
+                            invoice.downloadedCount ??
+                              invoice.downloadCount ??
+                              invoice.downloadsCount,
                           ).toLocaleString()}
                           x
                         </div>
@@ -485,7 +507,25 @@ export function GeneratedInvoicesHistoryTab() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>{prettyLabel(documentType)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <span>{prettyLabel(documentType)}</span>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled={openingInvoiceId === invoice.id}
+                          onClick={() => void openInvoice(invoice)}
+                        >
+                          {openingInvoiceId === invoice.id ? (
+                            <Loader2 className="size-4 animate-spin" />
+                          ) : (
+                            <ExternalLink className="size-4" />
+                          )}
+                          View
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 );
               })

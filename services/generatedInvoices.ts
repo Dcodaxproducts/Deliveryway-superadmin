@@ -75,6 +75,7 @@ export type GeneratedInvoice = {
   amount?: string | number | null;
   sentCount?: string | number | null;
   downloadCount?: string | number | null;
+  downloadedCount?: string | number | null;
   downloadsCount?: string | number | null;
   lastSent?: GeneratedInvoiceLastSent | null;
   lastSentAt?: string | null;
@@ -119,4 +120,19 @@ export const getGeneratedInvoices = async (
   });
 
   return data;
+};
+
+export const getGeneratedInvoicePdf = async (
+  invoiceId: string,
+  params?: Pick<GeneratedInvoicesParams, "restaurantId" | "branchId">,
+) => {
+  const response = await api.get(
+    `/admin/reports/generated-invoices/${invoiceId}/pdf`,
+    {
+      params: cleanGeneratedInvoiceParams(params),
+      responseType: "blob",
+    },
+  );
+
+  return response.data as Blob;
 };

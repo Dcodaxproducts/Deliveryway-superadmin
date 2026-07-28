@@ -27,14 +27,17 @@ import {
   useUpdateLandingPageSettings,
 } from "@/hooks/useLandingPageSettings";
 import type {
+  LandingHomeSettings,
   LandingPageFaq,
   LandingPageHero,
   LandingPagePages,
   LandingPageSettings,
 } from "@/services/globalSettings";
+import { getRestaurants } from "@/services/restaurant";
 
 type PageKey = keyof LandingPagePages;
 type Language = "en" | "de";
+type RestaurantChoice = { id: string; name: string };
 
 const PAGE_KEYS: PageKey[] = [
   "services",
@@ -60,10 +63,41 @@ export function LandingContentForm() {
   const [draft, setDraft] = useState<LandingPageSettings | null>(null);
   const [activePage, setActivePage] = useState<PageKey>("about");
   const [language, setLanguage] = useState<Language>("de");
+  const [restaurantChoices, setRestaurantChoices] = useState<
+    RestaurantChoice[]
+  >([]);
 
   useEffect(() => {
     if (data) setDraft(data);
   }, [data]);
+
+  useEffect(() => {
+    void getRestaurants({ page: 1, limit: 100 })
+      .then((response: unknown) => {
+        const record =
+          response && typeof response === "object"
+            ? (response as Record<string, unknown>)
+            : {};
+        const items = Array.isArray(record.data)
+          ? record.data
+          : Array.isArray(response)
+            ? response
+            : [];
+        setRestaurantChoices(
+          items
+            .filter(
+              (item): item is Record<string, unknown> =>
+                Boolean(item) && typeof item === "object",
+            )
+            .map((item) => ({
+              id: String(item.id ?? ""),
+              name: String(item.name ?? item.restaurantName ?? item.id ?? ""),
+            }))
+            .filter((item) => item.id),
+        );
+      })
+      .catch(() => setRestaurantChoices([]));
+  }, []);
 
   if (isError) {
     return (
@@ -211,6 +245,16 @@ export function LandingContentForm() {
 
   return (
     <div className="space-y-6">
+      <HomepageSettingsEditor
+        home={draft.home}
+        language={language}
+        onLanguageChange={setLanguage}
+        restaurantChoices={restaurantChoices}
+        onChange={(home) =>
+          setDraft((current) => (current ? { ...current, home } : current))
+        }
+      />
+
       <section className="overflow-hidden rounded-[18px] border border-[#EAECF0] bg-white shadow-sm">
         <div className="border-b border-[#EAECF0] bg-[linear-gradient(135deg,#fff7f7_0%,#ffffff_52%,#f8fafc_100%)] p-5 lg:p-7">
           <div className="flex items-start gap-4">
@@ -460,6 +504,354 @@ export function LandingContentForm() {
           {isPending ? t("saving") : t("save")}
         </Button>
       </div>
+    </div>
+  );
+}
+
+function HomepageSettingsEditor({
+  home,
+  language,
+  onLanguageChange,
+  restaurantChoices,
+  onChange,
+}: {
+  home: LandingHomeSettings;
+  language: Language;
+  onLanguageChange: (language: Language) => void;
+  restaurantChoices: RestaurantChoice[];
+  onChange: (home: LandingHomeSettings) => void;
+}) {
+  const suffix = language === "de" ? "De" : "En";
+  const headingKey = `heading${suffix}` as "headingEn" | "headingDe";
+  const descriptionKey = `description${suffix}` as
+    | "descriptionEn"
+    | "descriptionDe";
+  const checklistKey = `checklist${suffix}` as
+    | "checklistEn"
+    | "checklistDe";
+  const updateBlock = (
+    key: "growth" | "orderManagement",
+    updates: Partial<LandingHomeSettings[typeof key]>,
+  ) => onChange({ ...home, [key]: { ...home[key], ...updates } });
+
+  return (
+    <section className="rounded-[18px] border border-[#EAECF0] bg-white p-5 shadow-sm lg:p-7">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold text-dark">Homepage content</h2>
+          <p className="mt-1 text-sm text-gray">
+            Manage the hero, featured restaurants, feature sections, and app
+            download panel shown on the public landing page.
+          </p>
+        </div>
+        <div className="flex items-center gap-1 rounded-[12px] border border-[#EAECF0] bg-[#F8FAFC] p-1">
+          {(["de", "en"] as const).map((locale) => (
+            <button
+              key={locale}
+              type="button"
+              onClick={() => onLanguageChange(locale)}
+              className={`rounded-lg px-4 py-2 text-sm font-semibold ${
+                language === locale ? "bg-white text-dark shadow-sm" : "text-gray"
+              }`}
+            >
+              {locale.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-6 space-y-6">
+        <HomePanel title="Hero">
+          <div className="grid gap-4 md:grid-cols-2">
+            <ContentInput
+              label="Badge"
+              value={home.hero[`badge${suffix}`] ?? ""}
+              onChange={(value) =>
+                onChange({
+                  ...home,
+                  hero: { ...home.hero, [`badge${suffix}`]: value },
+                })
+              }
+              maxLength={100}
+            />
+            <ContentInput
+              label="Heading"
+              value={home.hero[headingKey] ?? ""}
+              onChange={(value) =>
+                onChange({
+                  ...home,
+                  hero: { ...home.hero, [headingKey]: value },
+                })
+              }
+              maxLength={250}
+            />
+            <ContentInput
+              label="Subheading"
+              value={home.hero[`subheading${suffix}`] ?? ""}
+              onChange={(value) =>
+                onChange({
+                  ...home,
+                  hero: { ...home.hero, [`subheading${suffix}`]: value },
+                })
+              }
+              maxLength={600}
+            />
+            <ContentInput
+              label="Hero image URL"
+              value={home.hero.imageUrl ?? ""}
+              onChange={(imageUrl) =>
+                onChange({ ...home, hero: { ...home.hero, imageUrl } })
+              }
+              maxLength={1000}
+            />
+            <ContentInput
+              label="Primary button label"
+              value={home.hero[`primaryCta${suffix}`] ?? ""}
+              onChange={(value) =>
+                onChange({
+                  ...home,
+                  hero: { ...home.hero, [`primaryCta${suffix}`]: value },
+                })
+              }
+              maxLength={100}
+            />
+            <ContentInput
+              label="Primary button URL"
+              value={home.hero.primaryCtaUrl ?? ""}
+              onChange={(primaryCtaUrl) =>
+                onChange({ ...home, hero: { ...home.hero, primaryCtaUrl } })
+              }
+              maxLength={1000}
+            />
+            <ContentInput
+              label="Secondary button label"
+              value={home.hero[`secondaryCta${suffix}`] ?? ""}
+              onChange={(value) =>
+                onChange({
+                  ...home,
+                  hero: { ...home.hero, [`secondaryCta${suffix}`]: value },
+                })
+              }
+              maxLength={100}
+            />
+            <ContentInput
+              label="Secondary button URL"
+              value={home.hero.secondaryCtaUrl ?? ""}
+              onChange={(secondaryCtaUrl) =>
+                onChange({ ...home, hero: { ...home.hero, secondaryCtaUrl } })
+              }
+              maxLength={1000}
+            />
+          </div>
+        </HomePanel>
+
+        <HomePanel title="Featured restaurants">
+          <div className="grid gap-4 md:grid-cols-2">
+            <ContentInput
+              label="Section heading"
+              value={home.featuredRestaurants[headingKey] ?? ""}
+              onChange={(value) =>
+                onChange({
+                  ...home,
+                  featuredRestaurants: {
+                    ...home.featuredRestaurants,
+                    [headingKey]: value,
+                  },
+                })
+              }
+              maxLength={250}
+            />
+            <label className="flex items-center gap-3 text-sm font-medium">
+              <Switch
+                checked={home.featuredRestaurants.isVisible}
+                onCheckedChange={(isVisible) =>
+                  onChange({
+                    ...home,
+                    featuredRestaurants: {
+                      ...home.featuredRestaurants,
+                      isVisible,
+                    },
+                  })
+                }
+              />
+              Show this section
+            </label>
+          </div>
+          <Label className="mt-4 block">Restaurants</Label>
+          <select
+            multiple
+            value={home.featuredRestaurants.restaurantIds}
+            onChange={(event) =>
+              onChange({
+                ...home,
+                featuredRestaurants: {
+                  ...home.featuredRestaurants,
+                  restaurantIds: Array.from(
+                    event.currentTarget.selectedOptions,
+                    (option) => option.value,
+                  ),
+                },
+              })
+            }
+            className="mt-2 min-h-40 w-full rounded-[12px] border border-[#D0D5DD] bg-white p-3 text-sm"
+          >
+            {restaurantChoices.map((restaurant) => (
+              <option key={restaurant.id} value={restaurant.id}>
+                {restaurant.name}
+              </option>
+            ))}
+          </select>
+          <p className="mt-2 text-xs text-gray">
+            Hold Ctrl/Cmd to select multiple restaurants.
+          </p>
+        </HomePanel>
+
+        {(["growth", "orderManagement"] as const).map((key) => (
+          <HomePanel
+            key={key}
+            title={key === "growth" ? "Growth section" : "Order management section"}
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <ContentInput
+                label="Heading"
+                value={home[key][headingKey] ?? ""}
+                onChange={(value) => updateBlock(key, { [headingKey]: value })}
+                maxLength={250}
+              />
+              <ContentInput
+                label="Image URL"
+                value={home[key].imageUrl ?? ""}
+                onChange={(imageUrl) => updateBlock(key, { imageUrl })}
+                maxLength={1000}
+              />
+              <div>
+                <Label>Description</Label>
+                <Textarea
+                  value={home[key][descriptionKey] ?? ""}
+                  onChange={(event) =>
+                    updateBlock(key, { [descriptionKey]: event.target.value })
+                  }
+                  rows={4}
+                  className="mt-2"
+                />
+              </div>
+              <div>
+                <Label>Checklist (one item per line)</Label>
+                <Textarea
+                  value={home[key][checklistKey].join("\n")}
+                  onChange={(event) =>
+                    updateBlock(key, {
+                      [checklistKey]: event.target.value
+                        .split("\n")
+                        .map((item) => item.trim())
+                        .filter(Boolean),
+                    })
+                  }
+                  rows={4}
+                  className="mt-2"
+                />
+              </div>
+            </div>
+            <label className="mt-4 flex items-center gap-3 text-sm font-medium">
+              <Switch
+                checked={home[key].isVisible}
+                onCheckedChange={(isVisible) => updateBlock(key, { isVisible })}
+              />
+              Show this section
+            </label>
+          </HomePanel>
+        ))}
+
+        <HomePanel title="App download section">
+          <div className="grid gap-4 md:grid-cols-2">
+            <ContentInput
+              label="Heading"
+              value={home.appDownload[headingKey] ?? ""}
+              onChange={(value) =>
+                onChange({
+                  ...home,
+                  appDownload: { ...home.appDownload, [headingKey]: value },
+                })
+              }
+              maxLength={250}
+            />
+            <ContentInput
+              label="Background image URL"
+              value={home.appDownload.backgroundImageUrl ?? ""}
+              onChange={(backgroundImageUrl) =>
+                onChange({
+                  ...home,
+                  appDownload: { ...home.appDownload, backgroundImageUrl },
+                })
+              }
+              maxLength={1000}
+            />
+            <ContentInput
+              label="Description"
+              value={home.appDownload[descriptionKey] ?? ""}
+              onChange={(value) =>
+                onChange({
+                  ...home,
+                  appDownload: {
+                    ...home.appDownload,
+                    [descriptionKey]: value,
+                  },
+                })
+              }
+              maxLength={600}
+            />
+            <ContentInput
+              label="Google Play URL"
+              value={home.appDownload.googlePlayUrl ?? ""}
+              onChange={(googlePlayUrl) =>
+                onChange({
+                  ...home,
+                  appDownload: { ...home.appDownload, googlePlayUrl },
+                })
+              }
+              maxLength={1000}
+            />
+            <ContentInput
+              label="App Store URL"
+              value={home.appDownload.appStoreUrl ?? ""}
+              onChange={(appStoreUrl) =>
+                onChange({
+                  ...home,
+                  appDownload: { ...home.appDownload, appStoreUrl },
+                })
+              }
+              maxLength={1000}
+            />
+          </div>
+          <label className="mt-4 flex items-center gap-3 text-sm font-medium">
+            <Switch
+              checked={home.appDownload.isVisible}
+              onCheckedChange={(isVisible) =>
+                onChange({
+                  ...home,
+                  appDownload: { ...home.appDownload, isVisible },
+                })
+              }
+            />
+            Show this section
+          </label>
+        </HomePanel>
+      </div>
+    </section>
+  );
+}
+
+function HomePanel({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-[16px] border border-[#EAECF0] bg-[#FCFCFD] p-5">
+      <h3 className="mb-4 font-semibold text-dark">{title}</h3>
+      {children}
     </div>
   );
 }
