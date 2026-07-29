@@ -20,3 +20,11 @@ export const getUser = async () => {
   const { data } = await api.get("/auth/me");
   return data.data
 }
+
+export const changePassword = async (payload: {
+  currentPassword: string;
+  newPassword: string;
+}) => {
+  const { data } = await api.patch("/auth/change-password", payload);
+  return data;
+};

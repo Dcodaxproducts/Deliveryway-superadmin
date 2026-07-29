@@ -17,6 +17,7 @@ export default function ProfileSection() {
   return (
     <Button
       variant={null}
+      onClick={() => router.push("/change-password")}
       className="flex justify-between items-center lg:pl-[25px] gap-[24px] py-2 rounded-lg h-auto"
     >
       <div className="flex flex-col items-start justify-center">

@@ -5,9 +5,11 @@ import { Check, Loader2, RefreshCw, Send, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Switch } from "@/components/ui/switch";
 import {
   useApprovePayoutProviderRequest,
+  useConfigurePayoutProvider,
   useCreateProviderPayout,
   usePayoutProviderSettings,
   useRejectPayoutProviderRequest,
@@ -23,11 +25,20 @@ export function PayoutProviderPanel({
   const settings = usePayoutProviderSettings(restaurantId);
   const approve = useApprovePayoutProviderRequest(restaurantId);
   const reject = useRejectPayoutProviderRequest(restaurantId);
+  const configure = useConfigurePayoutProvider(restaurantId);
   const setProviderEnabled = useSetPayoutProviderEnabled(restaurantId);
   const payout = useCreateProviderPayout(restaurantId);
   const [reviewNote, setReviewNote] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
   const [provider, setProvider] = useState<PayoutProvider>("STRIPE");
+  const [stripeAccountId, setStripeAccountId] = useState("");
+  const [paypalClientId, setPaypalClientId] = useState("");
+  const [paypalClientSecret, setPaypalClientSecret] = useState("");
+  const [paypalRecipientEmail, setPaypalRecipientEmail] = useState("");
+  const [paypalEnvironment, setPaypalEnvironment] = useState<
+    "SANDBOX" | "LIVE"
+  >("LIVE");
+  const [configurationNote, setConfigurationNote] = useState("");
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState("EUR");
   const [description, setDescription] = useState("");
@@ -38,6 +49,40 @@ export function PayoutProviderPanel({
   const selectedProviderEnabled = enabledProviders.some(
     (item) => item.provider === provider,
   );
+  const canSaveConfiguration =
+    !configure.isPending &&
+    (provider === "STRIPE"
+      ? stripeAccountId.trim().startsWith("acct_")
+      : paypalClientId.trim().length > 0 &&
+        paypalClientSecret.length > 0 &&
+        paypalRecipientEmail.trim().length > 0);
+
+  const saveConfiguration = () => {
+    if (!canSaveConfiguration) return;
+
+    configure.mutate(
+      provider === "STRIPE"
+        ? {
+            provider,
+            stripeAccountId: stripeAccountId.trim(),
+            note: configurationNote.trim() || undefined,
+          }
+        : {
+            provider,
+            paypalClientId: paypalClientId.trim(),
+            paypalClientSecret,
+            paypalRecipientEmail: paypalRecipientEmail.trim(),
+            paypalEnvironment,
+            note: configurationNote.trim() || undefined,
+          },
+      {
+        onSuccess: () => {
+          setPaypalClientSecret("");
+          setConfigurationNote("");
+        },
+      },
+    );
+  };
 
   const submitPayout = () => {
     if (
@@ -75,9 +120,9 @@ export function PayoutProviderPanel({
             Stripe & PayPal payout providers
           </h3>
           <p className="mt-1 text-sm text-gray">
-            Approve owner-submitted provider details, then transfer wallet funds
-            through the approved provider. Credentials remain encrypted and are
-            never displayed.
+            Configure each restaurant payout provider here, then transfer
+            wallet funds through the enabled provider. Secrets are encrypted,
+            masked, and never returned by the API.
           </p>
         </div>
         <Button
@@ -92,6 +137,114 @@ export function PayoutProviderPanel({
             <RefreshCw className="mr-2 size-4" />
           )}
           Refresh
+        </Button>
+      </div>
+
+      <div className="space-y-3 rounded-[10px] border border-[#e9eaee] p-4">
+        <div>
+          <h4 className="text-sm font-semibold text-dark">
+            Restaurant payout credentials
+          </h4>
+          <p className="mt-1 text-xs text-gray">
+            Saving replaces the selected provider configuration for this
+            restaurant. Existing secrets stay hidden; enter a new secret only
+            when replacing PayPal credentials.
+          </p>
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          <label className="space-y-1 text-xs font-medium text-dark">
+            Provider
+            <select
+              className="h-10 w-full rounded-md border border-input bg-white px-3 text-sm"
+              value={provider}
+              onChange={(event) =>
+                setProvider(event.target.value as PayoutProvider)
+              }
+            >
+              <option value="STRIPE">Stripe Connect</option>
+              <option value="PAYPAL">PayPal Payouts</option>
+            </select>
+          </label>
+          {provider === "STRIPE" ? (
+            <label className="space-y-1 text-xs font-medium text-dark">
+              Connected account ID
+              <Input
+                value={stripeAccountId}
+                onChange={(event) => setStripeAccountId(event.target.value)}
+                placeholder="acct_..."
+                autoComplete="off"
+              />
+            </label>
+          ) : (
+            <>
+              <label className="space-y-1 text-xs font-medium text-dark">
+                PayPal client ID
+                <Input
+                  value={paypalClientId}
+                  onChange={(event) => setPaypalClientId(event.target.value)}
+                  placeholder="PayPal REST app client ID"
+                  autoComplete="off"
+                />
+              </label>
+              <label className="space-y-1 text-xs font-medium text-dark">
+                PayPal client secret
+                <PasswordInput
+                  value={paypalClientSecret}
+                  onChange={(event) =>
+                    setPaypalClientSecret(event.target.value)
+                  }
+                  placeholder="Enter replacement secret"
+                  autoComplete="new-password"
+                />
+              </label>
+              <label className="space-y-1 text-xs font-medium text-dark">
+                Payout recipient email
+                <Input
+                  type="email"
+                  value={paypalRecipientEmail}
+                  onChange={(event) =>
+                    setPaypalRecipientEmail(event.target.value)
+                  }
+                  placeholder="payments@restaurant.de"
+                />
+              </label>
+              <label className="space-y-1 text-xs font-medium text-dark">
+                Environment
+                <select
+                  className="h-10 w-full rounded-md border border-input bg-white px-3 text-sm"
+                  value={paypalEnvironment}
+                  onChange={(event) =>
+                    setPaypalEnvironment(
+                      event.target.value as "SANDBOX" | "LIVE",
+                    )
+                  }
+                >
+                  <option value="LIVE">Live</option>
+                  <option value="SANDBOX">Sandbox</option>
+                </select>
+              </label>
+            </>
+          )}
+          <label className="space-y-1 text-xs font-medium text-dark md:col-span-2">
+            Configuration note
+            <Input
+              value={configurationNote}
+              onChange={(event) => setConfigurationNote(event.target.value)}
+              placeholder="Optional internal note"
+            />
+          </label>
+        </div>
+        <Button
+          type="button"
+          onClick={saveConfiguration}
+          disabled={!canSaveConfiguration}
+        >
+          {configure.isPending ? (
+            <Loader2 className="mr-2 size-4 animate-spin" />
+          ) : (
+            <Check className="mr-2 size-4" />
+          )}
+          Save & enable provider
         </Button>
       </div>
 

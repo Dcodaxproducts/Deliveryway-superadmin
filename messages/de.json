@@ -61,6 +61,7 @@
     "reportsAnalytics": "Berichte & Analysen",
     "systemHealthMonitoring": "Systemzustand & Überwachung",
     "notificationSettings": "Benachrichtigungseinstellungen",
+    "changePassword": "Passwort ändern",
     "logout": "Abmelden",
     "cuisines": "Küchen",
     "generatedHistory": "Generierte Historie",
@@ -1756,6 +1757,19 @@
     "faqRequired": "Jede FAQ benötigt eine Frage und Antwort in beiden Sprachen.",
     "save": "Landingpage-Inhalte speichern",
     "saving": "Wird gespeichert..."
+  },
+  "changePassword": {
+    "title": "Passwort ändern",
+    "description": "Aktualisieren Sie das Passwort Ihres Super-Admin-Kontos.",
+    "currentPassword": "Aktuelles Passwort",
+    "newPassword": "Neues Passwort",
+    "confirmPassword": "Neues Passwort bestätigen",
+    "passwordMismatch": "Die neuen Passwörter stimmen nicht überein.",
+    "requirements": "Verwenden Sie mindestens 8 Zeichen.",
+    "save": "Passwort ändern",
+    "saving": "Passwort wird geändert...",
+    "success": "Passwort wurde erfolgreich geändert.",
+    "error": "Passwort konnte nicht geändert werden."
   },
   "cuisines": {
     "title": "Küchen-Stammdaten",

@@ -20,6 +20,7 @@ import {
   Building2,
   Utensils,
   PanelsTopLeft,
+  LockKeyhole,
 } from "lucide-react";
 import { PiUsersThree } from "react-icons/pi";
 
@@ -176,6 +177,11 @@ export const menuItems: SidebarMenuItem[] = [
     icon: Bell,
     href: "/notification-settings",
     permissionAccess: "notifications",
+  },
+  {
+    titleKey: "navigation.changePassword",
+    icon: LockKeyhole,
+    href: "/change-password",
   },
   // { title: "Backups & Maintenance", icon: Database, href: "/maintenance" },
 ];

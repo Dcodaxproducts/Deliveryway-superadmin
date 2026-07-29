@@ -3,11 +3,13 @@ import { toast } from "sonner";
 
 import {
   approvePayoutProviderRequest,
+  configurePayoutProvider,
   createProviderPayout,
   getPayoutProviderSettings,
   rejectPayoutProviderRequest,
   setPayoutProviderEnabled,
   type PayoutProvider,
+  type ConfigurePayoutProviderPayload,
 } from "@/services/payoutProviders";
 import { payoutRequestKeys } from "@/hooks/usePayoutRequests";
 
@@ -95,6 +97,22 @@ export const useSetPayoutProviderEnabled = (
     },
     onError: (error: ApiError) =>
       toast.error(errorMessage(error, "Unable to update payout provider")),
+  });
+};
+
+export const useConfigurePayoutProvider = (
+  restaurantId?: string | null,
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: ConfigurePayoutProviderPayload) =>
+      configurePayoutProvider(restaurantId as string, payload),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: keys.detail(restaurantId) });
+      toast.success(`${variables.provider} payout credentials saved`);
+    },
+    onError: (error: ApiError) =>
+      toast.error(errorMessage(error, "Unable to save payout credentials")),
   });
 };
 

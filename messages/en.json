@@ -61,6 +61,7 @@
     "reportsAnalytics": "Reports & Analytics",
     "systemHealthMonitoring": "System Health & Monitoring",
     "notificationSettings": "Notification Setting",
+    "changePassword": "Change Password",
     "logout": "Logout",
     "cuisines": "Cuisines",
     "generatedHistory": "Generated History",
@@ -1756,6 +1757,19 @@
     "faqRequired": "Every FAQ must include a question and answer in both languages.",
     "save": "Save landing content",
     "saving": "Saving..."
+  },
+  "changePassword": {
+    "title": "Change Password",
+    "description": "Update the password for your Super Admin account.",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "passwordMismatch": "The new passwords do not match.",
+    "requirements": "Use at least 8 characters.",
+    "save": "Change password",
+    "saving": "Changing password...",
+    "success": "Password changed successfully.",
+    "error": "Unable to change password."
   },
   "cuisines": {
     "title": "Cuisine Master Data",

@@ -111,6 +111,32 @@ export const setPayoutProviderEnabled = async (
   return data;
 };
 
+export type ConfigurePayoutProviderPayload =
+  | {
+      provider: "STRIPE";
+      stripeAccountId: string;
+      note?: string;
+    }
+  | {
+      provider: "PAYPAL";
+      paypalClientId: string;
+      paypalClientSecret: string;
+      paypalRecipientEmail: string;
+      paypalEnvironment: "SANDBOX" | "LIVE";
+      note?: string;
+    };
+
+export const configurePayoutProvider = async (
+  restaurantId: string,
+  payload: ConfigurePayoutProviderPayload,
+) => {
+  const { data } = await api.post(
+    `/payments/restaurants/${restaurantId}/payout-providers/configuration`,
+    payload,
+  );
+  return data;
+};
+
 export const createProviderPayout = async (
   restaurantId: string,
   payload: {
