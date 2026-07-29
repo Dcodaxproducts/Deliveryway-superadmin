@@ -38,6 +38,7 @@ import { useFileUpload } from "@/hooks/useFileUpload";
 import { getStorageViewUrl } from "@/services/storage";
 import type { LandingPageFaq } from "@/services/globalSettings";
 import { RestaurantPayoutConfigurationSection } from "@/components/forms/restaurant-payout-configuration-section";
+import { GlobalPayoutProviderSection } from "@/components/forms/global-payout-provider-section";
 
 type SelectOption = {
   label: string;
@@ -913,6 +914,8 @@ export function SettingsForm() {
           </Button>
         </div>
       </section>
+
+      <GlobalPayoutProviderSection />
 
       <RestaurantPayoutConfigurationSection />
 

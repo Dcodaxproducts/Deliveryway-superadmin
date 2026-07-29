@@ -3,19 +3,45 @@ import { toast } from "sonner";
 
 import {
   approvePayoutProviderRequest,
+  configureGlobalPayoutProvider,
   configurePayoutProvider,
   createProviderPayout,
   getPayoutProviderSettings,
+  getGlobalPayoutProviderSettings,
   rejectPayoutProviderRequest,
   setPayoutProviderEnabled,
   type PayoutProvider,
   type ConfigurePayoutProviderPayload,
+  type ConfigureGlobalPayoutProviderPayload,
 } from "@/services/payoutProviders";
 import { payoutRequestKeys } from "@/hooks/usePayoutRequests";
 
 const keys = {
+  global: ["global-payout-providers"] as const,
   detail: (restaurantId?: string | null) =>
     ["restaurant-payout-providers", restaurantId ?? ""] as const,
+};
+
+export const useGlobalPayoutProviderSettings = () =>
+  useQuery({
+    queryKey: keys.global,
+    queryFn: getGlobalPayoutProviderSettings,
+  });
+
+export const useConfigureGlobalPayoutProvider = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: ConfigureGlobalPayoutProviderPayload) =>
+      configureGlobalPayoutProvider(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: keys.global });
+      toast.success("Global payout credentials saved");
+    },
+    onError: (error: ApiError) =>
+      toast.error(
+        errorMessage(error, "Unable to save global payout credentials"),
+      ),
+  });
 };
 
 type ApiError = Error & { response?: { data?: { message?: string } } };

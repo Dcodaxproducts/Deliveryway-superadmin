@@ -25,6 +25,18 @@ export type PayoutProviderSettings = {
   configurations: PayoutProviderConfiguration[];
 };
 
+export type GlobalPayoutProviderConfiguration = {
+  provider: PayoutProvider;
+  enabled: boolean;
+  publicDetails: Record<string, unknown>;
+  credentialsConfigured: boolean;
+  updatedAt: string | null;
+};
+
+export type GlobalPayoutProviderSettings = {
+  configurations: GlobalPayoutProviderConfiguration[];
+};
+
 type RecordValue = Record<string, unknown>;
 
 const isRecord = (value: unknown): value is RecordValue =>
@@ -73,6 +85,55 @@ export const getPayoutProviderSettings = async (
       approvedAt: getString(configuration.approvedAt),
     })),
   };
+};
+
+export const getGlobalPayoutProviderSettings =
+  async (): Promise<GlobalPayoutProviderSettings> => {
+    const response = await api.get("/payments/payout-providers/global");
+    const envelope = isRecord(response.data) ? response.data : {};
+    const data = isRecord(envelope.data) ? envelope.data : envelope;
+    const configurations = Array.isArray(data.configurations)
+      ? data.configurations
+      : [];
+
+    return {
+      configurations: configurations
+        .filter(isRecord)
+        .map((configuration) => ({
+          provider: getString(
+            configuration.provider,
+            "STRIPE",
+          ) as PayoutProvider,
+          enabled: configuration.enabled === true,
+          publicDetails: isRecord(configuration.publicDetails)
+            ? configuration.publicDetails
+            : {},
+          credentialsConfigured: configuration.credentialsConfigured === true,
+          updatedAt: getString(configuration.updatedAt),
+        })),
+    };
+  };
+
+export type ConfigureGlobalPayoutProviderPayload = {
+  provider: PayoutProvider;
+  enabled: boolean;
+  stripeSecretKey?: string;
+  stripePublishableKey?: string;
+  stripeWebhookSecret?: string;
+  paypalClientId?: string;
+  paypalClientSecret?: string;
+  paypalEnvironment?: "SANDBOX" | "LIVE";
+  note?: string;
+};
+
+export const configureGlobalPayoutProvider = async (
+  payload: ConfigureGlobalPayoutProviderPayload,
+) => {
+  const { data } = await api.post(
+    "/payments/payout-providers/global/configuration",
+    payload,
+  );
+  return data;
 };
 
 export const approvePayoutProviderRequest = async (
