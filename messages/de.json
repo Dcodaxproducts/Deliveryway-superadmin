@@ -1398,6 +1398,21 @@
     "number": "Nummer",
     "enterEmailAddress": "E-Mail-Adresse eingeben",
     "enterChannelNumber": "{channel}-Nummer eingeben",
+    "emailTemplates": "E-Mail-Vorlagen für Kunden",
+    "emailTemplatesDescription": "Bearbeite die deutschen und englischen Transaktions-E-Mails. Variablen in doppelten geschweiften Klammern werden automatisch ersetzt.",
+    "german": "Deutsch",
+    "english": "Englisch",
+    "emailSubject": "Betreff",
+    "emailBody": "E-Mail-Text",
+    "availableVariables": "Verfügbare Variablen",
+    "emailTemplateEvents": {
+      "verification": "Kontobestätigung",
+      "passwordReset": "Passwort zurücksetzen",
+      "orderConfirmation": "Bestellbestätigung",
+      "orderStatus": "Bestellstatus",
+      "paymentStatus": "Zahlungsstatus",
+      "giftCard": "Geschenkkarte"
+    },
     "notificationsTitle": "Benachrichtigungen",
     "notificationsDescription": "Restaurant-Benachrichtigungen, Updates und Kundenaktivitäten verwalten."
   },

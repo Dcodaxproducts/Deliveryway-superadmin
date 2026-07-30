@@ -1398,6 +1398,21 @@
     "number": "Number",
     "enterEmailAddress": "Enter email address",
     "enterChannelNumber": "Enter {channel} number",
+    "emailTemplates": "Customer email templates",
+    "emailTemplatesDescription": "Edit the German and English transactional emails sent to customers. Variables in double braces are replaced automatically.",
+    "german": "German",
+    "english": "English",
+    "emailSubject": "Subject",
+    "emailBody": "Email text",
+    "availableVariables": "Available variables",
+    "emailTemplateEvents": {
+      "verification": "Account verification",
+      "passwordReset": "Password reset",
+      "orderConfirmation": "Order confirmation",
+      "orderStatus": "Order status",
+      "paymentStatus": "Payment status",
+      "giftCard": "Gift card"
+    },
     "notificationsTitle": "Notifications",
     "notificationsDescription": "Manage restaurant alerts, updates, and customer activity."
   },
