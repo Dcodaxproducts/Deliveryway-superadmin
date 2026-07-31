@@ -43,6 +43,53 @@ export type LandingPagePages = {
   contact: LandingPageContent;
 };
 
+export type LandingHomeContentBlock = {
+  headingEn: string | null;
+  headingDe: string | null;
+  descriptionEn: string | null;
+  descriptionDe: string | null;
+  checklistEn: string[];
+  checklistDe: string[];
+  imageUrl: string | null;
+  isVisible: boolean;
+};
+
+export type LandingHomeSettings = {
+  hero: {
+    badgeEn: string | null;
+    badgeDe: string | null;
+    headingEn: string | null;
+    headingDe: string | null;
+    subheadingEn: string | null;
+    subheadingDe: string | null;
+    imageUrl: string | null;
+    primaryCtaEn: string | null;
+    primaryCtaDe: string | null;
+    primaryCtaUrl: string | null;
+    secondaryCtaEn: string | null;
+    secondaryCtaDe: string | null;
+    secondaryCtaUrl: string | null;
+  };
+  featuredRestaurants: {
+    headingEn: string | null;
+    headingDe: string | null;
+    restaurantIds: string[];
+    isVisible: boolean;
+  };
+  growth: LandingHomeContentBlock;
+  orderManagement: LandingHomeContentBlock;
+  appDownload: {
+    headingEn: string | null;
+    headingDe: string | null;
+    descriptionEn: string | null;
+    descriptionDe: string | null;
+    backgroundImageUrl: string | null;
+    googlePlayUrl: string | null;
+    appStoreUrl: string | null;
+    isVisible: boolean;
+  };
+};
+
 export type LandingPageSettings = {
   businessName: string;
   logoUrl: string | null;
@@ -57,6 +104,7 @@ export type LandingPageSettings = {
     instagram: string | null;
     youtube: string | null;
   };
+  home: LandingHomeSettings;
   pages: LandingPagePages;
   faqs: LandingPageFaq[];
 };
@@ -95,9 +143,11 @@ type GlobalSettingsResponse = Partial<GlobalSettingsValues> & {
  * Get global settings
  */
 export const getGlobalSettings = async (): Promise<GlobalSettingsResponse> => {
-  const { data } = await api.get<{
-    data?: GlobalSettingsResponse;
-  } & GlobalSettingsResponse>("/admin/global-settings");
+  const { data } = await api.get<
+    {
+      data?: GlobalSettingsResponse;
+    } & GlobalSettingsResponse
+  >("/admin/global-settings");
 
   return data?.data ?? data;
 };
@@ -139,7 +189,7 @@ export const updateLandingPageSettings = async (
 export const getGlobalPaymentMethods =
   async (): Promise<GetPaymentMethodsResponse> => {
     const { data } = await api.get<GetPaymentMethodsResponse>(
-      "/admin/global-settings/payment-methods"
+      "/admin/global-settings/payment-methods",
     );
 
     return data;
@@ -149,11 +199,11 @@ export const getGlobalPaymentMethods =
  * Update platform payment methods
  */
 export const updateGlobalPaymentMethods = async (
-    payload: UpdatePaymentMethodsPayload
+  payload: UpdatePaymentMethodsPayload,
 ): Promise<UpdatePaymentMethodsResponse> => {
   const { data } = await api.patch<UpdatePaymentMethodsResponse>(
     "/admin/global-settings/payment-methods",
-      payload
+    payload,
   );
 
   return data;
@@ -161,18 +211,18 @@ export const updateGlobalPaymentMethods = async (
 
 export const getGlobalTaxTypes = async (): Promise<GetTaxTypesResponse> => {
   const { data } = await api.get<GetTaxTypesResponse>(
-    "/admin/global-settings/tax-types"
+    "/admin/global-settings/tax-types",
   );
 
   return data;
 };
 
 export const updateGlobalTaxTypes = async (
-  payload: UpdateTaxTypesPayload
+  payload: UpdateTaxTypesPayload,
 ): Promise<UpdateTaxTypesResponse> => {
   const { data } = await api.patch<UpdateTaxTypesResponse>(
     "/admin/global-settings/tax-types",
-    payload
+    payload,
   );
 
   return data;

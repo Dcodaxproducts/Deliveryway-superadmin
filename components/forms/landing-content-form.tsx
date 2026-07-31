@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { LandingRichTextEditor } from "@/components/forms/landing-rich-text-editor";
+import { PremiumImageDropzone } from "@/components/forms/PremiumImageDropzone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,15 +27,21 @@ import {
   useLandingPageSettings,
   useUpdateLandingPageSettings,
 } from "@/hooks/useLandingPageSettings";
+import { useFileUpload } from "@/hooks/useFileUpload";
 import type {
+  LandingHomeSettings,
   LandingPageFaq,
   LandingPageHero,
   LandingPagePages,
   LandingPageSettings,
 } from "@/services/globalSettings";
+import { getRestaurants } from "@/services/restaurant";
 
 type PageKey = keyof LandingPagePages;
 type Language = "en" | "de";
+type RestaurantChoice = { id: string; name: string };
+type ManagedImageKey =
+  "logo" | "hero" | "growth" | "orderManagement" | "appDownload";
 
 const PAGE_KEYS: PageKey[] = [
   "services",
@@ -57,13 +64,48 @@ export function LandingContentForm() {
   const t = useTranslations("landingContent");
   const { data, isLoading, isError } = useLandingPageSettings();
   const { mutate, isPending } = useUpdateLandingPageSettings();
+  const { uploadFile, uploading, progress } = useFileUpload();
   const [draft, setDraft] = useState<LandingPageSettings | null>(null);
+  const [uploadingImage, setUploadingImage] = useState<ManagedImageKey | null>(
+    null,
+  );
   const [activePage, setActivePage] = useState<PageKey>("about");
   const [language, setLanguage] = useState<Language>("de");
+  const [restaurantChoices, setRestaurantChoices] = useState<
+    RestaurantChoice[]
+  >([]);
 
   useEffect(() => {
     if (data) setDraft(data);
   }, [data]);
+
+  useEffect(() => {
+    void getRestaurants({ page: 1, limit: 100 })
+      .then((response: unknown) => {
+        const record =
+          response && typeof response === "object"
+            ? (response as Record<string, unknown>)
+            : {};
+        const items = Array.isArray(record.data)
+          ? record.data
+          : Array.isArray(response)
+            ? response
+            : [];
+        setRestaurantChoices(
+          items
+            .filter(
+              (item): item is Record<string, unknown> =>
+                Boolean(item) && typeof item === "object",
+            )
+            .map((item) => ({
+              id: String(item.id ?? ""),
+              name: String(item.name ?? item.restaurantName ?? item.id ?? ""),
+            }))
+            .filter((item) => item.id),
+        );
+      })
+      .catch(() => setRestaurantChoices([]));
+  }, []);
 
   if (isError) {
     return (
@@ -135,6 +177,54 @@ export function LandingContentForm() {
     value: string,
   ) => {
     setDraft((current) => (current ? { ...current, [key]: value } : current));
+  };
+
+  const updateManagedImage = (
+    key: ManagedImageKey,
+    imageUrl: string | null,
+  ) => {
+    setDraft((current) => {
+      if (!current) return current;
+      if (key === "logo") return { ...current, logoUrl: imageUrl };
+      if (key === "hero") {
+        return {
+          ...current,
+          home: {
+            ...current.home,
+            hero: { ...current.home.hero, imageUrl },
+          },
+        };
+      }
+      if (key === "appDownload") {
+        return {
+          ...current,
+          home: {
+            ...current.home,
+            appDownload: {
+              ...current.home.appDownload,
+              backgroundImageUrl: imageUrl,
+            },
+          },
+        };
+      }
+      return {
+        ...current,
+        home: {
+          ...current.home,
+          [key]: { ...current.home[key], imageUrl },
+        },
+      };
+    });
+  };
+
+  const uploadManagedImage = async (key: ManagedImageKey, file: File) => {
+    setUploadingImage(key);
+    try {
+      const imageUrl = await uploadFile(file);
+      if (imageUrl) updateManagedImage(key, imageUrl);
+    } finally {
+      setUploadingImage(null);
+    }
   };
 
   const updateFaq = (
@@ -211,6 +301,108 @@ export function LandingContentForm() {
 
   return (
     <div className="space-y-6">
+      <section className="rounded-[18px] border border-[#EAECF0] bg-white p-5 shadow-sm lg:p-7">
+        <div>
+          <h2 className="text-lg font-semibold text-dark">
+            {t("brandAndFooter")}
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-gray">
+            {t("brandAndFooterDescription")}
+          </p>
+        </div>
+        <div className="mt-5 grid gap-5 lg:grid-cols-[280px_1fr]">
+          <PremiumImageDropzone
+            alt={t("businessLogo")}
+            emptyTitle={t("uploadImage")}
+            emptyHint={t("uploadImageHint")}
+            selectedText={t("imageSelected")}
+            uploadText={t("uploadingImage")}
+            removeLabel={t("removeImage")}
+            preview={draft.logoUrl ?? undefined}
+            uploading={uploading && uploadingImage === "logo"}
+            progress={progress}
+            variant="logo"
+            onFileSelect={(file) => void uploadManagedImage("logo", file)}
+            onRemove={() => updateManagedImage("logo", null)}
+          />
+          <div className="grid gap-4 md:grid-cols-2">
+            <ContentInput
+              label={t("businessName")}
+              value={draft.businessName}
+              onChange={(businessName) =>
+                setDraft((current) =>
+                  current ? { ...current, businessName } : current,
+                )
+              }
+              maxLength={200}
+            />
+            <ContentInput
+              label={t("copyrightText")}
+              value={draft.copyrightText}
+              onChange={(copyrightText) =>
+                setDraft((current) =>
+                  current ? { ...current, copyrightText } : current,
+                )
+              }
+              maxLength={300}
+            />
+            <div className="md:col-span-2">
+              <Label>{t("footerDescription")}</Label>
+              <Textarea
+                value={draft.footerDescription ?? ""}
+                onChange={(event) =>
+                  setDraft((current) =>
+                    current
+                      ? { ...current, footerDescription: event.target.value }
+                      : current,
+                  )
+                }
+                rows={3}
+                className="mt-2"
+              />
+            </div>
+            {(["facebook", "twitter", "instagram", "youtube"] as const).map(
+              (network) => (
+                <ContentInput
+                  key={network}
+                  label={t(`social.${network}`)}
+                  value={draft.socialLinks[network] ?? ""}
+                  onChange={(value) =>
+                    setDraft((current) =>
+                      current
+                        ? {
+                            ...current,
+                            socialLinks: {
+                              ...current.socialLinks,
+                              [network]: value || null,
+                            },
+                          }
+                        : current,
+                    )
+                  }
+                  maxLength={1000}
+                />
+              ),
+            )}
+          </div>
+        </div>
+      </section>
+
+      <HomepageSettingsEditor
+        home={draft.home}
+        language={language}
+        onLanguageChange={setLanguage}
+        restaurantChoices={restaurantChoices}
+        onChange={(home) =>
+          setDraft((current) => (current ? { ...current, home } : current))
+        }
+        uploading={uploading}
+        uploadingImage={uploadingImage}
+        progress={progress}
+        onImageUpload={uploadManagedImage}
+        onImageRemove={(key) => updateManagedImage(key, null)}
+      />
+
       <section className="overflow-hidden rounded-[18px] border border-[#EAECF0] bg-white shadow-sm">
         <div className="border-b border-[#EAECF0] bg-[linear-gradient(135deg,#fff7f7_0%,#ffffff_52%,#f8fafc_100%)] p-5 lg:p-7">
           <div className="flex items-start gap-4">
@@ -448,7 +640,7 @@ export function LandingContentForm() {
         <Button
           type="button"
           variant="primary"
-          disabled={isPending || hasInvalidFaq}
+          disabled={isPending || uploading || hasInvalidFaq}
           onClick={() => mutate(draft)}
           className="h-12 min-w-44 rounded-[12px] px-7 shadow-[0_16px_34px_rgba(220,38,38,0.24)]"
         >
@@ -460,6 +652,413 @@ export function LandingContentForm() {
           {isPending ? t("saving") : t("save")}
         </Button>
       </div>
+    </div>
+  );
+}
+
+function HomepageSettingsEditor({
+  home,
+  language,
+  onLanguageChange,
+  restaurantChoices,
+  onChange,
+  uploading,
+  uploadingImage,
+  progress,
+  onImageUpload,
+  onImageRemove,
+}: {
+  home: LandingHomeSettings;
+  language: Language;
+  onLanguageChange: (language: Language) => void;
+  restaurantChoices: RestaurantChoice[];
+  onChange: (home: LandingHomeSettings) => void;
+  uploading: boolean;
+  uploadingImage: ManagedImageKey | null;
+  progress: number;
+  onImageUpload: (key: ManagedImageKey, file: File) => Promise<void>;
+  onImageRemove: (key: ManagedImageKey) => void;
+}) {
+  const t = useTranslations("landingContent");
+  const suffix = language === "de" ? "De" : "En";
+  const headingKey = `heading${suffix}` as "headingEn" | "headingDe";
+  const descriptionKey = `description${suffix}` as
+    "descriptionEn" | "descriptionDe";
+  const checklistKey = `checklist${suffix}` as "checklistEn" | "checklistDe";
+  const updateBlock = (
+    key: "growth" | "orderManagement",
+    updates: Partial<LandingHomeSettings[typeof key]>,
+  ) => onChange({ ...home, [key]: { ...home[key], ...updates } });
+
+  return (
+    <section className="rounded-[18px] border border-[#EAECF0] bg-white p-5 shadow-sm lg:p-7">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold text-dark">
+            {t("homepageTitle")}
+          </h2>
+          <p className="mt-1 text-sm text-gray">{t("homepageDescription")}</p>
+        </div>
+        <div className="flex items-center gap-1 rounded-[12px] border border-[#EAECF0] bg-[#F8FAFC] p-1">
+          {(["de", "en"] as const).map((locale) => (
+            <button
+              key={locale}
+              type="button"
+              onClick={() => onLanguageChange(locale)}
+              className={`rounded-lg px-4 py-2 text-sm font-semibold ${
+                language === locale
+                  ? "bg-white text-dark shadow-sm"
+                  : "text-gray"
+              }`}
+            >
+              {t(`languages.${locale}`)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-6 space-y-6">
+        <HomePanel title={t("heroTitle")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <ContentInput
+              label={t("badge")}
+              value={home.hero[`badge${suffix}`] ?? ""}
+              onChange={(value) =>
+                onChange({
+                  ...home,
+                  hero: { ...home.hero, [`badge${suffix}`]: value },
+                })
+              }
+              maxLength={100}
+            />
+            <ContentInput
+              label={t("heading")}
+              value={home.hero[headingKey] ?? ""}
+              onChange={(value) =>
+                onChange({
+                  ...home,
+                  hero: { ...home.hero, [headingKey]: value },
+                })
+              }
+              maxLength={250}
+            />
+            <ContentInput
+              label={t("subheading")}
+              value={home.hero[`subheading${suffix}`] ?? ""}
+              onChange={(value) =>
+                onChange({
+                  ...home,
+                  hero: { ...home.hero, [`subheading${suffix}`]: value },
+                })
+              }
+              maxLength={600}
+            />
+            <ManagedImageDropzone
+              label={t("heroImage")}
+              preview={home.hero.imageUrl}
+              imageKey="hero"
+              uploading={uploading}
+              uploadingImage={uploadingImage}
+              progress={progress}
+              onImageUpload={onImageUpload}
+              onImageRemove={onImageRemove}
+            />
+            <ContentInput
+              label={t("primaryButtonLabel")}
+              value={home.hero[`primaryCta${suffix}`] ?? ""}
+              onChange={(value) =>
+                onChange({
+                  ...home,
+                  hero: { ...home.hero, [`primaryCta${suffix}`]: value },
+                })
+              }
+              maxLength={100}
+            />
+            <ContentInput
+              label={t("primaryButtonUrl")}
+              value={home.hero.primaryCtaUrl ?? ""}
+              onChange={(primaryCtaUrl) =>
+                onChange({ ...home, hero: { ...home.hero, primaryCtaUrl } })
+              }
+              maxLength={1000}
+            />
+            <ContentInput
+              label={t("secondaryButtonLabel")}
+              value={home.hero[`secondaryCta${suffix}`] ?? ""}
+              onChange={(value) =>
+                onChange({
+                  ...home,
+                  hero: { ...home.hero, [`secondaryCta${suffix}`]: value },
+                })
+              }
+              maxLength={100}
+            />
+            <ContentInput
+              label={t("secondaryButtonUrl")}
+              value={home.hero.secondaryCtaUrl ?? ""}
+              onChange={(secondaryCtaUrl) =>
+                onChange({ ...home, hero: { ...home.hero, secondaryCtaUrl } })
+              }
+              maxLength={1000}
+            />
+          </div>
+        </HomePanel>
+
+        <HomePanel title={t("featuredRestaurantsTitle")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <ContentInput
+              label={t("sectionHeading")}
+              value={home.featuredRestaurants[headingKey] ?? ""}
+              onChange={(value) =>
+                onChange({
+                  ...home,
+                  featuredRestaurants: {
+                    ...home.featuredRestaurants,
+                    [headingKey]: value,
+                  },
+                })
+              }
+              maxLength={250}
+            />
+            <label className="flex items-center gap-3 text-sm font-medium">
+              <Switch
+                checked={home.featuredRestaurants.isVisible}
+                onCheckedChange={(isVisible) =>
+                  onChange({
+                    ...home,
+                    featuredRestaurants: {
+                      ...home.featuredRestaurants,
+                      isVisible,
+                    },
+                  })
+                }
+              />
+              {t("showSection")}
+            </label>
+          </div>
+          <Label className="mt-4 block">{t("restaurants")}</Label>
+          <select
+            multiple
+            value={home.featuredRestaurants.restaurantIds}
+            onChange={(event) =>
+              onChange({
+                ...home,
+                featuredRestaurants: {
+                  ...home.featuredRestaurants,
+                  restaurantIds: Array.from(
+                    event.currentTarget.selectedOptions,
+                    (option) => option.value,
+                  ),
+                },
+              })
+            }
+            className="mt-2 min-h-40 w-full rounded-[12px] border border-[#D0D5DD] bg-white p-3 text-sm"
+          >
+            {restaurantChoices.map((restaurant) => (
+              <option key={restaurant.id} value={restaurant.id}>
+                {restaurant.name}
+              </option>
+            ))}
+          </select>
+          <p className="mt-2 text-xs text-gray">{t("multiSelectHint")}</p>
+        </HomePanel>
+
+        {(["growth", "orderManagement"] as const).map((key) => (
+          <HomePanel
+            key={key}
+            title={
+              key === "growth"
+                ? t("growthSectionTitle")
+                : t("orderManagementSectionTitle")
+            }
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <ContentInput
+                label={t("heading")}
+                value={home[key][headingKey] ?? ""}
+                onChange={(value) => updateBlock(key, { [headingKey]: value })}
+                maxLength={250}
+              />
+              <ManagedImageDropzone
+                label={t("sectionImage")}
+                preview={home[key].imageUrl}
+                imageKey={key}
+                uploading={uploading}
+                uploadingImage={uploadingImage}
+                progress={progress}
+                onImageUpload={onImageUpload}
+                onImageRemove={onImageRemove}
+              />
+              <div>
+                <Label>{t("sectionDescription")}</Label>
+                <Textarea
+                  value={home[key][descriptionKey] ?? ""}
+                  onChange={(event) =>
+                    updateBlock(key, { [descriptionKey]: event.target.value })
+                  }
+                  rows={4}
+                  className="mt-2"
+                />
+              </div>
+              <div>
+                <Label>{t("checklist")}</Label>
+                <Textarea
+                  value={home[key][checklistKey].join("\n")}
+                  onChange={(event) =>
+                    updateBlock(key, {
+                      [checklistKey]: event.target.value
+                        .split("\n")
+                        .map((item) => item.trim())
+                        .filter(Boolean),
+                    })
+                  }
+                  rows={4}
+                  className="mt-2"
+                />
+              </div>
+            </div>
+            <label className="mt-4 flex items-center gap-3 text-sm font-medium">
+              <Switch
+                checked={home[key].isVisible}
+                onCheckedChange={(isVisible) => updateBlock(key, { isVisible })}
+              />
+              {t("showSection")}
+            </label>
+          </HomePanel>
+        ))}
+
+        <HomePanel title={t("appDownloadSectionTitle")}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <ContentInput
+              label={t("heading")}
+              value={home.appDownload[headingKey] ?? ""}
+              onChange={(value) =>
+                onChange({
+                  ...home,
+                  appDownload: { ...home.appDownload, [headingKey]: value },
+                })
+              }
+              maxLength={250}
+            />
+            <ManagedImageDropzone
+              label={t("backgroundImage")}
+              preview={home.appDownload.backgroundImageUrl}
+              imageKey="appDownload"
+              uploading={uploading}
+              uploadingImage={uploadingImage}
+              progress={progress}
+              onImageUpload={onImageUpload}
+              onImageRemove={onImageRemove}
+            />
+            <ContentInput
+              label={t("sectionDescription")}
+              value={home.appDownload[descriptionKey] ?? ""}
+              onChange={(value) =>
+                onChange({
+                  ...home,
+                  appDownload: {
+                    ...home.appDownload,
+                    [descriptionKey]: value,
+                  },
+                })
+              }
+              maxLength={600}
+            />
+            <ContentInput
+              label={t("googlePlayUrl")}
+              value={home.appDownload.googlePlayUrl ?? ""}
+              onChange={(googlePlayUrl) =>
+                onChange({
+                  ...home,
+                  appDownload: { ...home.appDownload, googlePlayUrl },
+                })
+              }
+              maxLength={1000}
+            />
+            <ContentInput
+              label={t("appStoreUrl")}
+              value={home.appDownload.appStoreUrl ?? ""}
+              onChange={(appStoreUrl) =>
+                onChange({
+                  ...home,
+                  appDownload: { ...home.appDownload, appStoreUrl },
+                })
+              }
+              maxLength={1000}
+            />
+          </div>
+          <label className="mt-4 flex items-center gap-3 text-sm font-medium">
+            <Switch
+              checked={home.appDownload.isVisible}
+              onCheckedChange={(isVisible) =>
+                onChange({
+                  ...home,
+                  appDownload: { ...home.appDownload, isVisible },
+                })
+              }
+            />
+            {t("showSection")}
+          </label>
+        </HomePanel>
+      </div>
+    </section>
+  );
+}
+
+function ManagedImageDropzone({
+  label,
+  preview,
+  imageKey,
+  uploading,
+  uploadingImage,
+  progress,
+  onImageUpload,
+  onImageRemove,
+}: {
+  label: string;
+  preview: string | null;
+  imageKey: ManagedImageKey;
+  uploading: boolean;
+  uploadingImage: ManagedImageKey | null;
+  progress: number;
+  onImageUpload: (key: ManagedImageKey, file: File) => Promise<void>;
+  onImageRemove: (key: ManagedImageKey) => void;
+}) {
+  const t = useTranslations("landingContent");
+
+  return (
+    <div>
+      <Label>{label}</Label>
+      <PremiumImageDropzone
+        alt={label}
+        className="mt-2"
+        emptyTitle={t("uploadImage")}
+        emptyHint={t("uploadImageHint")}
+        selectedText={t("imageSelected")}
+        uploadText={t("uploadingImage")}
+        removeLabel={t("removeImage")}
+        preview={preview ?? undefined}
+        uploading={uploading && uploadingImage === imageKey}
+        progress={progress}
+        variant="cover"
+        onFileSelect={(file) => void onImageUpload(imageKey, file)}
+        onRemove={() => onImageRemove(imageKey)}
+      />
+    </div>
+  );
+}
+
+function HomePanel({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-[16px] border border-[#EAECF0] bg-[#FCFCFD] p-5">
+      <h3 className="mb-4 font-semibold text-dark">{title}</h3>
+      {children}
     </div>
   );
 }
