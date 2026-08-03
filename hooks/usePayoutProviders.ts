@@ -35,11 +35,11 @@ export const useConfigureGlobalPayoutProvider = () => {
       configureGlobalPayoutProvider(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.global });
-      toast.success("Global payout credentials saved");
+      toast.success("Global checkout credentials saved");
     },
     onError: (error: ApiError) =>
       toast.error(
-        errorMessage(error, "Unable to save global payout credentials"),
+        errorMessage(error, "Unable to save global checkout credentials"),
       ),
   });
 };

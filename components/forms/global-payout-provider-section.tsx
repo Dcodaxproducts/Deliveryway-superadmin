@@ -40,6 +40,11 @@ const emptyForm = (): ProviderForm => ({
   note: "",
 });
 
+const maskedLast4 = (value: unknown, fallback?: string) =>
+  typeof value === "string" && value.length > 0
+    ? `••••••••${value}`
+    : fallback;
+
 export function GlobalPayoutProviderSection() {
   const t = useTranslations("globalSettings");
   const { data, isLoading } = useGlobalPayoutProviderSettings();
@@ -108,6 +113,29 @@ export function GlobalPayoutProviderSection() {
     const configuration = data?.configurations.find(
       (entry) => entry.provider === provider,
     );
+    const keepPlaceholder = configuration?.credentialsConfigured
+      ? t("secretKeepPlaceholder")
+      : undefined;
+    const primaryPlaceholder =
+      provider === "STRIPE"
+        ? maskedLast4(
+            configuration?.publicDetails.secretKeyLast4,
+            keepPlaceholder,
+          )
+        : maskedLast4(
+            configuration?.publicDetails.clientIdLast4,
+            keepPlaceholder,
+          );
+    const secondaryPlaceholder =
+      provider === "STRIPE"
+        ? maskedLast4(
+            configuration?.publicDetails.publishableKeyLast4,
+            keepPlaceholder,
+          )
+        : maskedLast4(
+            configuration?.publicDetails.clientSecretLast4,
+            keepPlaceholder,
+          );
 
     return (
       <Card key={provider}>
@@ -143,11 +171,7 @@ export function GlobalPayoutProviderSection() {
             <Input
               type="password"
               value={form.primary}
-              placeholder={
-                configuration?.credentialsConfigured
-                  ? t("secretKeepPlaceholder")
-                  : undefined
-              }
+              placeholder={primaryPlaceholder}
               onChange={(event) =>
                 update(provider, "primary", event.target.value)
               }
@@ -163,11 +187,7 @@ export function GlobalPayoutProviderSection() {
             <Input
               type="password"
               value={form.secondary}
-              placeholder={
-                configuration?.credentialsConfigured
-                  ? t("secretKeepPlaceholder")
-                  : undefined
-              }
+              placeholder={secondaryPlaceholder}
               onChange={(event) =>
                 update(provider, "secondary", event.target.value)
               }
@@ -180,11 +200,10 @@ export function GlobalPayoutProviderSection() {
               <Input
                 type="password"
                 value={form.webhook}
-                placeholder={
-                  configuration?.credentialsConfigured
-                    ? t("secretKeepPlaceholder")
-                    : undefined
-                }
+                placeholder={maskedLast4(
+                  configuration?.publicDetails.webhookSecretLast4,
+                  keepPlaceholder,
+                )}
                 onChange={(event) =>
                   update(provider, "webhook", event.target.value)
                 }
