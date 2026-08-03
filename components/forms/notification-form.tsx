@@ -7,6 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  createEmptyEmailTemplates,
+  EMAIL_TEMPLATE_KEYS,
+  type EmailTemplateKey,
+  type EmailTemplateLocale,
+  type EmailTemplates,
+} from "@/services/notificationSettings";
 
 import {
   useGetNotificationSettings,
@@ -26,6 +34,7 @@ type NotificationFormState = {
   phoneNumber: string;
   whatsappNumber: string;
   notificationTypes: NotificationTypes;
+  emailTemplates: EmailTemplates;
 };
 
 type ChannelEnabledState = Record<Channel, boolean>;
@@ -33,12 +42,13 @@ type ChannelEnabledState = Record<Channel, boolean>;
 /**
  * Default state
  */
-const defaultState: NotificationFormState = {
+const createDefaultState = (): NotificationFormState => ({
   emailAddress: "",
   phoneNumber: "",
   whatsappNumber: "",
   notificationTypes: {},
-};
+  emailTemplates: createEmptyEmailTemplates(),
+});
 
 const defaultEnabledState: ChannelEnabledState = {
   email: true,
@@ -49,7 +59,9 @@ const defaultEnabledState: ChannelEnabledState = {
 export function NotificationForm() {
   const notificationSettings = useTranslations("notificationSettings");
   const common = useTranslations("common");
-  const [form, setForm] = useState<NotificationFormState>(defaultState);
+  const [form, setForm] = useState<NotificationFormState>(createDefaultState);
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<EmailTemplateKey>("orderConfirmation");
   const [enabledChannels, setEnabledChannels] =
     useState<ChannelEnabledState>(defaultEnabledState);
 
@@ -61,7 +73,7 @@ export function NotificationForm() {
    */
   useEffect(() => {
     if (!data) {
-      setForm(defaultState);
+      setForm(createDefaultState());
       setEnabledChannels(defaultEnabledState);
       return;
     }
@@ -71,6 +83,7 @@ export function NotificationForm() {
       phoneNumber: data.phoneNumber ?? "",
       whatsappNumber: data.whatsappNumber ?? "",
       notificationTypes: data.notificationTypes ?? {},
+      emailTemplates: data.emailTemplates ?? createEmptyEmailTemplates(),
     };
 
     setForm(safeForm);
@@ -181,6 +194,7 @@ export function NotificationForm() {
           },
         ])
       ),
+      emailTemplates: form.emailTemplates,
     };
 
     mutation.mutate(payload);
@@ -188,7 +202,7 @@ export function NotificationForm() {
 
   const handleCancel = () => {
     if (!data) {
-      setForm(defaultState);
+      setForm(createDefaultState());
       setEnabledChannels(defaultEnabledState);
       return;
     }
@@ -198,6 +212,7 @@ export function NotificationForm() {
       phoneNumber: data.phoneNumber ?? "",
       whatsappNumber: data.whatsappNumber ?? "",
       notificationTypes: data.notificationTypes ?? {},
+      emailTemplates: data.emailTemplates ?? createEmptyEmailTemplates(),
     };
 
     setForm(safeForm);
@@ -318,9 +333,29 @@ export function NotificationForm() {
             />
           )}
 
+          <EmailTemplateSection
+            templates={form.emailTemplates}
+            selectedTemplate={selectedTemplate}
+            onSelectTemplate={setSelectedTemplate}
+            onChange={(locale, field, value) =>
+              setForm((previous) => ({
+                ...previous,
+                emailTemplates: {
+                  ...previous.emailTemplates,
+                  [selectedTemplate]: {
+                    ...previous.emailTemplates[selectedTemplate],
+                    [locale]: {
+                      ...previous.emailTemplates[selectedTemplate][locale],
+                      [field]: value,
+                    },
+                  },
+                },
+              }))
+            }
+          />
+
           {/* ACTIONS */}
-          {hasVisibleSettings && (
-            <div className="flex justify-end gap-4">
+          <div className="flex justify-end gap-4">
               <Button
                 type="button"
                 variant="outline"
@@ -341,10 +376,72 @@ export function NotificationForm() {
                   ? common("saving")
                   : notificationSettings("saveActivate")}
               </Button>
-            </div>
-          )}
+          </div>
         </>
       )}
+    </div>
+  );
+}
+
+const templateVariables: Record<EmailTemplateKey, readonly string[]> = {
+  verification: ["otp", "expiresMinutes"],
+  passwordReset: ["otp", "expiresMinutes"],
+  orderConfirmation: [
+    "customerName", "orderNumber", "branchName", "orderType", "items",
+    "subtotal", "taxAmount", "deliveryFee", "discountAmount", "totalAmount",
+    "currency",
+  ],
+  orderStatus: ["customerName", "orderNumber", "branchName", "status"],
+  paymentStatus: ["customerName", "orderNumber", "branchName", "status", "amount", "currency"],
+  giftCard: ["buyerName", "buyerEmail", "title", "amount", "currency", "code", "expiresAt", "message"],
+};
+
+function EmailTemplateSection({
+  templates,
+  selectedTemplate,
+  onSelectTemplate,
+  onChange,
+}: {
+  templates: EmailTemplates;
+  selectedTemplate: EmailTemplateKey;
+  onSelectTemplate: (value: EmailTemplateKey) => void;
+  onChange: (
+    locale: EmailTemplateLocale,
+    field: "subject" | "body",
+    value: string,
+  ) => void;
+}) {
+  const t = useTranslations("notificationSettings");
+
+  return (
+    <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
+      <h3 className="text-xl font-semibold text-foreground">{t("emailTemplates")}</h3>
+      <p className="mt-1 text-sm text-muted-foreground">{t("emailTemplatesDescription")}</p>
+      <div className="my-6 flex flex-wrap gap-2">
+        {EMAIL_TEMPLATE_KEYS.map((key) => (
+          <Button key={key} type="button" variant={selectedTemplate === key ? "default" : "outline"} onClick={() => onSelectTemplate(key)}>
+            {t(`emailTemplateEvents.${key}`)}
+          </Button>
+        ))}
+      </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        {(["de", "en"] as const).map((locale) => (
+          <div key={locale} className="space-y-4 rounded-xl border p-4">
+            <h4 className="font-semibold">{locale === "de" ? t("german") : t("english")}</h4>
+            <div className="space-y-2">
+              <Label>{t("emailSubject")}</Label>
+              <Input value={templates[selectedTemplate][locale].subject} onChange={(event) => onChange(locale, "subject", event.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>{t("emailBody")}</Label>
+              <Textarea rows={12} value={templates[selectedTemplate][locale].body} onChange={(event) => onChange(locale, "body", event.target.value)} />
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="mt-4 break-words text-xs text-muted-foreground">
+        {t("availableVariables")}: {templateVariables[selectedTemplate].map((variable) => `{{${variable}}}`).join(", ")}
+      </p>
     </div>
   );
 }

@@ -12,6 +12,30 @@ export type NotificationChannel = {
   whatsapp: boolean;
 };
 
+export const EMAIL_TEMPLATE_KEYS = [
+  "verification",
+  "passwordReset",
+  "orderConfirmation",
+  "orderStatus",
+  "paymentStatus",
+  "giftCard",
+] as const;
+
+export type EmailTemplateKey = (typeof EMAIL_TEMPLATE_KEYS)[number];
+export type EmailTemplateLocale = "de" | "en";
+export type EmailTemplates = Record<
+  EmailTemplateKey,
+  Record<EmailTemplateLocale, { subject: string; body: string }>
+>;
+
+export const createEmptyEmailTemplates = (): EmailTemplates =>
+  Object.fromEntries(
+    EMAIL_TEMPLATE_KEYS.map((key) => [
+      key,
+      { de: { subject: "", body: "" }, en: { subject: "", body: "" } },
+    ]),
+  ) as EmailTemplates;
+
 export type NotificationSettingsValues = {
   emailAddress: string | null;
   phoneNumber: string | null;
@@ -19,6 +43,7 @@ export type NotificationSettingsValues = {
   notificationTypes: {
     [key: string]: NotificationChannel;
   };
+  emailTemplates: EmailTemplates;
 };
 
 /**
@@ -26,14 +51,40 @@ export type NotificationSettingsValues = {
  * HELPERS
  * ==============================
  */
+const asRecord = (value: unknown): Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+
+const asString = (value: unknown) => (typeof value === "string" ? value : "");
+
 const normalizeNotificationSettings = (
-  payload: any
+  payload: unknown,
 ): NotificationSettingsValues => {
+  const source = asRecord(payload);
+  const rawTemplates = asRecord(source.emailTemplates);
+  const emailTemplates = createEmptyEmailTemplates();
+
+  EMAIL_TEMPLATE_KEYS.forEach((key) => {
+    const template = asRecord(rawTemplates[key]);
+    (["de", "en"] as const).forEach((locale) => {
+      const localized = asRecord(template[locale]);
+      emailTemplates[key][locale] = {
+        subject: asString(localized.subject),
+        body: asString(localized.body),
+      };
+    });
+  });
+
   return {
-    emailAddress: payload?.emailAddress ?? "",
-    phoneNumber: payload?.phoneNumber ?? "",
-    whatsappNumber: payload?.whatsappNumber ?? "",
-    notificationTypes: payload?.notificationTypes ?? {},
+    emailAddress: asString(source.emailAddress),
+    phoneNumber: asString(source.phoneNumber),
+    whatsappNumber: asString(source.whatsappNumber),
+    notificationTypes: asRecord(source.notificationTypes) as Record<
+      string,
+      NotificationChannel
+    >,
+    emailTemplates,
   };
 };
 
