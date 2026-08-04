@@ -34,6 +34,7 @@ export type GlobalPayoutProviderConfiguration = {
 };
 
 export type GlobalPayoutProviderSettings = {
+  deploymentEnvironment: string;
   configurations: GlobalPayoutProviderConfiguration[];
 };
 
@@ -97,20 +98,19 @@ export const getGlobalPayoutProviderSettings =
       : [];
 
     return {
-      configurations: configurations
-        .filter(isRecord)
-        .map((configuration) => ({
-          provider: getString(
-            configuration.provider,
-            "STRIPE",
-          ) as PayoutProvider,
-          enabled: configuration.enabled === true,
-          publicDetails: isRecord(configuration.publicDetails)
-            ? configuration.publicDetails
-            : {},
-          credentialsConfigured: configuration.credentialsConfigured === true,
-          updatedAt: getString(configuration.updatedAt),
-        })),
+      deploymentEnvironment: getString(
+        data.deploymentEnvironment,
+        "development",
+      ) as string,
+      configurations: configurations.filter(isRecord).map((configuration) => ({
+        provider: getString(configuration.provider, "STRIPE") as PayoutProvider,
+        enabled: configuration.enabled === true,
+        publicDetails: isRecord(configuration.publicDetails)
+          ? configuration.publicDetails
+          : {},
+        credentialsConfigured: configuration.credentialsConfigured === true,
+        updatedAt: getString(configuration.updatedAt),
+      })),
     };
   };
 

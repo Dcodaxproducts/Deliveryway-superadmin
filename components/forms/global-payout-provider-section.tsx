@@ -9,6 +9,7 @@ import {
 } from "@/hooks/usePayoutProviders";
 import type { PayoutProvider } from "@/services/payoutProviders";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,14 +37,12 @@ const emptyForm = (): ProviderForm => ({
   primary: "",
   secondary: "",
   webhook: "",
-  environment: "LIVE",
+  environment: "SANDBOX",
   note: "",
 });
 
 const maskedLast4 = (value: unknown, fallback?: string) =>
-  typeof value === "string" && value.length > 0
-    ? `••••••••${value}`
-    : fallback;
+  typeof value === "string" && value.length > 0 ? `••••••••${value}` : fallback;
 
 export function GlobalPayoutProviderSection() {
   const t = useTranslations("globalSettings");
@@ -58,15 +57,20 @@ export function GlobalPayoutProviderSection() {
     if (!data) return;
 
     setForms((current) => {
-      const next = { ...current };
+      const expectedPayPalEnvironment: "SANDBOX" | "LIVE" =
+        data.deploymentEnvironment === "production" ? "LIVE" : "SANDBOX";
+      const next = {
+        ...current,
+        PAYPAL: {
+          ...current.PAYPAL,
+          environment: expectedPayPalEnvironment,
+        },
+      };
       for (const configuration of data.configurations) {
         next[configuration.provider] = {
           ...current[configuration.provider],
           enabled: configuration.enabled,
-          environment:
-            configuration.publicDetails.environment === "SANDBOX"
-              ? "SANDBOX"
-              : "LIVE",
+          environment: expectedPayPalEnvironment,
           note:
             typeof configuration.publicDetails.note === "string"
               ? configuration.publicDetails.note
@@ -76,6 +80,9 @@ export function GlobalPayoutProviderSection() {
       return next;
     });
   }, [data]);
+
+  const deploymentEnvironment = data?.deploymentEnvironment ?? "development";
+  const isProduction = deploymentEnvironment === "production";
 
   const update = (
     provider: PayoutProvider,
@@ -209,16 +216,14 @@ export function GlobalPayoutProviderSection() {
                 }
                 autoComplete="new-password"
               />
+              <p className="text-xs text-muted-foreground">
+                {isProduction ? t("stripeLiveKeyHint") : t("stripeTestKeyHint")}
+              </p>
             </div>
           ) : (
             <div className="space-y-2">
               <Label>{t("paypalEnvironment")}</Label>
-              <Select
-                value={form.environment}
-                onValueChange={(value: "SANDBOX" | "LIVE") =>
-                  update(provider, "environment", value)
-                }
-              >
+              <Select value={form.environment} disabled>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -227,15 +232,16 @@ export function GlobalPayoutProviderSection() {
                   <SelectItem value="LIVE">Live</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">
+                {t("providerEnvironmentLocked")}
+              </p>
             </div>
           )}
           <div className="space-y-2">
             <Label>{t("globalPayoutNote")}</Label>
             <Textarea
               value={form.note}
-              onChange={(event) =>
-                update(provider, "note", event.target.value)
-              }
+              onChange={(event) => update(provider, "note", event.target.value)}
             />
           </div>
           <Button
@@ -253,9 +259,21 @@ export function GlobalPayoutProviderSection() {
   return (
     <section className="space-y-4 rounded-[14px] bg-white p-4 lg:p-[30px]">
       <div>
-        <h2 className="text-lg font-semibold">{t("globalPayoutProviders")}</h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className="text-lg font-semibold">
+            {t("globalPayoutProviders")}
+          </h2>
+          <Badge variant={isProduction ? "destructive" : "secondary"}>
+            {t("checkoutEnvironment", { environment: deploymentEnvironment })}
+          </Badge>
+        </div>
         <p className="text-sm text-muted-foreground">
           {t("globalPayoutProvidersDescription")}
+        </p>
+        <p className="mt-1 text-sm font-medium text-amber-700">
+          {isProduction
+            ? t("productionCredentialWarning")
+            : t("testCredentialWarning")}
         </p>
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
