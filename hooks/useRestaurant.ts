@@ -12,6 +12,8 @@ import {
   getBranch,
   getRestaurantTrend,
   getTopPerformingRestaurants
+  ,getCustomDomainStatus,
+  verifyCustomDomain
 } from "@/services/restaurant";
 import { useRouter } from "next/navigation";
 import type { RestaurantValues } from "@/validations/restaurant";
@@ -66,6 +68,39 @@ export const useGetRestaurant = (id: string) => {
     queryKey: ["restaurant", id],
     queryFn: () => getRestaurant(id),
     enabled: !!id,
+  });
+};
+
+export const useGetCustomDomainStatus = (
+  id: string,
+  enabled: boolean,
+) => {
+  return useQuery({
+    queryKey: ["restaurant-custom-domain", id],
+    queryFn: () => getCustomDomainStatus(id),
+    enabled: Boolean(id) && enabled,
+  });
+};
+
+export const useVerifyCustomDomain = () => {
+  const queryClient = useQueryClient();
+  const restaurants = useTranslations("restaurants");
+
+  return useMutation({
+    mutationFn: verifyCustomDomain,
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({
+        queryKey: ["restaurant-custom-domain", id],
+      });
+      queryClient.invalidateQueries({ queryKey: ["restaurant", id] });
+      queryClient.invalidateQueries({ queryKey: ["restaurants"] });
+      toast.success(restaurants("domainVerifiedSuccess"));
+    },
+    onError: (error: ApiError) => {
+      toast.error(
+        error.response?.data?.message || restaurants("domainVerificationFailed"),
+      );
+    },
   });
 };
 
