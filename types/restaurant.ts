@@ -40,6 +40,18 @@ export type Restaurant = {
   updatedAt: string;
 };
 
+export type CustomDomainStatus = {
+  customDomain: string;
+  verified: boolean;
+  verifiedAt: string | null;
+  dns: {
+    type: "CNAME";
+    host: string;
+    hostLabel: string;
+    target: string;
+  };
+};
+
 export interface BranchSettings {
   contact: {
     phone: string;

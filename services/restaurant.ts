@@ -1,7 +1,7 @@
 import api from "@/lib/axios";
 import { RestaurantValues } from "@/validations/restaurant";
 import { ApiResponse, RestaurantTrend, TopRestaurantsResponse } from "@/types/stats";
-import type { Branch, Restaurant } from "@/types/restaurant";
+import type { Branch, CustomDomainStatus, Restaurant } from "@/types/restaurant";
 
 // RESTAURANT APIS
 export const createRestaurant = async (payload: RestaurantValues) => {
@@ -21,6 +21,22 @@ export const getRestaurants = async (params?: {
 
 export const getRestaurant = async (id: string): Promise<Restaurant> => {
   const { data } = await api.get(`/restaurants/${id}`);
+  return data.data;
+};
+
+export const getCustomDomainStatus = async (
+  id: string,
+): Promise<CustomDomainStatus> => {
+  const { data } = await api.get(`/restaurants/${id}/custom-domain-status`);
+  return data.data;
+};
+
+export const verifyCustomDomain = async (
+  id: string,
+): Promise<CustomDomainStatus> => {
+  const { data } = await api.post(
+    `/restaurants/${id}/custom-domain-verification`,
+  );
   return data.data;
 };
 
