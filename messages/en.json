@@ -1511,6 +1511,8 @@
     "orderPayments": "Order & Payments",
     "orderTypesAllowed": "Order Types Allowed",
     "paymentMethods": "Payment Methods",
+    "restaurantPaymentMethodsDescription": "Choose which platform-enabled payment methods this restaurant may offer.",
+    "selectAtLeastOnePaymentMethod": "Select at least one payment method.",
     "restaurant": "Restaurant",
     "standardRates": "Standard Rates",
     "taxationAutomation": "Taxation & Automation",

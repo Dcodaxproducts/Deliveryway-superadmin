@@ -64,6 +64,34 @@ export const updateRestaurantServiceCharge = async (
   return data;
 };
 
+export type RestaurantPaymentMethods = {
+  activePlatformMethods: string[];
+  restaurantMethods: {
+    allowedPaymentMethods: string[];
+    walletEnabled?: boolean;
+  };
+};
+
+export const getRestaurantPaymentMethods = async (
+  id: string,
+): Promise<RestaurantPaymentMethods> => {
+  const { data } = await api.get(`/payments/restaurants/${id}/management`, {
+    params: { page: 1, limit: 1 },
+  });
+  return data.data.payments.methods;
+};
+
+export const updateRestaurantPaymentMethods = async (
+  id: string,
+  allowedPaymentMethods: string[],
+) => {
+  const { data } = await api.patch(`/payments/restaurants/${id}/methods`, {
+    allowedPaymentMethods,
+    walletEnabled: allowedPaymentMethods.includes("WALLET"),
+  });
+  return data;
+};
+
 // BRANCH APIS
 export const getRestaurantBranches = async (id: string): Promise<Branch[]> => {
   const { data } = await api.get(`/branches?restaurantId=${id}`);

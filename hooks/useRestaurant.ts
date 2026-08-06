@@ -8,6 +8,8 @@ import {
   createRestaurant, 
   updateRestaurant, 
   updateRestaurantServiceCharge,
+  getRestaurantPaymentMethods,
+  updateRestaurantPaymentMethods,
   getRestaurantBranches, 
   getBranch,
   getRestaurantTrend,
@@ -141,6 +143,39 @@ export const useUpdateRestaurantServiceCharge = () => {
     },
     onError: (err: ApiError) => {
       toast.error(err.response?.data?.message || toasts("restaurantUpdateFailed"));
+    },
+  });
+};
+
+export const useGetRestaurantPaymentMethods = (id?: string) =>
+  useQuery({
+    queryKey: ["restaurant-payment-methods", id],
+    queryFn: () => getRestaurantPaymentMethods(id as string),
+    enabled: Boolean(id),
+  });
+
+export const useUpdateRestaurantPaymentMethods = () => {
+  const queryClient = useQueryClient();
+  const toasts = useTranslations("toasts");
+
+  return useMutation({
+    mutationFn: ({
+      id,
+      allowedPaymentMethods,
+    }: {
+      id: string;
+      allowedPaymentMethods: string[];
+    }) => updateRestaurantPaymentMethods(id, allowedPaymentMethods),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["restaurant-payment-methods", variables.id],
+      });
+      toast.success(toasts("paymentMethodsUpdated"));
+    },
+    onError: (err: ApiError) => {
+      toast.error(
+        err.response?.data?.message || toasts("paymentMethodsUpdateFailed"),
+      );
     },
   });
 };

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Info } from "lucide-react"
+import { Check, Info, Loader2 } from "lucide-react"
 import { HexColorPicker } from "react-colorful"
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
@@ -13,7 +13,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 import { createRestaurantSchema, type RestaurantValues } from "@/validations/restaurant"
-import { useCreateRestaurant, useUpdateRestaurant } from "@/hooks/useRestaurant"
+import {
+  useCreateRestaurant,
+  useGetRestaurantPaymentMethods,
+  useUpdateRestaurant,
+  useUpdateRestaurantPaymentMethods,
+} from "@/hooks/useRestaurant"
+import { useGlobalPaymentMethodsQuery } from "@/hooks/useGlobalPaymentMethods"
 import { useFileUpload } from '@/hooks/useFileUpload'
 import { PremiumImageDropzone } from "@/components/forms/PremiumImageDropzone"
 import AsyncSelect from "@/components/ui/AsyncSelect"
@@ -54,6 +60,12 @@ export default function RestaurantForm({
   const restaurantSchema = createRestaurantSchema(validation)
   const createMutation = useCreateRestaurant()
   const updateMutation = useUpdateRestaurant()
+  const paymentMethodsQuery = useGetRestaurantPaymentMethods(
+    mode === "edit" ? restaurantId : undefined,
+  )
+  const globalPaymentMethodsQuery = useGlobalPaymentMethodsQuery()
+  const paymentMethodsMutation = useUpdateRestaurantPaymentMethods()
+  const [allowedPaymentMethods, setAllowedPaymentMethods] = useState<string[]>([])
 
   const { uploadFile, uploading, progress } = useFileUpload()
   const [uploadingTarget, setUploadingTarget] = useState<UploadTarget>(null)
@@ -67,13 +79,8 @@ const [coverPreviewBlob, setCoverPreviewBlob] = useState("")
         ? { id: initialData.tenantId, name: initialData.tenantName }
         : null,
   )
-  const mutate =
-    mode === 'edit' && restaurantId
-      ? (data: RestaurantValues) => updateMutation.mutate({ id: restaurantId, data })
-      : createMutation.mutate
-
   const isPending = mode === 'edit'
-    ? updateMutation.isPending
+    ? updateMutation.isPending || paymentMethodsMutation.isPending
     : createMutation.isPending
 
   const {
@@ -151,8 +158,32 @@ const coverPreview = coverPreviewBlob || coverImageUrl
   }
 }, [logoPreviewBlob, coverPreviewBlob])
 
-  const onSubmit = (data: RestaurantValues) => {
-    mutate(data)
+  useEffect(() => {
+    const methods = paymentMethodsQuery.data;
+    if (!methods) return;
+
+    setAllowedPaymentMethods(
+      methods.restaurantMethods.allowedPaymentMethods.length
+        ? methods.restaurantMethods.allowedPaymentMethods
+        : methods.activePlatformMethods,
+    );
+  }, [paymentMethodsQuery.data]);
+
+  const activePlatformPaymentMethods =
+    globalPaymentMethodsQuery.data?.data.filter((method) => method.isActive) ?? [];
+
+  const onSubmit = async (data: RestaurantValues) => {
+    if (mode === "edit" && restaurantId) {
+      if (allowedPaymentMethods.length === 0) return;
+      await paymentMethodsMutation.mutateAsync({
+        id: restaurantId,
+        allowedPaymentMethods,
+      });
+      updateMutation.mutate({ id: restaurantId, data });
+      return;
+    }
+
+    createMutation.mutate(data)
   }
 
 const handleLogoChange = async (file: File) => {
@@ -367,6 +398,50 @@ const removeCover = () => {
           {...register("customDomain")}
         />
       </FormSection>
+
+      {mode === "edit" ? (
+        <FormSection label={restaurants("paymentMethods")}>
+          <p className="text-sm text-gray-500">
+            {restaurants("restaurantPaymentMethodsDescription")}
+          </p>
+          {paymentMethodsQuery.isLoading || globalPaymentMethodsQuery.isLoading ? (
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Loader2 className="size-4 animate-spin" />
+              {common("loading")}
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {activePlatformPaymentMethods.map((method) => {
+                const checked = allowedPaymentMethods.includes(method.code)
+                return (
+                  <button
+                    key={method.code}
+                    type="button"
+                    onClick={() =>
+                      setAllowedPaymentMethods((current) =>
+                        checked
+                          ? current.filter((code) => code !== method.code)
+                          : [...current, method.code],
+                      )
+                    }
+                    className="flex items-center gap-3 rounded-xl border border-gray-200 p-4 text-left transition hover:border-primary/40"
+                  >
+                    <span className={`flex size-5 items-center justify-center rounded border ${checked ? "border-primary bg-primary" : "border-gray-300"}`}>
+                      {checked ? <Check className="size-3.5 text-white" /> : null}
+                    </span>
+                    <span className="font-medium text-gray-900">{method.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+          {allowedPaymentMethods.length === 0 ? (
+            <p className="text-sm text-red-500">
+              {restaurants("selectAtLeastOnePaymentMethod")}
+            </p>
+          ) : null}
+        </FormSection>
+      ) : null}
 
       <FormSection label={restaurants("branding")}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-[24px]">
