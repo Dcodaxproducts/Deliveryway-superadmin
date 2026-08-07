@@ -95,9 +95,12 @@ const [coverPreviewBlob, setCoverPreviewBlob] = useState("")
         whatsapp: "",
         phone: ""
       },
-      logoUrl: "",
-      coverImage: "",
-      ...initialData
+      ...initialData,
+      logoUrl: initialData?.logoUrl ?? "",
+      coverImage: initialData?.coverImage ?? "",
+      customDomain: initialData?.customDomain ?? "",
+      tagline: initialData?.tagline ?? "",
+      bio: initialData?.bio ?? ""
     }
   })
 
