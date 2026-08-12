@@ -8,3 +8,14 @@ export const getNormalizedRole = (user: unknown) => {
 };
 
 export const isSuperAdmin = (user: unknown) => getNormalizedRole(user) === "SUPER_ADMIN";
+
+export const canAccessSuperAdminPanel = (user: unknown) => {
+  const record = typeof user === "object" && user !== null ? user as Record<string, unknown> : {};
+  const nestedUser = typeof record.user === "object" && record.user !== null
+    ? record.user as Record<string, unknown>
+    : {};
+  const actorType = String(record.actorType || nestedUser.actorType || "").trim().toUpperCase();
+  const panelType = String(record.panelType || nestedUser.panelType || "").trim().toUpperCase();
+
+  return isSuperAdmin(user) || (actorType === "STAFF" && panelType === "SUPER_ADMIN");
+};

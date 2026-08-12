@@ -54,7 +54,7 @@ export const useLogin = () => {
 
     onError: (err: ApiError) => {
       clearAuthTokens();
-      const message = err.response?.data?.message || toasts("somethingWentWrong");
+      const message = err.response?.data?.message || err.message || toasts("somethingWentWrong");
       toast.error(message);
     },
   });

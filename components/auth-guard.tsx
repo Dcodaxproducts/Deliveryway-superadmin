@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { canAccessSuperAdminPanel } from "@/lib/auth-role";
 import { isStaffUser } from "@/lib/staff-access";
 import {
   canAccessPath,
@@ -24,6 +25,16 @@ const getStoredUser = () => {
   }
 };
 
+const clearStoredAuth = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("authUser");
+  sessionStorage.removeItem("token");
+  sessionStorage.removeItem("accessToken");
+  sessionStorage.removeItem("refreshToken");
+};
+
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const t = useTranslations("auth");
   const router = useRouter();
@@ -40,6 +51,12 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     if (isPublicRoute) {
       if (token) {
         const user = getStoredUser();
+        if (!canAccessSuperAdminPanel(user)) {
+          clearStoredAuth();
+          setLoading(false);
+          return;
+        }
+
         router.replace(
           isStaffUser(user) ? (getFirstAccessiblePath(user) ?? "/") : "/",
         );
@@ -57,6 +74,13 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     }
 
     const user = getStoredUser();
+    if (!canAccessSuperAdminPanel(user)) {
+      clearStoredAuth();
+      router.replace("/auth/login");
+      setLoading(false);
+      return;
+    }
+
     if (isStaffUser(user) && !canAccessPath(user, pathname)) {
       const firstAccessiblePath = getFirstAccessiblePath(user);
 
