@@ -40,6 +40,7 @@ type PackageSubscriptionRow = {
   } | null;
   restaurant?: {
     id: string;
+    displayNumber?: number | null;
     name?: string | null;
     email?: string | null;
     identifier?: string | null;
@@ -66,6 +67,7 @@ type TenantOption = {
 
 type RestaurantOption = {
   id: string;
+  displayNumber?: number | null;
   name?: string | null;
   email?: string | null;
   identifier?: string | null;
@@ -210,7 +212,9 @@ const getRestaurantLabel = (restaurant: RestaurantOption) => {
 };
 
 const getRestaurantMeta = (restaurant: RestaurantOption) => {
-  return restaurant.email || restaurant.identifier || restaurant.id;
+  return restaurant.displayNumber
+    ? `#${restaurant.displayNumber}`
+    : restaurant.email || restaurant.identifier || restaurant.id;
 };
 
 const mergeSelectedTenant = (
@@ -367,9 +371,7 @@ export function SubscriptionModal({
   };
 
   const handleSubmit = async () => {
-    const payload = {
-      tenantId: form.tenantId || undefined,
-      restaurantId: form.restaurantId || undefined,
+    const sharedPayload = {
       packagePlanId: form.packagePlanId,
       paymentStatus: form.paymentStatus,
       status: form.status,
@@ -379,14 +381,19 @@ export function SubscriptionModal({
       payoutCycleOverride: form.payoutCycleOverride || null,
       note: form.note.trim() || undefined,
     };
+    const createPayload = {
+      tenantId: form.tenantId || undefined,
+      restaurantId: form.restaurantId || undefined,
+      ...sharedPayload,
+    };
 
     if (isEditMode && initialData?.id) {
       await updateSubscription.mutateAsync({
         id: initialData.id,
-        payload,
+        payload: sharedPayload,
       });
     } else {
-      await createSubscription.mutateAsync(payload);
+      await createSubscription.mutateAsync(createPayload);
     }
 
     onOpenChange(false);

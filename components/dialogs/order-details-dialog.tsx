@@ -7,13 +7,18 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Star } from "lucide-react";
+import { Loader2, RotateCcw, Star, XCircle } from "lucide-react";
 import MyImage from "@/components/MyImage";
-import { useGetOrder } from "@/hooks/useOrder";
+import {
+    useCancelOrder,
+    useGetOrder,
+    useRefundOrderPayment,
+} from "@/hooks/useOrder";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
 import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
 import { formatMoney } from "@/lib/currency";
+import type { Order } from "@/services/order";
 
 interface Props {
     open: boolean;
@@ -27,6 +32,14 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Prop
     const products = useTranslations("products");
     const currency = useGlobalCurrency();
     const { data: order, isLoading } = useGetOrder(orderId as string);
+    const cancelOrder = useCancelOrder(orderId);
+    const refundPayment = useRefundOrderPayment(orderId);
+    const refundablePayment = order?.transactions?.find(
+        (transaction: NonNullable<Order["transactions"]>[number]) =>
+            transaction.type?.toUpperCase() === "CHARGE" &&
+            transaction.status?.toUpperCase() === "PAID",
+    );
+    const canCancel = Boolean(order && order.status !== "CANCELLED");
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -113,13 +126,47 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Prop
                         </>
                     )}
 
-                    <Button
-                        onClick={() => onOpenChange(false)}
-                        variant="primary"
-                        className="w-full"
-                    >
-                        {common("close")}
-                    </Button>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        {canCancel ? (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                disabled={cancelOrder.isPending || refundPayment.isPending}
+                                onClick={() => cancelOrder.mutate()}
+                                className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                            >
+                                {cancelOrder.isPending ? (
+                                    <Loader2 className="size-4 animate-spin" />
+                                ) : (
+                                    <XCircle className="size-4" />
+                                )}
+                                Cancel order
+                            </Button>
+                        ) : null}
+                        {refundablePayment ? (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                disabled={refundPayment.isPending || cancelOrder.isPending}
+                                onClick={() => refundPayment.mutate(refundablePayment.id)}
+                                className="border-amber-200 text-amber-700 hover:bg-amber-50 hover:text-amber-800"
+                            >
+                                {refundPayment.isPending ? (
+                                    <Loader2 className="size-4 animate-spin" />
+                                ) : (
+                                    <RotateCcw className="size-4" />
+                                )}
+                                Refund payment
+                            </Button>
+                        ) : null}
+                        <Button
+                            onClick={() => onOpenChange(false)}
+                            variant="primary"
+                            className="sm:col-span-2"
+                        >
+                            {common("close")}
+                        </Button>
+                    </div>
                 </div>
             </DialogContent>
         </Dialog>

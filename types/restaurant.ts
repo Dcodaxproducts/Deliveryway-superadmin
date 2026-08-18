@@ -20,6 +20,7 @@ export type SocialMedia = {
 
 export type Restaurant = {
   id: string;
+  displayNumber: number;
   tenantId: string;
   name: string;
   slug: string;
