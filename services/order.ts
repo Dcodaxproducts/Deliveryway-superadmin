@@ -37,6 +37,14 @@ export interface Order {
     id: string;
     name: string;
   };
+  transactions?: Array<{
+    id: string;
+    paymentMethod?: string | null;
+    type?: string | null;
+    status?: string | null;
+    amount?: string | number | null;
+    currency?: string | null;
+  }>;
   coupon?: {
     id: string;
     code: string;
@@ -99,6 +107,16 @@ export const getOrders = async (params?: GetOrdersParams) => {
 export const getOrder = async (id: string) => {
   const { data } = await api.get(`/orders/${id}`);
   return data.data;
+};
+
+export const cancelOrder = async (id: string) => {
+  const { data } = await api.post(`/orders/${id}/cancel`, {});
+  return data;
+};
+
+export const refundOrderPayment = async (paymentId: string) => {
+  const { data } = await api.post(`/payments/${paymentId}/refund`, {});
+  return data;
 };
 
 

@@ -119,8 +119,9 @@ export type CreatePackageSubscriptionPayload = {
   note?: string;
 };
 
-export type UpdatePackageSubscriptionPayload =
-  Partial<CreatePackageSubscriptionPayload>;
+export type UpdatePackageSubscriptionPayload = Partial<
+  Omit<CreatePackageSubscriptionPayload, "tenantId" | "restaurantId">
+>;
 
 export type PackageSubscriptionsParams = {
   page?: number;

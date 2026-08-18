@@ -1,5 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
-import { getOrders, getOrder, getOrderTrend, GetOrdersParams } from "@/services/order";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import {
+  cancelOrder,
+  getOrders,
+  getOrder,
+  getOrderTrend,
+  GetOrdersParams,
+  refundOrderPayment,
+} from "@/services/order";
 
 
 export const useGetOrders = (params?: GetOrdersParams) => {
@@ -25,6 +33,34 @@ export const useGetOrder = (id: string) => {
   return useQuery({
     queryKey: ["order", id],
     queryFn: () => getOrder(id),
+  });
+};
+
+export const useCancelOrder = (orderId?: string | null) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => cancelOrder(orderId as string),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["orders"] });
+      void queryClient.invalidateQueries({ queryKey: ["order", orderId] });
+      toast.success("Order cancelled successfully");
+    },
+    onError: () => toast.error("Unable to cancel order"),
+  });
+};
+
+export const useRefundOrderPayment = (orderId?: string | null) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (paymentId: string) => refundOrderPayment(paymentId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["orders"] });
+      void queryClient.invalidateQueries({ queryKey: ["order", orderId] });
+      toast.success("Payment refunded successfully");
+    },
+    onError: () => toast.error("Unable to refund payment"),
   });
 };
 
