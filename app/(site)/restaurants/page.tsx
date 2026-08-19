@@ -87,7 +87,7 @@ export default function RestaurantsPage() {
                         data={sorted}
                         headers={
                             <>
-                                <TableHead><span className="text-sm font-medium">{restaurantsText("serial")}</span></TableHead>
+                                <TableHead><span className="text-sm font-medium">{restaurantsText("restaurantId")}</span></TableHead>
                                 <SortHeader label={restaurantsText("restaurantName")} sortKey="name" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
                                 <SortHeader label={restaurantsText("domain")} sortKey="subdomain" activeKey={sortKey} direction={sortDir} onSort={handleSort} />
                                 <SortHeader label={restaurantsText("tagline")} sortKey="tagline" activeKey={sortKey} direction={sortDir} onSort={handleSort} className="text-center" />
@@ -96,9 +96,9 @@ export default function RestaurantsPage() {
                                 <TableHead className="text-right font-medium">{common("actions")}</TableHead>
                             </>
                         }
-                        row={(item: Restaurant, index) => (
+                        row={(item: Restaurant) => (
                             <>
-                                <TableCell className="text-gray">{index + 1}</TableCell>
+                                <TableCell className="font-mono text-gray">#{item.displayNumber}</TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-3">
                                         <div className="w-[42px] h-[42px] rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
