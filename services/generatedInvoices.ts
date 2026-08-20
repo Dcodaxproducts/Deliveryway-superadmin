@@ -120,3 +120,17 @@ export const getGeneratedInvoices = async (
 
   return data;
 };
+
+export const cancelGeneratedInvoice = async (invoiceId: string) => {
+  const { data } = await api.post(
+    `/admin/reports/generated-invoices/${invoiceId}/cancel`,
+  );
+  return data;
+};
+
+export const recreateGeneratedInvoice = async (invoiceId: string) => {
+  const { data } = await api.post(
+    `/admin/reports/generated-invoices/${invoiceId}/recreate`,
+  );
+  return data;
+};

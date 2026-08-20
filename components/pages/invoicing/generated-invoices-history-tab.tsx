@@ -22,7 +22,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useGetGeneratedInvoices } from "@/hooks/useGeneratedInvoices";
+import {
+  useCancelGeneratedInvoice,
+  useGetGeneratedInvoices,
+  useRecreateGeneratedInvoice,
+} from "@/hooks/useGeneratedInvoices";
 import { formatMoney } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 import { getRestaurants } from "@/services/restaurant";
@@ -205,6 +209,8 @@ export function GeneratedInvoicesHistoryTab() {
   }, [fromDate, kind, restaurant?.id, status, toDate]);
 
   const generatedInvoicesQuery = useGetGeneratedInvoices(params);
+  const cancelInvoice = useCancelGeneratedInvoice();
+  const recreateInvoice = useRecreateGeneratedInvoice();
   const response = generatedInvoicesQuery.data;
   const invoices = response?.data ?? [];
   const total = response?.meta?.total ?? invoices.length;
@@ -361,15 +367,16 @@ export function GeneratedInvoicesHistoryTab() {
               <TableHead>Tenant / Restaurant / Branch</TableHead>
               <TableHead>Linked ID</TableHead>
               <TableHead>Period</TableHead>
-              <TableHead className="text-right">Total</TableHead>
+              <TableHead className="text-right">Total received</TableHead>
               <TableHead>Activity</TableHead>
               <TableHead>Document</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={9} className="h-48 text-center">
+                <TableCell colSpan={10} className="h-48 text-center">
                   <div className="flex items-center justify-center gap-2 text-gray-500">
                     <Loader2 className="size-5 animate-spin" />
                     Loading generated invoices...
@@ -378,7 +385,7 @@ export function GeneratedInvoicesHistoryTab() {
               </TableRow>
             ) : invoices.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="h-56 text-center">
+                <TableCell colSpan={10} className="h-56 text-center">
                   <div className="mx-auto flex max-w-sm flex-col items-center gap-3 text-gray-500">
                     <div className="flex size-12 items-center justify-center rounded-full bg-[#F1F5F9] text-gray-500">
                       <FileText className="size-6" />
@@ -463,10 +470,17 @@ export function GeneratedInvoicesHistoryTab() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-semibold text-dark">
-                      {formatMoney(
-                        numericValue(totalAmount),
-                        invoice.currency || "EUR",
-                      )}
+                      <div>
+                        {formatMoney(
+                          numericValue(totalAmount),
+                          invoice.currency || "EUR",
+                        )}
+                      </div>
+                      {invoice.kind === "WEEKLY_PAYOUT" ? (
+                        <div className="text-xs font-normal text-gray-500">
+                          Restaurant received
+                        </div>
+                      ) : null}
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1 text-sm">
@@ -486,6 +500,37 @@ export function GeneratedInvoicesHistoryTab() {
                       </div>
                     </TableCell>
                     <TableCell>{prettyLabel(documentType)}</TableCell>
+                    <TableCell>
+                      {invoice.status === "CANCELLED" ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled={recreateInvoice.isPending}
+                          onClick={() => recreateInvoice.mutate(invoice.id)}
+                        >
+                          {recreateInvoice.isPending &&
+                          recreateInvoice.variables === invoice.id ? (
+                            <Loader2 className="size-4 animate-spin" />
+                          ) : null}
+                          Recreate
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled={cancelInvoice.isPending}
+                          onClick={() => cancelInvoice.mutate(invoice.id)}
+                        >
+                          {cancelInvoice.isPending &&
+                          cancelInvoice.variables === invoice.id ? (
+                            <Loader2 className="size-4 animate-spin" />
+                          ) : null}
+                          Cancel
+                        </Button>
+                      )}
+                    </TableCell>
                   </TableRow>
                 );
               })
