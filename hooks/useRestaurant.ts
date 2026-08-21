@@ -1,19 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { 
-  getRestaurants, 
-  getRestaurant, 
-  deleteRestaurant, 
-  createRestaurant, 
-  updateRestaurant, 
+import {
+  getRestaurants,
+  getRestaurant,
+  deleteRestaurant,
+  createRestaurant,
+  updateRestaurant,
   updateRestaurantServiceCharge,
-  getRestaurantBranches, 
+  updateRestaurantPaymentProcessingFee,
+  getRestaurantBranches,
   getBranch,
   getRestaurantTrend,
-  getTopPerformingRestaurants
-  ,getCustomDomainStatus,
-  verifyCustomDomain
+  getTopPerformingRestaurants,
+  getCustomDomainStatus,
+  verifyCustomDomain,
 } from "@/services/restaurant";
 import { useRouter } from "next/navigation";
 import type { RestaurantValues } from "@/validations/restaurant";
@@ -40,7 +41,9 @@ export const useCreateRestaurant = () => {
       router.push("/restaurants");
     },
     onError: (err: ApiError) => {
-      toast.error(err.response?.data?.message || toasts("restaurantCreateFailed"));
+      toast.error(
+        err.response?.data?.message || toasts("restaurantCreateFailed"),
+      );
     },
   });
 };
@@ -71,10 +74,7 @@ export const useGetRestaurant = (id: string) => {
   });
 };
 
-export const useGetCustomDomainStatus = (
-  id: string,
-  enabled: boolean,
-) => {
+export const useGetCustomDomainStatus = (id: string, enabled: boolean) => {
   return useQuery({
     queryKey: ["restaurant-custom-domain", id],
     queryFn: () => getCustomDomainStatus(id),
@@ -98,7 +98,8 @@ export const useVerifyCustomDomain = () => {
     },
     onError: (error: ApiError) => {
       toast.error(
-        error.response?.data?.message || restaurants("domainVerificationFailed"),
+        error.response?.data?.message ||
+          restaurants("domainVerificationFailed"),
       );
     },
   });
@@ -109,7 +110,8 @@ export const useUpdateRestaurant = () => {
   const queryClient = useQueryClient();
   const toasts = useTranslations("toasts");
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: RestaurantValues }) => updateRestaurant(id, data),
+    mutationFn: ({ id, data }: { id: string; data: RestaurantValues }) =>
+      updateRestaurant(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["restaurants"] });
       queryClient.invalidateQueries({ queryKey: ["restaurant", variables.id] });
@@ -117,11 +119,12 @@ export const useUpdateRestaurant = () => {
       router.push(`/restaurants`);
     },
     onError: (err: ApiError) => {
-      toast.error(err.response?.data?.message || toasts("restaurantUpdateFailed"));
+      toast.error(
+        err.response?.data?.message || toasts("restaurantUpdateFailed"),
+      );
     },
   });
 };
-
 
 export const useUpdateRestaurantServiceCharge = () => {
   const queryClient = useQueryClient();
@@ -132,7 +135,11 @@ export const useUpdateRestaurantServiceCharge = () => {
       data,
     }: {
       id: string;
-      data: { isEnabled?: boolean; type?: "PERCENTAGE" | "AMOUNT"; value?: number };
+      data: {
+        isEnabled?: boolean;
+        type?: "PERCENTAGE" | "AMOUNT";
+        value?: number;
+      };
     }) => updateRestaurantServiceCharge(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["restaurants"] });
@@ -140,7 +147,38 @@ export const useUpdateRestaurantServiceCharge = () => {
       toast.success(toasts("restaurantUpdated"));
     },
     onError: (err: ApiError) => {
-      toast.error(err.response?.data?.message || toasts("restaurantUpdateFailed"));
+      toast.error(
+        err.response?.data?.message || toasts("restaurantUpdateFailed"),
+      );
+    },
+  });
+};
+
+export const useUpdateRestaurantPaymentProcessingFee = () => {
+  const queryClient = useQueryClient();
+  const toasts = useTranslations("toasts");
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: {
+        isEnabled?: boolean;
+        type?: "PERCENTAGE" | "AMOUNT";
+        value?: number;
+        payer?: "CUSTOMER" | "RESTAURANT";
+      };
+    }) => updateRestaurantPaymentProcessingFee(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["restaurants"] });
+      queryClient.invalidateQueries({ queryKey: ["restaurant", variables.id] });
+      toast.success(toasts("restaurantUpdated"));
+    },
+    onError: (err: ApiError) => {
+      toast.error(
+        err.response?.data?.message || toasts("restaurantUpdateFailed"),
+      );
     },
   });
 };
@@ -155,7 +193,9 @@ export const useDeleteRestaurant = () => {
       queryClient.invalidateQueries({ queryKey: ["restaurants"] });
     },
     onError: (err: ApiError) => {
-      toast.error(err.response?.data?.message || toasts("restaurantDeleteFailed"));
+      toast.error(
+        err.response?.data?.message || toasts("restaurantDeleteFailed"),
+      );
     },
   });
 };

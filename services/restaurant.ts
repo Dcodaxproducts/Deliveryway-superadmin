@@ -1,7 +1,15 @@
 import api from "@/lib/axios";
 import { RestaurantValues } from "@/validations/restaurant";
-import { ApiResponse, RestaurantTrend, TopRestaurantsResponse } from "@/types/stats";
-import type { Branch, CustomDomainStatus, Restaurant } from "@/types/restaurant";
+import {
+  ApiResponse,
+  RestaurantTrend,
+  TopRestaurantsResponse,
+} from "@/types/stats";
+import type {
+  Branch,
+  CustomDomainStatus,
+  Restaurant,
+} from "@/types/restaurant";
 
 // RESTAURANT APIS
 export const createRestaurant = async (payload: RestaurantValues) => {
@@ -40,7 +48,10 @@ export const verifyCustomDomain = async (
   return data.data;
 };
 
-export const updateRestaurant = async (id: string, payload: RestaurantValues) => {
+export const updateRestaurant = async (
+  id: string,
+  payload: RestaurantValues,
+) => {
   const { data } = await api.patch(`/restaurants/${id}`, payload);
   return data;
 };
@@ -58,9 +69,30 @@ export type RestaurantServiceChargePayload = {
 
 export const updateRestaurantServiceCharge = async (
   id: string,
-  payload: RestaurantServiceChargePayload
+  payload: RestaurantServiceChargePayload,
 ) => {
-  const { data } = await api.patch(`/restaurants/${id}/service-charge`, payload);
+  const { data } = await api.patch(
+    `/restaurants/${id}/service-charge`,
+    payload,
+  );
+  return data;
+};
+
+export type RestaurantPaymentFeePayload = {
+  isEnabled?: boolean;
+  type?: "PERCENTAGE" | "AMOUNT";
+  value?: number;
+  payer?: "CUSTOMER" | "RESTAURANT";
+};
+
+export const updateRestaurantPaymentProcessingFee = async (
+  id: string,
+  payload: RestaurantPaymentFeePayload,
+) => {
+  const { data } = await api.patch(
+    `/restaurants/${id}/payment-processing-fee`,
+    payload,
+  );
   return data;
 };
 
@@ -76,15 +108,23 @@ export const getBranch = async (id: string) => {
 };
 
 // RESTAURANT TREND API
-export const getRestaurantTrend = async (range?: "daily" | "weekly"): Promise<RestaurantTrend> => {
-  const { data } = await api.get<ApiResponse<RestaurantTrend>>("/admin/dashboard/restaurants/trend", {
-    params: { range }
-  });
+export const getRestaurantTrend = async (
+  range?: "daily" | "weekly",
+): Promise<RestaurantTrend> => {
+  const { data } = await api.get<ApiResponse<RestaurantTrend>>(
+    "/admin/dashboard/restaurants/trend",
+    {
+      params: { range },
+    },
+  );
   return data.data;
 };
 
 // TOP PERFORMING RESTAURANTS API
-export const getTopPerformingRestaurants = async (): Promise<TopRestaurantsResponse> => {
-  const { data } = await api.get<ApiResponse<TopRestaurantsResponse>>("/admin/dashboard/restaurants/top-performing");
-  return data.data;
-};
+export const getTopPerformingRestaurants =
+  async (): Promise<TopRestaurantsResponse> => {
+    const { data } = await api.get<ApiResponse<TopRestaurantsResponse>>(
+      "/admin/dashboard/restaurants/top-performing",
+    );
+    return data.data;
+  };

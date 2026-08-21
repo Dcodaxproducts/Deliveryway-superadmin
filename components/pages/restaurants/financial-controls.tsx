@@ -5,6 +5,7 @@ import {
   CircleDollarSign,
   CreditCard,
   ReceiptText,
+  BadgePercent,
   Wallet,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -16,11 +17,22 @@ import { RestaurantPayoutPanel } from "@/components/pages/restaurants/restaurant
 import { StripeAccountPanel } from "@/components/pages/restaurants/stripe-account-panel";
 import { PayoutProviderPanel } from "@/components/pages/restaurants/payout-provider-panel";
 import { RestaurantPaymentMethodsPanel } from "@/components/pages/restaurants/restaurant-payment-methods-panel";
+import { PaymentProcessingFeePanel } from "@/components/pages/restaurants/payment-processing-fee-panel";
 
-type FinancialTab = "service-charge" | "payment-methods" | "payouts" | "stripe";
+type FinancialTab =
+  | "service-charge"
+  | "payment-processing-fee"
+  | "payment-methods"
+  | "payouts"
+  | "stripe";
 
 const tabs = [
   { id: "service-charge", labelKey: "serviceChargeTab", icon: ReceiptText },
+  {
+    id: "payment-processing-fee",
+    labelKey: "paymentProcessingFeeTab",
+    icon: BadgePercent,
+  },
   {
     id: "payment-methods",
     labelKey: "restaurantPaymentMethodsTab",
@@ -48,7 +60,7 @@ export function FinancialControls({ restaurant }: { restaurant: Restaurant }) {
       <div
         role="tablist"
         aria-label={text("financialControls")}
-        className="grid grid-cols-1 gap-2 border-y border-[#e9eaee] bg-white p-2 sm:grid-cols-2 xl:grid-cols-4"
+        className="grid grid-cols-1 gap-2 border-y border-[#e9eaee] bg-white p-2 sm:grid-cols-2 xl:grid-cols-5"
       >
         {tabs.map(({ id, labelKey, icon: Icon }) => {
           const isActive = activeTab === id;
@@ -82,6 +94,9 @@ export function FinancialControls({ restaurant }: { restaurant: Restaurant }) {
       >
         {activeTab === "service-charge" ? (
           <ServiceChargePanel restaurant={restaurant} />
+        ) : null}
+        {activeTab === "payment-processing-fee" ? (
+          <PaymentProcessingFeePanel restaurant={restaurant} />
         ) : null}
         {activeTab === "payment-methods" ? (
           <RestaurantPaymentMethodsPanel restaurantId={restaurant.id} />
