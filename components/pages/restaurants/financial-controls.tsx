@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import {
-  CircleDollarSign,
+  Banknote,
   CreditCard,
   ReceiptText,
   BadgePercent,
@@ -36,7 +36,7 @@ const tabs = [
   {
     id: "payment-methods",
     labelKey: "restaurantPaymentMethodsTab",
-    icon: CircleDollarSign,
+    icon: Banknote,
   },
   { id: "payouts", labelKey: "payoutsTab", icon: Wallet },
   { id: "stripe", labelKey: "stripeTab", icon: CreditCard },

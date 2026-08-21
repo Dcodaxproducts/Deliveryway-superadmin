@@ -1,12 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  CheckCircle,
-  UserPlus,
-  DollarSign,
-  Bell,
-} from "lucide-react";
+import { CheckCircle, UserPlus, Banknote, Bell } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 
@@ -88,16 +83,14 @@ export default function Notifications({
   /**
    * ✅ Use static data if no props
    */
-  const data = notifications?.length
-    ? notifications
-    : STATIC_NOTIFICATIONS;
+  const data = notifications?.length ? notifications : STATIC_NOTIFICATIONS;
 
   const getIcon = (type: string) => {
     switch (type) {
       case "reservation":
         return <UserPlus />;
       case "payout":
-        return <DollarSign />;
+        return <Banknote />;
       case "order":
         return <CheckCircle />;
       default:
@@ -106,9 +99,7 @@ export default function Notifications({
   };
 
   const filteredNotifications =
-    activeTab === "all"
-      ? data
-      : data.filter((n) => n.status === "PENDING");
+    activeTab === "all" ? data : data.filter((n) => n.status === "PENDING");
 
   return (
     <div className="space-y-4">
@@ -117,9 +108,7 @@ export default function Notifications({
         <div className="flex space-x-4 border-b border-gray-200">
           <button
             className={`px-4 py-2 text-sm font-semibold ${
-              activeTab === "all"
-                ? "text-primary"
-                : "text-gray-600"
+              activeTab === "all" ? "text-primary" : "text-gray-600"
             }`}
             onClick={() => handleTabChange("all")}
           >
@@ -128,9 +117,7 @@ export default function Notifications({
 
           <button
             className={`px-4 py-2 text-sm font-semibold ${
-              activeTab === "pending"
-                ? "text-primary"
-                : "text-gray-600"
+              activeTab === "pending" ? "text-primary" : "text-gray-600"
             }`}
             onClick={() => handleTabChange("pending")}
           >
@@ -188,13 +175,14 @@ export default function Notifications({
 
               <span className="text-xs text-gray-400">
                 {notification.createdAt
-                  ? new Date(
-                      notification.createdAt
-                    ).toLocaleTimeString("en-GB", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: false,
-                    })
+                  ? new Date(notification.createdAt).toLocaleTimeString(
+                      "en-GB",
+                      {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                      },
+                    )
                   : ""}
               </span>
             </CardContent>
