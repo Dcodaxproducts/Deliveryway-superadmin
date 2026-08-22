@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { FileText, Loader2, Search } from "lucide-react";
+import { Eye, FileText, Loader2, Search } from "lucide-react";
+import { toast } from "sonner";
 
 import AsyncSelect from "@/components/ui/AsyncSelect";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { SubscriptionInvoiceModal } from "@/components/pages/pricing-models/subscriptions/SubscriptionInvoiceModal";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -27,9 +29,15 @@ import {
   useGetGeneratedInvoices,
   useRecreateGeneratedInvoice,
 } from "@/hooks/useGeneratedInvoices";
+import {
+  useDownloadPackageSubscriptionInvoicePdf,
+  useSendPackageSubscriptionInvoiceEmail,
+} from "@/hooks/usePackagePlans";
 import { formatMoney } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 import { getRestaurants } from "@/services/restaurant";
+import { getGeneratedInvoicePdf } from "@/services/generatedInvoices";
+import type { PackageSubscription } from "@/services/packagePlans";
 import type {
   GeneratedInvoice,
   GeneratedInvoiceKind,
@@ -211,6 +219,48 @@ export function GeneratedInvoicesHistoryTab() {
   const generatedInvoicesQuery = useGetGeneratedInvoices(params);
   const cancelInvoice = useCancelGeneratedInvoice();
   const recreateInvoice = useRecreateGeneratedInvoice();
+  const downloadSubscriptionInvoice =
+    useDownloadPackageSubscriptionInvoicePdf();
+  const sendSubscriptionInvoice = useSendPackageSubscriptionInvoiceEmail();
+  const [viewingInvoiceId, setViewingInvoiceId] = useState<string | null>(null);
+  const [subscriptionInvoice, setSubscriptionInvoice] =
+    useState<PackageSubscription | null>(null);
+
+  const handleViewInvoice = async (invoice: GeneratedInvoice) => {
+    if (
+      invoice.subscriptionId &&
+      (invoice.kind === "SUBSCRIPTION" ||
+        invoice.kind === "MONTHLY_SUBSCRIPTION")
+    ) {
+      setSubscriptionInvoice({
+        id: invoice.subscriptionId,
+        packagePlanId: "",
+        status: "ACTIVE",
+      });
+      return;
+    }
+
+    const previewWindow = window.open("", "_blank");
+    if (previewWindow) previewWindow.opener = null;
+    setViewingInvoiceId(invoice.id);
+
+    try {
+      const pdf = await getGeneratedInvoicePdf(invoice.id, invoice.kind);
+      const url = URL.createObjectURL(pdf);
+
+      if (previewWindow) {
+        previewWindow.location.href = url;
+      } else {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch {
+      previewWindow?.close();
+      toast.error("Unable to open invoice");
+    } finally {
+      setViewingInvoiceId(null);
+    }
+  };
   const response = generatedInvoicesQuery.data;
   const invoices = response?.data ?? [];
   const total = response?.meta?.total ?? invoices.length;
@@ -501,35 +551,51 @@ export function GeneratedInvoicesHistoryTab() {
                     </TableCell>
                     <TableCell>{prettyLabel(documentType)}</TableCell>
                     <TableCell>
-                      {invoice.status === "CANCELLED" ? (
+                      <div className="flex flex-wrap gap-2">
                         <Button
                           type="button"
                           size="sm"
                           variant="outline"
-                          disabled={recreateInvoice.isPending}
-                          onClick={() => recreateInvoice.mutate(invoice.id)}
+                          disabled={viewingInvoiceId === invoice.id}
+                          onClick={() => void handleViewInvoice(invoice)}
                         >
-                          {recreateInvoice.isPending &&
-                          recreateInvoice.variables === invoice.id ? (
+                          {viewingInvoiceId === invoice.id ? (
                             <Loader2 className="size-4 animate-spin" />
-                          ) : null}
-                          Recreate
+                          ) : (
+                            <Eye className="size-4" />
+                          )}
+                          View
                         </Button>
-                      ) : (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          disabled={cancelInvoice.isPending}
-                          onClick={() => cancelInvoice.mutate(invoice.id)}
-                        >
-                          {cancelInvoice.isPending &&
-                          cancelInvoice.variables === invoice.id ? (
-                            <Loader2 className="size-4 animate-spin" />
-                          ) : null}
-                          Cancel
-                        </Button>
-                      )}
+                        {invoice.status === "CANCELLED" ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            disabled={recreateInvoice.isPending}
+                            onClick={() => recreateInvoice.mutate(invoice.id)}
+                          >
+                            {recreateInvoice.isPending &&
+                            recreateInvoice.variables === invoice.id ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : null}
+                            Recreate
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            disabled={cancelInvoice.isPending}
+                            onClick={() => cancelInvoice.mutate(invoice.id)}
+                          >
+                            {cancelInvoice.isPending &&
+                            cancelInvoice.variables === invoice.id ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : null}
+                            Cancel
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -544,6 +610,24 @@ export function GeneratedInvoicesHistoryTab() {
           </p>
         </div>
       </div>
+      <SubscriptionInvoiceModal
+        open={Boolean(subscriptionInvoice)}
+        subscription={subscriptionInvoice}
+        downloading={downloadSubscriptionInvoice.isPending}
+        sending={sendSubscriptionInvoice.isPending}
+        onOpenChange={(open) => {
+          if (!open) setSubscriptionInvoice(null);
+        }}
+        onDownload={(subscriptionId) =>
+          downloadSubscriptionInvoice.mutate(subscriptionId)
+        }
+        onSendEmail={(subscriptionId, email) =>
+          sendSubscriptionInvoice.mutate({
+            id: subscriptionId,
+            payload: email ? { email } : undefined,
+          })
+        }
+      />
     </div>
   );
 }

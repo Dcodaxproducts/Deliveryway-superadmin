@@ -134,3 +134,18 @@ export const recreateGeneratedInvoice = async (invoiceId: string) => {
   );
   return data;
 };
+
+export const getGeneratedInvoicePdf = async (
+  invoiceId: string,
+  kind?: GeneratedInvoiceKind | null,
+) => {
+  const { data } = await api.get<Blob>(
+    `/admin/reports/generated-invoices/${invoiceId}/pdf`,
+    {
+      params: kind ? { kind } : undefined,
+      responseType: "blob",
+    },
+  );
+
+  return data;
+};
