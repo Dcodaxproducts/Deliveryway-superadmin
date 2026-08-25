@@ -3,6 +3,11 @@ import { z } from "zod";
 type TranslationFunction = (key: string) => string;
 
 const nullableOptionalString = z.preprocess((value) => value ?? "", z.string());
+const optionalContactNumber = (message: string) =>
+  z
+    .string()
+    .trim()
+    .refine((value) => value.length === 0 || value.length >= 10, message);
 
 export const createRestaurantSchema = (t: TranslationFunction) =>
   z.object({
@@ -15,7 +20,7 @@ export const createRestaurantSchema = (t: TranslationFunction) =>
     bio: z.preprocess((value) => value ?? "", z.string().max(500, t("bioMax"))),
     supportContact: z.object({
       email: z.string().email(t("invalidEmail")),
-      whatsapp: z.string().min(10, t("invalidWhatsapp")),
+      whatsapp: optionalContactNumber(t("invalidWhatsapp")),
       phone: z.string().min(10, t("invalidPhone")),
     }),
     branding: z.object({
