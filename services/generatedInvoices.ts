@@ -20,6 +20,7 @@ export type GeneratedInvoiceStatus =
 
 export type GeneratedInvoicesParams = {
   kind?: GeneratedInvoiceKind;
+  excludeKind?: GeneratedInvoiceKind;
   status?: GeneratedInvoiceStatus;
   fromDate?: string;
   toDate?: string;

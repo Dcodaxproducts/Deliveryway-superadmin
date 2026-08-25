@@ -1336,7 +1336,7 @@
     "generateMore": "Weitere erstellen",
     "backToDashboard": "Zurück zum Dashboard",
     "generatedHistoryTitle": "Historie generierter Rechnungen",
-    "generatedHistoryDescription": "Prüfe alle generierten Rechnungsdokumente sowie Versand- und Download-Aktivitäten.",
+    "generatedHistoryDescription": "Prüfe generierte Abonnement- und Auszahlungsdokumente sowie Versand- und Download-Aktivitäten.",
     "weeklyPayoutTitle": "Wöchentliche Auszahlungsrechnungen",
     "weeklyPayoutDescription": "Erstelle und teile wöchentliche Restaurant-Auszahlungsrechnungen.",
     "monthlySubscriptionTitle": "Abonnements",

@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import AsyncSelect from "@/components/ui/AsyncSelect";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { SubscriptionInvoiceModal } from "@/components/pages/pricing-models/subscriptions/SubscriptionInvoiceModal";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -29,15 +28,10 @@ import {
   useGetGeneratedInvoices,
   useRecreateGeneratedInvoice,
 } from "@/hooks/useGeneratedInvoices";
-import {
-  useDownloadPackageSubscriptionInvoicePdf,
-  useSendPackageSubscriptionInvoiceEmail,
-} from "@/hooks/usePackagePlans";
 import { formatMoney } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 import { getRestaurants } from "@/services/restaurant";
 import { getGeneratedInvoicePdf } from "@/services/generatedInvoices";
-import type { PackageSubscription } from "@/services/packagePlans";
 import type {
   GeneratedInvoice,
   GeneratedInvoiceKind,
@@ -58,7 +52,6 @@ type GeneratedStatusFilter = "ALL" | GeneratedInvoiceStatus;
 const ALL_FILTER = "ALL";
 const KIND_OPTIONS = [
   { value: ALL_FILTER, label: "All kinds" },
-  { value: "ORDER", label: "Order" },
   { value: "WEEKLY_PAYOUT", label: "Weekly payout" },
   { value: "MONTHLY_SUBSCRIPTION", label: "Monthly subscription" },
   { value: "SUBSCRIPTION", label: "Subscription" },
@@ -209,6 +202,7 @@ export function GeneratedInvoicesHistoryTab() {
   const params = useMemo(() => {
     return {
       kind: kind === ALL_FILTER ? undefined : kind,
+      excludeKind: "ORDER" as const,
       status: status === ALL_FILTER ? undefined : status,
       fromDate: fromDate || undefined,
       toDate: toDate || undefined,
@@ -219,27 +213,9 @@ export function GeneratedInvoicesHistoryTab() {
   const generatedInvoicesQuery = useGetGeneratedInvoices(params);
   const cancelInvoice = useCancelGeneratedInvoice();
   const recreateInvoice = useRecreateGeneratedInvoice();
-  const downloadSubscriptionInvoice =
-    useDownloadPackageSubscriptionInvoicePdf();
-  const sendSubscriptionInvoice = useSendPackageSubscriptionInvoiceEmail();
   const [viewingInvoiceId, setViewingInvoiceId] = useState<string | null>(null);
-  const [subscriptionInvoice, setSubscriptionInvoice] =
-    useState<PackageSubscription | null>(null);
 
   const handleViewInvoice = async (invoice: GeneratedInvoice) => {
-    if (
-      invoice.subscriptionId &&
-      (invoice.kind === "SUBSCRIPTION" ||
-        invoice.kind === "MONTHLY_SUBSCRIPTION")
-    ) {
-      setSubscriptionInvoice({
-        id: invoice.subscriptionId,
-        packagePlanId: "",
-        status: "ACTIVE",
-      });
-      return;
-    }
-
     const previewWindow = window.open("", "_blank");
     if (previewWindow) previewWindow.opener = null;
     setViewingInvoiceId(invoice.id);
@@ -307,8 +283,8 @@ export function GeneratedInvoicesHistoryTab() {
               Generated invoice history
             </h2>
             <p className="text-sm text-gray-500">
-              Search generated order, payout, and subscription documents without
-              adding another sidebar section.
+              Search generated payout and subscription documents without adding
+              another sidebar section.
             </p>
           </div>
         </div>
@@ -610,24 +586,6 @@ export function GeneratedInvoicesHistoryTab() {
           </p>
         </div>
       </div>
-      <SubscriptionInvoiceModal
-        open={Boolean(subscriptionInvoice)}
-        subscription={subscriptionInvoice}
-        downloading={downloadSubscriptionInvoice.isPending}
-        sending={sendSubscriptionInvoice.isPending}
-        onOpenChange={(open) => {
-          if (!open) setSubscriptionInvoice(null);
-        }}
-        onDownload={(subscriptionId) =>
-          downloadSubscriptionInvoice.mutate(subscriptionId)
-        }
-        onSendEmail={(subscriptionId, email) =>
-          sendSubscriptionInvoice.mutate({
-            id: subscriptionId,
-            payload: email ? { email } : undefined,
-          })
-        }
-      />
     </div>
   );
 }
