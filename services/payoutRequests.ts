@@ -5,6 +5,15 @@ type RecordValue = Record<string, unknown>;
 export type RestaurantWallet = {
   type: string | null;
   balance: number | null;
+  ledgerBalance: number | null;
+  totalOrderAmount: number | null;
+  platformCollectedAmount: number | null;
+  commissionLiabilityAmount: number | null;
+  restaurantTransactionFeeAmount: number | null;
+  vatPercentage: number | null;
+  vatAmount: number | null;
+  totalDeductionsAmount: number | null;
+  availablePayoutBalance: number | null;
   currency: string | null;
   customerWalletExposure: RecordValue;
 };
@@ -29,7 +38,8 @@ export type MarkRestaurantPayoutPaidPayload = {
 const isRecord = (value: unknown): value is RecordValue =>
   Boolean(value) && typeof value === "object" && !Array.isArray(value);
 
-const getRecord = (value: unknown): RecordValue => (isRecord(value) ? value : {});
+const getRecord = (value: unknown): RecordValue =>
+  isRecord(value) ? value : {};
 
 const getString = (value: unknown, fallback: string | null = null) => {
   if (value === null || value === undefined || value === "") return fallback;
@@ -62,22 +72,41 @@ const firstArray = (...values: unknown[]) => {
   return [];
 };
 
-const normalizeWallet = (response: unknown): RestaurantWallet => {
+export const normalizeWallet = (response: unknown): RestaurantWallet => {
   const data = getRecord(unwrapData(response));
   const wallet = firstRecord(data.wallet, data.account, data);
 
   return {
     type: getString(wallet.type, "RESTAURANT_WALLET"),
-    balance: getNumber(wallet.balance ?? wallet.availableBalance ?? wallet.amount),
+    balance: getNumber(
+      wallet.balance ?? wallet.availableBalance ?? wallet.amount,
+    ),
+    ledgerBalance: getNumber(wallet.ledgerBalance ?? wallet.balance),
+    totalOrderAmount: getNumber(wallet.totalOrderAmount),
+    platformCollectedAmount: getNumber(
+      wallet.platformCollectedAmount ?? wallet.grossCollectedAmount,
+    ),
+    commissionLiabilityAmount: getNumber(wallet.commissionLiabilityAmount),
+    restaurantTransactionFeeAmount: getNumber(
+      wallet.restaurantTransactionFeeAmount,
+    ),
+    vatPercentage: getNumber(wallet.vatPercentage),
+    vatAmount: getNumber(wallet.vatAmount),
+    totalDeductionsAmount: getNumber(wallet.totalDeductionsAmount),
+    availablePayoutBalance: getNumber(
+      wallet.availablePayoutBalance ?? wallet.availableBalance,
+    ),
     currency: getString(wallet.currency ?? data.currency),
     customerWalletExposure: firstRecord(
       wallet.customerWalletExposure,
-      data.customerWalletExposure
+      data.customerWalletExposure,
     ),
   };
 };
 
-const normalizePayoutRequest = (value: unknown): RestaurantPayoutRequest | null => {
+const normalizePayoutRequest = (
+  value: unknown,
+): RestaurantPayoutRequest | null => {
   if (!isRecord(value)) return null;
 
   return {
@@ -93,10 +122,18 @@ const normalizePayoutRequest = (value: unknown): RestaurantPayoutRequest | null 
   };
 };
 
-const normalizePayoutRequests = (response: unknown): RestaurantPayoutRequest[] => {
+const normalizePayoutRequests = (
+  response: unknown,
+): RestaurantPayoutRequest[] => {
   const data = unwrapData(response);
   const record = getRecord(data);
-  const rows = firstArray(data, record.items, record.requests, record.payoutRequests, record.data);
+  const rows = firstArray(
+    data,
+    record.items,
+    record.requests,
+    record.payoutRequests,
+    record.data,
+  );
 
   return rows
     .map(normalizePayoutRequest)
@@ -104,32 +141,40 @@ const normalizePayoutRequests = (response: unknown): RestaurantPayoutRequest[] =
 };
 
 export const getRestaurantWallet = async (restaurantId: string) => {
-  const { data } = await api.get(`/payments/restaurants/${restaurantId}/wallet`);
+  const { data } = await api.get(
+    `/payments/restaurants/${restaurantId}/wallet`,
+  );
   return normalizeWallet(data);
 };
 
 export const getRestaurantPayoutRequests = async (restaurantId: string) => {
-  const { data } = await api.get(`/payments/restaurants/${restaurantId}/payout-requests`);
+  const { data } = await api.get(
+    `/payments/restaurants/${restaurantId}/payout-requests`,
+  );
   return normalizePayoutRequests(data);
 };
 
 export const approveRestaurantPayoutRequest = async (id: string) => {
-  const { data } = await api.post(`/payments/restaurant-payout-requests/${id}/approve`);
+  const { data } = await api.post(
+    `/payments/restaurant-payout-requests/${id}/approve`,
+  );
   return data;
 };
 
 export const rejectRestaurantPayoutRequest = async (id: string) => {
-  const { data } = await api.post(`/payments/restaurant-payout-requests/${id}/reject`);
+  const { data } = await api.post(
+    `/payments/restaurant-payout-requests/${id}/reject`,
+  );
   return data;
 };
 
 export const markRestaurantPayoutRequestPaid = async (
   id: string,
-  payload: MarkRestaurantPayoutPaidPayload
+  payload: MarkRestaurantPayoutPaidPayload,
 ) => {
   const { data } = await api.post(
     `/payments/restaurant-payout-requests/${id}/mark-paid`,
-    payload
+    payload,
   );
   return data;
 };

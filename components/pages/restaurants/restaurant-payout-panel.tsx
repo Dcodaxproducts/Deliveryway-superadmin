@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Banknote, CheckCircle2, Loader2, RefreshCw, Send, Wallet, XCircle } from "lucide-react";
+import {
+  Banknote,
+  CheckCircle2,
+  Loader2,
+  RefreshCw,
+  Send,
+  Wallet,
+  XCircle,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -20,7 +28,9 @@ type RestaurantPayoutPanelProps = {
   restaurantId?: string | null;
 };
 
-export function RestaurantPayoutPanel({ restaurantId }: RestaurantPayoutPanelProps) {
+export function RestaurantPayoutPanel({
+  restaurantId,
+}: RestaurantPayoutPanelProps) {
   const walletQuery = useRestaurantWallet(restaurantId);
   const payoutRequestsQuery = useRestaurantPayoutRequests(restaurantId);
   const approveRequest = useApproveRestaurantPayoutRequest(restaurantId);
@@ -51,7 +61,7 @@ export function RestaurantPayoutPanel({ restaurantId }: RestaurantPayoutPanelPro
           setPaymentReference("");
           setPaidNote("");
         },
-      }
+      },
     );
   };
 
@@ -61,17 +71,24 @@ export function RestaurantPayoutPanel({ restaurantId }: RestaurantPayoutPanelPro
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Wallet className="size-5 text-primary" />
-            <h3 className="text-lg font-semibold text-dark">Restaurant wallet & payout requests</h3>
+            <h3 className="text-lg font-semibold text-dark">
+              Restaurant wallet & payout requests
+            </h3>
           </div>
           <p className="text-sm text-gray">
-            Review wallet balance, approve or reject payout requests, and mark approved bank transfers as paid.
+            Available payout is the platform-held amount minus commission on
+            every successful order, restaurant-paid transaction fees, and VAT.
           </p>
         </div>
         <Button
           type="button"
           variant="outline"
           onClick={refresh}
-          disabled={!restaurantId || walletQuery.isFetching || payoutRequestsQuery.isFetching}
+          disabled={
+            !restaurantId ||
+            walletQuery.isFetching ||
+            payoutRequestsQuery.isFetching
+          }
           className="h-10 rounded-[10px]"
         >
           {walletQuery.isFetching || payoutRequestsQuery.isFetching ? (
@@ -89,21 +106,57 @@ export function RestaurantPayoutPanel({ restaurantId }: RestaurantPayoutPanelPro
         </p>
       ) : null}
 
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <SummaryCard
           icon={<Wallet className="size-4" />}
-          label="Wallet balance"
-          value={walletQuery.isLoading ? "Loading..." : formatMoney(walletQuery.data?.balance, currency)}
+          label="Available payout"
+          value={
+            walletQuery.isLoading
+              ? "Loading..."
+              : formatMoney(walletQuery.data?.availablePayoutBalance, currency)
+          }
         />
         <SummaryCard
           icon={<Banknote className="size-4" />}
-          label="Wallet type"
-          value={walletQuery.data?.type || "RESTAURANT_WALLET"}
+          label="Total successful order amount"
+          value={formatMoney(walletQuery.data?.totalOrderAmount, currency)}
+        />
+        <SummaryCard
+          icon={<Banknote className="size-4" />}
+          label="Platform-held amount"
+          value={formatMoney(
+            walletQuery.data?.platformCollectedAmount,
+            currency,
+          )}
+        />
+        <SummaryCard
+          icon={<Banknote className="size-4" />}
+          label="Commission on all successful orders"
+          value={formatMoney(
+            walletQuery.data?.commissionLiabilityAmount,
+            currency,
+          )}
+        />
+        <SummaryCard
+          icon={<Banknote className="size-4" />}
+          label="Restaurant-paid transaction fees"
+          value={formatMoney(
+            walletQuery.data?.restaurantTransactionFeeAmount,
+            currency,
+          )}
+        />
+        <SummaryCard
+          icon={<Banknote className="size-4" />}
+          label={`VAT (${walletQuery.data?.vatPercentage ?? 0}%)`}
+          value={formatMoney(walletQuery.data?.vatAmount, currency)}
         />
         <SummaryCard
           icon={<Wallet className="size-4" />}
           label="Customer wallet exposure"
-          value={formatMoney(readAmount(walletQuery.data?.customerWalletExposure), currency)}
+          value={formatMoney(
+            readAmount(walletQuery.data?.customerWalletExposure),
+            currency,
+          )}
         />
       </div>
 
@@ -121,25 +174,41 @@ export function RestaurantPayoutPanel({ restaurantId }: RestaurantPayoutPanelPro
           payoutRequestsQuery.data?.length ? (
             <div className="overflow-hidden rounded-[12px] border border-gray-100">
               {payoutRequestsQuery.data.map((request) => {
-                const status = String(request.status || "REQUESTED").toUpperCase();
+                const status = String(
+                  request.status || "REQUESTED",
+                ).toUpperCase();
                 const canApproveReject = status === "REQUESTED";
                 const canMarkPaid = status === "APPROVED";
                 const isPaidFormOpen = activePaidId === request.id;
 
                 return (
-                  <div key={request.id} className="space-y-3 border-b border-gray-100 p-4 last:border-b-0">
+                  <div
+                    key={request.id}
+                    className="space-y-3 border-b border-gray-100 p-4 last:border-b-0"
+                  >
                     <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                       <div className="space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="text-base font-semibold text-dark">
-                            {formatMoney(request.amount, request.currency || currency)}
+                            {formatMoney(
+                              request.amount,
+                              request.currency || currency,
+                            )}
                           </span>
                           <StatusBadge status={status} />
                         </div>
-                        <p className="text-xs text-gray">{formatBankDetails(request.bankDetails)}</p>
-                        {request.note ? <p className="text-xs text-gray">Note: {request.note}</p> : null}
+                        <p className="text-xs text-gray">
+                          {formatBankDetails(request.bankDetails)}
+                        </p>
+                        {request.note ? (
+                          <p className="text-xs text-gray">
+                            Note: {request.note}
+                          </p>
+                        ) : null}
                         {request.paymentReference ? (
-                          <p className="text-xs font-medium text-dark">Reference: {request.paymentReference}</p>
+                          <p className="text-xs font-medium text-dark">
+                            Reference: {request.paymentReference}
+                          </p>
                         ) : null}
                       </div>
 
@@ -150,7 +219,10 @@ export function RestaurantPayoutPanel({ restaurantId }: RestaurantPayoutPanelPro
                               type="button"
                               size="sm"
                               onClick={() => approveRequest.mutate(request.id)}
-                              disabled={approveRequest.isPending || rejectRequest.isPending}
+                              disabled={
+                                approveRequest.isPending ||
+                                rejectRequest.isPending
+                              }
                             >
                               <CheckCircle2 className="mr-1.5 size-4" />
                               Approve
@@ -160,7 +232,10 @@ export function RestaurantPayoutPanel({ restaurantId }: RestaurantPayoutPanelPro
                               size="sm"
                               variant="outline"
                               onClick={() => rejectRequest.mutate(request.id)}
-                              disabled={approveRequest.isPending || rejectRequest.isPending}
+                              disabled={
+                                approveRequest.isPending ||
+                                rejectRequest.isPending
+                              }
                             >
                               <XCircle className="mr-1.5 size-4" />
                               Reject
@@ -172,7 +247,11 @@ export function RestaurantPayoutPanel({ restaurantId }: RestaurantPayoutPanelPro
                             type="button"
                             size="sm"
                             variant="outline"
-                            onClick={() => setActivePaidId(isPaidFormOpen ? null : request.id)}
+                            onClick={() =>
+                              setActivePaidId(
+                                isPaidFormOpen ? null : request.id,
+                              )
+                            }
                           >
                             <Send className="mr-1.5 size-4" />
                             Mark paid
@@ -183,11 +262,16 @@ export function RestaurantPayoutPanel({ restaurantId }: RestaurantPayoutPanelPro
 
                     {isPaidFormOpen ? (
                       <div className="grid gap-3 rounded-[10px] bg-gray-50 p-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
-                        <Field label="Payment reference" htmlFor={`reference-${request.id}`}>
+                        <Field
+                          label="Payment reference"
+                          htmlFor={`reference-${request.id}`}
+                        >
                           <Input
                             id={`reference-${request.id}`}
                             value={paymentReference}
-                            onChange={(event) => setPaymentReference(event.target.value)}
+                            onChange={(event) =>
+                              setPaymentReference(event.target.value)
+                            }
                             placeholder="BANK-TXN-123"
                           />
                         </Field>
@@ -195,7 +279,9 @@ export function RestaurantPayoutPanel({ restaurantId }: RestaurantPayoutPanelPro
                           <Input
                             id={`note-${request.id}`}
                             value={paidNote}
-                            onChange={(event) => setPaidNote(event.target.value)}
+                            onChange={(event) =>
+                              setPaidNote(event.target.value)
+                            }
                             placeholder="Transferred to bank account"
                           />
                         </Field>
@@ -227,13 +313,23 @@ export function RestaurantPayoutPanel({ restaurantId }: RestaurantPayoutPanelPro
   );
 }
 
-function SummaryCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function SummaryCard({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
   return (
     <div className="rounded-[12px] border border-gray-100 p-4">
       <div className="mb-3 flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
         {icon}
       </div>
-      <p className="text-xs font-semibold uppercase tracking-wide text-gray">{label}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-gray">
+        {label}
+      </p>
       <p className="mt-2 text-sm font-semibold text-dark">{value}</p>
     </div>
   );
@@ -249,10 +345,24 @@ function StatusBadge({ status }: { status: string }) {
           ? "bg-green-100 text-green-700"
           : "bg-amber-100 text-amber-700";
 
-  return <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${className}`}>{status}</span>;
+  return (
+    <span
+      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${className}`}
+    >
+      {status}
+    </span>
+  );
 }
 
-function Field({ label, htmlFor, children }: { label: string; htmlFor: string; children: React.ReactNode }) {
+function Field({
+  label,
+  htmlFor,
+  children,
+}: {
+  label: string;
+  htmlFor: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-2">
       <Label htmlFor={htmlFor}>{label}</Label>
@@ -262,14 +372,23 @@ function Field({ label, htmlFor, children }: { label: string; htmlFor: string; c
 }
 
 function readAmount(record?: Record<string, unknown>) {
-  const value = record?.totalBalance ?? record?.balance ?? record?.totalExposure ?? record?.amount;
+  const value =
+    record?.totalBalance ??
+    record?.balance ??
+    record?.totalExposure ??
+    record?.amount;
   const parsed = Number(value);
 
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
 function formatBankDetails(bankDetails: Record<string, unknown>) {
-  const values = [bankDetails.bankName, bankDetails.accountTitle, bankDetails.accountNumber, bankDetails.iban]
+  const values = [
+    bankDetails.bankName,
+    bankDetails.accountTitle,
+    bankDetails.accountNumber,
+    bankDetails.iban,
+  ]
     .filter(Boolean)
     .map(String);
 
