@@ -107,6 +107,11 @@ export const getBranch = async (id: string) => {
   return data.data;
 };
 
+export const deleteBranch = async (id: string) => {
+  const { data } = await api.delete(`/branches/${id}`);
+  return data.data;
+};
+
 // RESTAURANT TREND API
 export const getRestaurantTrend = async (
   range?: "daily" | "weekly",

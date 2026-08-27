@@ -11,6 +11,7 @@ import {
   updateRestaurantPaymentProcessingFee,
   getRestaurantBranches,
   getBranch,
+  deleteBranch,
   getRestaurantTrend,
   getTopPerformingRestaurants,
   getCustomDomainStatus,
@@ -215,6 +216,23 @@ export const useGetBranch = (id: string) => {
     queryKey: ["branch", id],
     queryFn: () => getBranch(id),
     enabled: !!id,
+  });
+};
+
+export const useDeleteBranch = () => {
+  const queryClient = useQueryClient();
+  const toasts = useTranslations("toasts");
+
+  return useMutation({
+    mutationFn: deleteBranch,
+    onSuccess: (_, branchId) => {
+      queryClient.invalidateQueries({ queryKey: ["restaurant-branches"] });
+      queryClient.removeQueries({ queryKey: ["branch", branchId] });
+      toast.success(toasts("branchDeleted"));
+    },
+    onError: (err: ApiError) => {
+      toast.error(err.response?.data?.message || toasts("branchDeleteFailed"));
+    },
   });
 };
 
