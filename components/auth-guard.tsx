@@ -2,12 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { isStaffUser } from "@/lib/staff-access";
-import {
-  canAccessPath,
-  getFirstAccessiblePath,
-} from "@/lib/sidebar-permissions";
+import { isSuperAdmin } from "@/lib/auth-role";
 
 const publicRoutes = new Set(["/auth/login"]);
 
@@ -24,28 +19,30 @@ const getStoredUser = () => {
   }
 };
 
+const clearStoredAuth = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("authUser");
+};
+
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
-  const t = useTranslations("auth");
   const router = useRouter();
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
-  const [accessDenied, setAccessDenied] = useState(false);
 
   useEffect(() => {
     const token = getStoredToken();
     const isPublicRoute = publicRoutes.has(pathname);
-
-    setAccessDenied(false);
+    const user = getStoredUser();
 
     if (isPublicRoute) {
-      if (token) {
-        const user = getStoredUser();
-        router.replace(
-          isStaffUser(user) ? (getFirstAccessiblePath(user) ?? "/") : "/",
-        );
+      if (token && isSuperAdmin(user)) {
+        router.replace("/");
         return;
       }
 
+      if (token) clearStoredAuth();
       setLoading(false);
       return;
     }
@@ -56,16 +53,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const user = getStoredUser();
-    if (isStaffUser(user) && !canAccessPath(user, pathname)) {
-      const firstAccessiblePath = getFirstAccessiblePath(user);
-
-      if (firstAccessiblePath && firstAccessiblePath !== pathname) {
-        router.replace(firstAccessiblePath);
-        return;
-      }
-
-      setAccessDenied(true);
+    if (!isSuperAdmin(user)) {
+      clearStoredAuth();
+      router.replace("/auth/login");
       setLoading(false);
       return;
     }
@@ -77,19 +67,6 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-red-200 border-t-primary rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (accessDenied) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-6 text-center">
-        <div>
-          <h1 className="text-2xl font-semibold text-dark">
-            {t("accessDenied")}
-          </h1>
-          <p className="mt-2 text-gray">{t("accessDeniedDescription")}</p>
-        </div>
       </div>
     );
   }

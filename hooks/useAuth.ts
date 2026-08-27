@@ -28,6 +28,7 @@ const clearAuthTokens = () => {
 export const useLogin = () => {
   const router = useRouter();
   const toasts = useTranslations("toasts");
+  const auth = useTranslations("auth");
 
   return useMutation({
     mutationFn: login,
@@ -54,7 +55,9 @@ export const useLogin = () => {
 
     onError: (err: ApiError) => {
       clearAuthTokens();
-      const message = err.response?.data?.message || toasts("somethingWentWrong");
+      const message = err.message === "SUPER_ADMIN_REQUIRED"
+        ? auth("accessDenied")
+        : err.response?.data?.message || toasts("somethingWentWrong");
       toast.error(message);
     },
   });
