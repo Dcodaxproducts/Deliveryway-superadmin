@@ -1137,7 +1137,14 @@
       "paidOrdersCount": "{count} paid order(s) in billing period",
       "subtotal": "Subtotal",
       "vatAmount": "VAT Amount",
-      "total": "Total"
+      "total": "Total",
+      "payoutActivity": "Payout Activity",
+      "noPayoutActivity": "No payout request activity occurred in this service period.",
+      "payoutRequested": "Requested",
+      "payoutApproved": "Approved",
+      "payoutRejected": "Rejected",
+      "payoutPaid": "Paid",
+      "payoutInformational": "Payout activity is informational and does not change the invoice amount due."
     },
     "review": {
       "pricingModel": "Pricing model",

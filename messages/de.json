@@ -1137,7 +1137,14 @@
       "paidOrdersCount": "{count} bezahlte Bestellung(en) im Abrechnungszeitraum",
       "subtotal": "Zwischensumme",
       "vatAmount": "MwSt.-Betrag",
-      "total": "Gesamt"
+      "total": "Gesamt",
+      "payoutActivity": "Auszahlungsaktivität",
+      "noPayoutActivity": "In diesem Leistungszeitraum gab es keine Auszahlungsanfragen.",
+      "payoutRequested": "Angefordert",
+      "payoutApproved": "Genehmigt",
+      "payoutRejected": "Abgelehnt",
+      "payoutPaid": "Bezahlt",
+      "payoutInformational": "Die Auszahlungsaktivität dient nur zur Information und ändert den Rechnungsbetrag nicht."
     },
     "review": {
       "pricingModel": "Preismodell",

@@ -143,11 +143,6 @@ export const menuItems: SidebarMenuItem[] = [
     permissionAccess: ["reports-payouts", "payment-settings"],
     children: [
       {
-        titleKey: "navigation.weeklyPayout",
-        icon: Receipt,
-        href: "/invoicing/weekly-payout",
-      },
-      {
         titleKey: "navigation.subscriptions",
         icon: ListChecks,
         href: "/invoicing/subscriptions",

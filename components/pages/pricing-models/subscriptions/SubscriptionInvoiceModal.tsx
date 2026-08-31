@@ -88,7 +88,7 @@ export function SubscriptionInvoiceModal({
   const [email, setEmail] = useState("");
 
   const { data, isLoading, isFetching } = useGetPackageSubscriptionInvoice(
-    open ? subscription?.id : undefined
+    open ? subscription?.id : undefined,
   );
 
   const invoice = data?.data;
@@ -100,44 +100,53 @@ export function SubscriptionInvoiceModal({
   const loading = isLoading || isFetching;
   const subscriptionFeeAmount = valueOrFallback(
     totals?.subscriptionFeeAmount,
-    plan?.planPrice
+    plan?.planPrice,
   );
   const transactionFeeAmount = valueOrFallback(
     totals?.transactionFeeAmount,
-    transactionFee?.amount
+    transactionFee?.amount,
   );
   const subtotal = valueOrFallback(
     totals?.subtotal,
-    valueOrFallback(invoice?.subtotal, plan?.planPrice)
+    valueOrFallback(invoice?.subtotal, plan?.planPrice),
   );
   const vatPercentage = valueOrFallback(
     totals?.vatPercentage,
-    valueOrFallback(invoice?.vatPercentage, plan?.vatPercentage)
+    valueOrFallback(invoice?.vatPercentage, plan?.vatPercentage),
   );
   const vatAmount = valueOrFallback(
     totals?.vatAmount,
-    valueOrFallback(invoice?.vatAmount, invoice?.taxAmount)
+    valueOrFallback(invoice?.vatAmount, invoice?.taxAmount),
   );
   const totalAmount = valueOrFallback(
     totals?.amountDue,
-    valueOrFallback(totals?.totalAmount, valueOrFallback(invoice?.totalAmount, invoice?.amountDue))
+    valueOrFallback(
+      totals?.totalAmount,
+      valueOrFallback(invoice?.totalAmount, invoice?.amountDue),
+    ),
   );
   const additionalChargeAmount = valueOrFallback(
     totals?.additionalChargeAmount,
-    totals?.additionalChargesAmount
+    totals?.additionalChargesAmount,
   );
   const deductionAmount = valueOrFallback(totals?.deductionAmount, 0);
   const onlinePaymentCreditAmount = valueOrFallback(
     totals?.onlinePaymentCreditAmount,
-    0
+    0,
   );
   const creditAmount = valueOrFallback(totals?.creditAmount, 0);
 
   const rows = useMemo(() => {
     const servicePeriodStart =
-      invoice?.servicePeriodStart || invoice?.periodStart || subscription?.startsAt;
+      invoice?.servicePeriod?.from ||
+      invoice?.servicePeriodStart ||
+      invoice?.periodStart ||
+      subscription?.startsAt;
     const servicePeriodEnd =
-      invoice?.servicePeriodEnd || invoice?.periodEnd || subscription?.endsAt;
+      invoice?.servicePeriod?.to ||
+      invoice?.servicePeriodEnd ||
+      invoice?.periodEnd ||
+      subscription?.endsAt;
     const billingModel = invoice?.billingModel || plan?.billingModel;
     const billingInterval = invoice?.billingInterval || plan?.billingInterval;
 
@@ -145,7 +154,7 @@ export function SubscriptionInvoiceModal({
       {
         label: pricingModel("invoice.servicePeriod"),
         value: `${formatDate(servicePeriodStart)} - ${formatDate(
-          servicePeriodEnd
+          servicePeriodEnd,
         )}`,
       },
       {
@@ -158,12 +167,16 @@ export function SubscriptionInvoiceModal({
       },
       {
         label: pricingModel("invoice.paymentStatus"),
-        value: prettyLabel(invoice?.paymentStatus || subscription?.paymentStatus),
+        value: prettyLabel(
+          invoice?.paymentStatus || subscription?.paymentStatus,
+        ),
       },
       {
         label: pricingModel("invoice.subscriptionStatus"),
         value: prettyLabel(
-          invoice?.subscriptionStatus || invoice?.status || subscription?.status
+          invoice?.subscriptionStatus ||
+            invoice?.status ||
+            subscription?.status,
         ),
       },
       {
@@ -250,8 +263,8 @@ export function SubscriptionInvoiceModal({
                     value={formatPercent(
                       valueOrFallback(
                         invoice?.commissionPercentage,
-                        plan?.commissionPercentage
-                      )
+                        plan?.commissionPercentage,
+                      ),
                     )}
                   />
                   <SummaryCard
@@ -259,9 +272,9 @@ export function SubscriptionInvoiceModal({
                     value={formatMoney(
                       valueOrFallback(
                         invoice?.commissionFixedAmount,
-                        plan?.commissionFixedAmount
+                        plan?.commissionFixedAmount,
                       ),
-                      currency
+                      currency,
                     )}
                   />
                   <SummaryCard
@@ -269,9 +282,9 @@ export function SubscriptionInvoiceModal({
                     value={formatMoney(
                       valueOrFallback(
                         invoice?.commissionCapAmount,
-                        plan?.commissionCapAmount
+                        plan?.commissionCapAmount,
                       ),
-                      currency
+                      currency,
                     )}
                   />
                   <SummaryCard
@@ -353,6 +366,75 @@ export function SubscriptionInvoiceModal({
                 items={invoice?.deductions}
                 currency={currency}
               />
+
+              <div className="rounded-[14px] bg-white p-5">
+                <h3 className="mb-4 text-base font-semibold text-gray-900">
+                  {pricingModel("invoice.payoutActivity")}
+                </h3>
+                {!invoice?.payoutActivity?.requests.length ? (
+                  <p className="text-sm text-gray-500">
+                    {pricingModel("invoice.noPayoutActivity")}
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                      <SummaryCard
+                        label={pricingModel("invoice.payoutRequested")}
+                        value={formatMoney(
+                          invoice.payoutActivity.summary.requestedAmount,
+                          invoice.payoutActivity.currency,
+                        )}
+                      />
+                      <SummaryCard
+                        label={pricingModel("invoice.payoutApproved")}
+                        value={formatMoney(
+                          invoice.payoutActivity.summary.approvedAmount,
+                          invoice.payoutActivity.currency,
+                        )}
+                      />
+                      <SummaryCard
+                        label={pricingModel("invoice.payoutRejected")}
+                        value={formatMoney(
+                          invoice.payoutActivity.summary.rejectedAmount,
+                          invoice.payoutActivity.currency,
+                        )}
+                      />
+                      <SummaryCard
+                        label={pricingModel("invoice.payoutPaid")}
+                        value={formatMoney(
+                          invoice.payoutActivity.summary.paidAmount,
+                          invoice.payoutActivity.currency,
+                        )}
+                      />
+                    </div>
+                    {invoice.payoutActivity.requests.map((request) => (
+                      <div
+                        key={request.id}
+                        className="grid gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm sm:grid-cols-[1fr_auto_auto] sm:items-center"
+                      >
+                        <div>
+                          <p className="font-semibold text-gray-900">
+                            {request.id}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {formatDate(request.requestedAt)} ·{" "}
+                            {prettyLabel(request.status)}
+                          </p>
+                        </div>
+                        <span className="font-semibold text-gray-900">
+                          {formatMoney(request.amount, request.currency)}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {request.paymentReference || "-"}
+                        </span>
+                      </div>
+                    ))}
+                    <p className="text-xs text-gray-500">
+                      {pricingModel("invoice.payoutInformational")}
+                    </p>
+                  </div>
+                )}
+              </div>
 
               <div className="rounded-[14px] bg-white p-5">
                 <h3 className="mb-4 text-base font-semibold text-gray-900">
@@ -459,7 +541,9 @@ function AmountRow({
       <span className="text-sm text-gray-500">
         {label}
         {description ? (
-          <span className="mt-1 block text-xs text-gray-400">{description}</span>
+          <span className="mt-1 block text-xs text-gray-400">
+            {description}
+          </span>
         ) : null}
       </span>
       <span className="text-sm font-semibold text-gray-900">{value}</span>
@@ -484,7 +568,8 @@ function ChargeLineItemsSection({
       <div className="space-y-3">
         {items.map((item) => {
           const amount = numberValue(item.amount);
-          const signedAmount = item.direction === "CREDIT" ? -Math.abs(amount) : amount;
+          const signedAmount =
+            item.direction === "CREDIT" ? -Math.abs(amount) : amount;
 
           return (
             <div
@@ -492,9 +577,12 @@ function ChargeLineItemsSection({
               className="flex items-start justify-between gap-4 rounded-lg bg-gray-50 px-4 py-3"
             >
               <div>
-                <p className="text-sm font-semibold text-gray-900">{item.title}</p>
+                <p className="text-sm font-semibold text-gray-900">
+                  {item.title}
+                </p>
                 <p className="mt-1 text-xs text-gray-500">
-                  {prettyLabel(item.source)} · {prettyLabel(item.type)} · {prettyLabel(item.direction)}
+                  {prettyLabel(item.source)} · {prettyLabel(item.type)} ·{" "}
+                  {prettyLabel(item.direction)}
                   {item.moduleCode ? ` · ${item.moduleCode}` : ""}
                 </p>
               </div>

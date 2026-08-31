@@ -265,6 +265,34 @@ export type PackageSubscriptionInvoiceTransactionFee = {
   amount?: string | number | null;
 };
 
+export type PackageSubscriptionInvoicePayoutRequest = {
+  id: string;
+  branchId?: string | null;
+  status: string;
+  amount: string | number;
+  currency: string;
+  paymentReference?: string | null;
+  requestedAt: string;
+  approvedAt?: string | null;
+  rejectedAt?: string | null;
+  paidAt?: string | null;
+};
+
+export type PackageSubscriptionInvoicePayoutActivity = {
+  currency: string;
+  summary: {
+    requestedCount: number;
+    requestedAmount: number;
+    approvedCount: number;
+    approvedAmount: number;
+    rejectedCount: number;
+    rejectedAmount: number;
+    paidCount: number;
+    paidAmount: number;
+  };
+  requests: PackageSubscriptionInvoicePayoutRequest[];
+};
+
 export type PackageSubscriptionInvoice = {
   id?: string;
   invoiceNumber?: string | null;
@@ -275,6 +303,7 @@ export type PackageSubscriptionInvoice = {
   restaurant?: PackageSubscriptionInvoiceParty | null;
   servicePeriodStart?: string | null;
   servicePeriodEnd?: string | null;
+  servicePeriod?: { from?: string | null; to?: string | null } | null;
   periodStart?: string | null;
   periodEnd?: string | null;
   packagePlan?: PackageSubscriptionInvoicePlan | null;
@@ -291,6 +320,7 @@ export type PackageSubscriptionInvoice = {
   additionalCharges?: PackagePlanCharge[];
   deductions?: PackagePlanCharge[];
   transactionFee?: PackageSubscriptionInvoiceTransactionFee | null;
+  payoutActivity?: PackageSubscriptionInvoicePayoutActivity | null;
   subtotal?: string | number | null;
   vatAmount?: string | number | null;
   taxAmount?: string | number | null;
