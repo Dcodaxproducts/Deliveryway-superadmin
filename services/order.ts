@@ -27,6 +27,7 @@ export interface Order {
   customerNote: string;
   cancelledAt: null | string;
   cancelledByUserId: null | string;
+  statusBeforeCancellation?: OrderStatus | null;
   createdAt: string;
   updatedAt: string;
   branch: {
@@ -111,6 +112,11 @@ export const getOrder = async (id: string) => {
 
 export const cancelOrder = async (id: string) => {
   const { data } = await api.post(`/orders/${id}/cancel`, {});
+  return data;
+};
+
+export const uncancelOrder = async (id: string) => {
+  const { data } = await api.post(`/orders/${id}/uncancel`, {});
   return data;
 };
 

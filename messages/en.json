@@ -561,7 +561,8 @@
     "peakDay": "Peak Day",
     "ordersInSelectedRange": "{count} orders in selected range",
     "pendingOrders": "Pending Orders",
-    "awaitingPaymentCompletion": "awaiting payment completion"
+    "awaitingPaymentCompletion": "awaiting payment completion",
+    "uncancelOrder": "Uncancel order"
   },
   "products": {
     "overview": "Product Overview",
@@ -1520,6 +1521,7 @@
     "branchId": "Branch ID",
     "branchName": "Branch Name",
     "defaultBranch": "Default Branch",
+    "makeDefault": "Make default branch",
     "deleteBranch": "Delete branch",
     "deleteDescription": "Delete {name}? The branch will be removed from active use, while historical records are retained.",
     "deleteTitle": "Delete Branch",
@@ -1669,6 +1671,8 @@
     "restaurantUpdated": "Restaurant updated successfully!",
     "branchDeleteFailed": "Failed to delete branch",
     "branchDeleted": "Branch deleted successfully",
+    "defaultBranchUpdated": "Default branch updated successfully",
+    "defaultBranchUpdateFailed": "Failed to update default branch",
     "somethingWentWrong": "Something went wrong",
     "tenantDeleteFailed": "Failed to delete tenant",
     "tenantDeleted": "Tenant deleted successfully",

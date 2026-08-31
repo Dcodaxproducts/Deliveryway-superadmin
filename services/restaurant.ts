@@ -112,6 +112,11 @@ export const deleteBranch = async (id: string) => {
   return data.data;
 };
 
+export const makeDefaultBranch = async (id: string) => {
+  const { data } = await api.patch(`/branches/${id}/default`);
+  return data.data;
+};
+
 // RESTAURANT TREND API
 export const getRestaurantTrend = async (
   range?: "daily" | "weekly",

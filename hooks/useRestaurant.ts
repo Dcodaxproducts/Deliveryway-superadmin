@@ -12,6 +12,7 @@ import {
   getRestaurantBranches,
   getBranch,
   deleteBranch,
+  makeDefaultBranch,
   getRestaurantTrend,
   getTopPerformingRestaurants,
   getCustomDomainStatus,
@@ -232,6 +233,24 @@ export const useDeleteBranch = () => {
     },
     onError: (err: ApiError) => {
       toast.error(err.response?.data?.message || toasts("branchDeleteFailed"));
+    },
+  });
+};
+
+export const useMakeDefaultBranch = () => {
+  const queryClient = useQueryClient();
+  const toasts = useTranslations("toasts");
+
+  return useMutation({
+    mutationFn: makeDefaultBranch,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["restaurant-branches"] });
+      toast.success(toasts("defaultBranchUpdated"));
+    },
+    onError: (err: ApiError) => {
+      toast.error(
+        err.response?.data?.message || toasts("defaultBranchUpdateFailed"),
+      );
     },
   });
 };

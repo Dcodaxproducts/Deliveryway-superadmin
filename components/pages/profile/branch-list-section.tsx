@@ -1,18 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, Store, Trash2 } from "lucide-react";
+import { Eye, Star, Store, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Branch } from "@/types/restaurant";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import DeleteDialog from "@/components/dialogs/delete-dialog";
-import { useDeleteBranch } from "@/hooks/useRestaurant";
+import {
+  useDeleteBranch,
+  useMakeDefaultBranch,
+} from "@/hooks/useRestaurant";
 
 export default function BranchList({ branches }: { branches: Branch[] }) {
   const branchesText = useTranslations("branches");
   const [branchToDelete, setBranchToDelete] = useState<Branch | null>(null);
   const deleteBranch = useDeleteBranch();
+  const makeDefaultBranch = useMakeDefaultBranch();
 
   const handleDelete = () => {
     if (!branchToDelete) return;
@@ -80,15 +84,26 @@ export default function BranchList({ branches }: { branches: Branch[] }) {
                     <Eye size={20} />
                   </Link>
                   {!branch.isMain && (
-                    <button
-                      type="button"
-                      className="pl-[11px] text-gray-400 hover:text-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-                      onClick={() => setBranchToDelete(branch)}
-                      disabled={deleteBranch.isPending}
-                      aria-label={`${branchesText("deleteBranch")}: ${branch.name}`}
-                    >
-                      <Trash2 size={20} />
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        className="px-[11px] text-gray-400 hover:text-amber-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                        onClick={() => makeDefaultBranch.mutate(branch.id)}
+                        disabled={makeDefaultBranch.isPending}
+                        aria-label={`${branchesText("makeDefault")}: ${branch.name}`}
+                      >
+                        <Star size={20} />
+                      </button>
+                      <button
+                        type="button"
+                        className="pl-[11px] text-gray-400 hover:text-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                        onClick={() => setBranchToDelete(branch)}
+                        disabled={deleteBranch.isPending}
+                        aria-label={`${branchesText("deleteBranch")}: ${branch.name}`}
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                    </>
                   )}
                 </div>
               </div>

@@ -13,6 +13,7 @@ import {
     useCancelOrder,
     useGetOrder,
     useRefundOrderPayment,
+    useUncancelOrder,
 } from "@/hooks/useOrder";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslations } from "next-intl";
@@ -33,6 +34,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Prop
     const currency = useGlobalCurrency();
     const { data: order, isLoading } = useGetOrder(orderId as string);
     const cancelOrder = useCancelOrder(orderId);
+    const uncancelOrder = useUncancelOrder(orderId);
     const refundPayment = useRefundOrderPayment(orderId);
     const refundablePayment = order?.transactions?.find(
         (transaction: NonNullable<Order["transactions"]>[number]) =>
@@ -40,6 +42,7 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Prop
             transaction.status?.toUpperCase() === "PAID",
     );
     const canCancel = Boolean(order && order.status !== "CANCELLED");
+    const canUncancel = order?.status === "CANCELLED";
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -143,11 +146,27 @@ export default function OrderDetailsDialog({ open, onOpenChange, orderId }: Prop
                                 Cancel order
                             </Button>
                         ) : null}
+                        {canUncancel ? (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                disabled={uncancelOrder.isPending || refundPayment.isPending}
+                                onClick={() => uncancelOrder.mutate()}
+                                className="border-green/30 text-green hover:bg-green/10 hover:text-green"
+                            >
+                                {uncancelOrder.isPending ? (
+                                    <Loader2 className="size-4 animate-spin" />
+                                ) : (
+                                    <RotateCcw className="size-4" />
+                                )}
+                                {orders("uncancelOrder")}
+                            </Button>
+                        ) : null}
                         {refundablePayment ? (
                             <Button
                                 type="button"
                                 variant="outline"
-                                disabled={refundPayment.isPending || cancelOrder.isPending}
+                                disabled={refundPayment.isPending || cancelOrder.isPending || uncancelOrder.isPending}
                                 onClick={() => refundPayment.mutate(refundablePayment.id)}
                                 className="border-amber-200 text-amber-700 hover:bg-amber-50 hover:text-amber-800"
                             >

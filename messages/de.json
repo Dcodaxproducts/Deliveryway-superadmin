@@ -561,7 +561,8 @@
     "peakDay": "Spitzentag",
     "ordersInSelectedRange": "{count} Bestellungen im ausgewählten Zeitraum",
     "pendingOrders": "Ausstehende Bestellungen",
-    "awaitingPaymentCompletion": "wartet auf Zahlungsabschluss"
+    "awaitingPaymentCompletion": "wartet auf Zahlungsabschluss",
+    "uncancelOrder": "Stornierung aufheben"
   },
   "products": {
     "overview": "Produktübersicht",
@@ -1520,6 +1521,7 @@
     "branchId": "Filial-ID",
     "branchName": "Filialname",
     "defaultBranch": "Standardfiliale",
+    "makeDefault": "Als Standardfiliale festlegen",
     "deleteBranch": "Filiale löschen",
     "deleteDescription": "{name} löschen? Die Filiale wird aus dem aktiven Betrieb entfernt, während historische Datensätze erhalten bleiben.",
     "deleteTitle": "Filiale löschen",
@@ -1669,6 +1671,8 @@
     "restaurantUpdated": "Restaurant erfolgreich aktualisiert!",
     "branchDeleteFailed": "Filiale konnte nicht gelöscht werden",
     "branchDeleted": "Filiale erfolgreich gelöscht",
+    "defaultBranchUpdated": "Standardfiliale erfolgreich aktualisiert",
+    "defaultBranchUpdateFailed": "Standardfiliale konnte nicht aktualisiert werden",
     "somethingWentWrong": "Etwas ist schiefgelaufen",
     "tenantDeleteFailed": "Mandant konnte nicht gelöscht werden",
     "tenantDeleted": "Mandant erfolgreich gelöscht",

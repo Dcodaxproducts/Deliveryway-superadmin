@@ -7,6 +7,7 @@ import {
   getOrderTrend,
   GetOrdersParams,
   refundOrderPayment,
+  uncancelOrder,
 } from "@/services/order";
 
 
@@ -47,6 +48,20 @@ export const useCancelOrder = (orderId?: string | null) => {
       toast.success("Order cancelled successfully");
     },
     onError: () => toast.error("Unable to cancel order"),
+  });
+};
+
+export const useUncancelOrder = (orderId?: string | null) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => uncancelOrder(orderId as string),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["orders"] });
+      void queryClient.invalidateQueries({ queryKey: ["order", orderId] });
+      toast.success("Order uncancelled successfully");
+    },
+    onError: () => toast.error("Unable to uncancel order"),
   });
 };
 
