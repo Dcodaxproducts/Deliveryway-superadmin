@@ -139,6 +139,22 @@ export function RestaurantPayoutPanel({
         />
         <SummaryCard
           icon={<Banknote className="size-4" />}
+          label="Monthly fee deducted in this payout"
+          value={formatMoney(
+            walletQuery.data?.monthlyFeeDeductedAmount,
+            currency,
+          )}
+        />
+        <SummaryCard
+          icon={<Banknote className="size-4" />}
+          label="Monthly fee outstanding"
+          value={formatMoney(
+            walletQuery.data?.monthlyFeeOutstandingAmount,
+            currency,
+          )}
+        />
+        <SummaryCard
+          icon={<Banknote className="size-4" />}
           label="Restaurant-paid transaction fees"
           value={formatMoney(
             walletQuery.data?.restaurantTransactionFeeAmount,

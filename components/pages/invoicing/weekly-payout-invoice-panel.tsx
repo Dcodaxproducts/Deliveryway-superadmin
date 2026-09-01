@@ -143,7 +143,7 @@ export function WeeklyPayoutInvoicePanel() {
         includeInactive: false,
       });
     },
-    []
+    [],
   );
 
   const buildParams = (): WeeklyPayoutInvoiceParams | null => {
@@ -204,7 +204,8 @@ export function WeeklyPayoutInvoicePanel() {
               {invoice.invoiceNumber || invoicing("weeklyPayoutInvoiceReady")}
             </p>
             <p className="mt-1 text-xs text-green-700">
-              {formatDate(invoice.period?.from)} - {formatDate(invoice.period?.to)}
+              {formatDate(invoice.period?.from)} -{" "}
+              {formatDate(invoice.period?.to)}
             </p>
           </div>
         ) : null}
@@ -232,7 +233,9 @@ export function WeeklyPayoutInvoicePanel() {
                     {getRestaurantLabel(restaurant)}
                   </p>
                   <p className="mt-0.5 truncate text-xs text-gray-400">
-                    {restaurant.billingEmail || restaurant.email || restaurant.id}
+                    {restaurant.billingEmail ||
+                      restaurant.email ||
+                      restaurant.id}
                   </p>
                 </div>
               )}
@@ -343,9 +346,7 @@ export function WeeklyPayoutInvoicePanel() {
         </div>
       </div>
 
-      {invoice ? (
-        <PayoutPreview invoice={invoice} currency={currency} />
-      ) : null}
+      {invoice ? <PayoutPreview invoice={invoice} currency={currency} /> : null}
     </section>
   );
 }
@@ -359,10 +360,11 @@ function PayoutPreview({
 }) {
   const invoicing = useTranslations("invoicing");
   const visibleLineItems = invoice.lineItems?.slice(0, 6) ?? [];
+  const monthlyBilling = invoice.monthlyBilling?.months ?? [];
 
   return (
     <div className="mt-5 rounded-2xl border border-gray-100 bg-gray-50 p-4">
-      <div className="grid gap-3 md:grid-cols-4">
+      <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
         <PayoutMetric
           label={invoicing("ordersCount")}
           value={String(numberValue(invoice.totals?.ordersCount))}
@@ -373,7 +375,24 @@ function PayoutPreview({
         />
         <PayoutMetric
           label={invoicing("platformCommission")}
-          value={formatMoney(invoice.totals?.platformCommissionAmount, currency)}
+          value={formatMoney(
+            invoice.totals?.platformCommissionAmount,
+            currency,
+          )}
+        />
+        <PayoutMetric
+          label={invoicing("monthlyFeeDeducted")}
+          value={formatMoney(
+            invoice.totals?.monthlyFeeDeductedAmount,
+            currency,
+          )}
+        />
+        <PayoutMetric
+          label={invoicing("monthlyFeeOutstanding")}
+          value={formatMoney(
+            invoice.totals?.monthlyFeeOutstandingAmount,
+            currency,
+          )}
         />
         <PayoutMetric
           label={invoicing("netRestaurantPayout")}
@@ -396,6 +415,48 @@ function PayoutPreview({
           value={invoice.restaurant?.billingEmail || "-"}
         />
       </div>
+
+      {monthlyBilling.length > 0 ? (
+        <div className="mt-5 overflow-hidden rounded-2xl bg-white">
+          <div className="grid grid-cols-[100px_repeat(4,minmax(120px,1fr))] gap-3 border-b border-gray-100 px-4 py-3 text-xs font-semibold uppercase text-gray-400">
+            <span>{invoicing("billingMonth")}</span>
+            <span className="text-right">
+              {invoicing("commissionThisMonth")}
+            </span>
+            <span className="text-right">
+              {invoicing("commissionRemaining")}
+            </span>
+            <span className="text-right">
+              {invoicing("monthlyFeeCollected")}
+            </span>
+            <span className="text-right">
+              {invoicing("monthlyFeeOutstanding")}
+            </span>
+          </div>
+          {monthlyBilling.map((month) => (
+            <div
+              key={month.month || "month"}
+              className="grid grid-cols-[100px_repeat(4,minmax(120px,1fr))] gap-3 border-b border-gray-50 px-4 py-3 text-sm last:border-b-0"
+            >
+              <span className="font-medium text-gray-900">
+                {month.month || "-"}
+              </span>
+              <span className="text-right text-gray-600">
+                {formatMoney(month.commissionDeductedThisMonth, currency)}
+              </span>
+              <span className="text-right text-gray-600">
+                {formatMoney(month.commissionCapRemaining, currency)}
+              </span>
+              <span className="text-right text-gray-600">
+                {formatMoney(month.monthlyFeeDeductedThisMonth, currency)}
+              </span>
+              <span className="text-right font-semibold text-primary">
+                {formatMoney(month.monthlyFeeOutstandingAmount, currency)}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : null}
 
       <div className="mt-5 overflow-hidden rounded-2xl bg-white">
         <div className="grid grid-cols-[minmax(0,1fr)_120px_140px_140px] gap-3 border-b border-gray-100 px-4 py-3 text-xs font-semibold uppercase text-gray-400">

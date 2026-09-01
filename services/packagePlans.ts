@@ -381,6 +381,21 @@ export type WeeklyPayoutInvoiceLineItem = {
   restaurantPayoutAmount?: string | number | null;
 };
 
+export type WeeklyPayoutMonthlyBilling = {
+  month?: string | null;
+  commissionCapAmount?: string | number | null;
+  commissionDeductedBefore?: string | number | null;
+  commissionDeductedThisPayout?: string | number | null;
+  commissionDeductedThisMonth?: string | number | null;
+  commissionCapRemaining?: string | number | null;
+  monthlyFeeAmount?: string | number | null;
+  monthlyFeeScheduledToDate?: string | number | null;
+  monthlyFeeDeductedBefore?: string | number | null;
+  monthlyFeeDeductedThisPayout?: string | number | null;
+  monthlyFeeDeductedThisMonth?: string | number | null;
+  monthlyFeeOutstandingAmount?: string | number | null;
+};
+
 export type WeeklyPayoutInvoice = {
   invoiceNumber?: string | null;
   restaurant?: {
@@ -397,10 +412,15 @@ export type WeeklyPayoutInvoice = {
     to?: string | null;
   } | null;
   lineItems?: WeeklyPayoutInvoiceLineItem[];
+  monthlyBilling?: {
+    months?: WeeklyPayoutMonthlyBilling[];
+  } | null;
   totals?: {
     ordersCount?: string | number | null;
     grossAmount?: string | number | null;
     platformCommissionAmount?: string | number | null;
+    monthlyFeeDeductedAmount?: string | number | null;
+    monthlyFeeOutstandingAmount?: string | number | null;
     restaurantPayoutAmount?: string | number | null;
     currency?: string | null;
   } | null;

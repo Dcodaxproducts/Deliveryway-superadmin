@@ -12,6 +12,14 @@ export type RestaurantWallet = {
   restaurantTransactionFeeAmount: number | null;
   vatPercentage: number | null;
   vatAmount: number | null;
+  billingMonth: string | null;
+  monthlyFeeAmount: number | null;
+  monthlyFeeScheduledToDate: number | null;
+  monthlyFeeDeductedBefore: number | null;
+  monthlyFeeDeductedAmount: number | null;
+  monthlyFeeVatAmount: number | null;
+  monthlyFeeDeductedThisMonth: number | null;
+  monthlyFeeOutstandingAmount: number | null;
   totalDeductionsAmount: number | null;
   availablePayoutBalance: number | null;
   currency: string | null;
@@ -92,6 +100,14 @@ export const normalizeWallet = (response: unknown): RestaurantWallet => {
     ),
     vatPercentage: getNumber(wallet.vatPercentage),
     vatAmount: getNumber(wallet.vatAmount),
+    billingMonth: getString(wallet.billingMonth),
+    monthlyFeeAmount: getNumber(wallet.monthlyFeeAmount),
+    monthlyFeeScheduledToDate: getNumber(wallet.monthlyFeeScheduledToDate),
+    monthlyFeeDeductedBefore: getNumber(wallet.monthlyFeeDeductedBefore),
+    monthlyFeeDeductedAmount: getNumber(wallet.monthlyFeeDeductedAmount),
+    monthlyFeeVatAmount: getNumber(wallet.monthlyFeeVatAmount),
+    monthlyFeeDeductedThisMonth: getNumber(wallet.monthlyFeeDeductedThisMonth),
+    monthlyFeeOutstandingAmount: getNumber(wallet.monthlyFeeOutstandingAmount),
     totalDeductionsAmount: getNumber(wallet.totalDeductionsAmount),
     availablePayoutBalance: getNumber(
       wallet.availablePayoutBalance ?? wallet.availableBalance,
