@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,6 +24,8 @@ import {
   Trash2,
   ArrowDown,
   ArrowUp,
+  ChevronRight,
+  Palette,
 } from "lucide-react";
 
 import {
@@ -172,17 +175,17 @@ export function SettingsForm() {
     const nextForm: SettingsFormValues = {
       ...form,
       ...Object.fromEntries(
-        Object.entries(rest).map(([key, value]) => [key, String(value)])
+        Object.entries(rest).map(([key, value]) => [key, String(value)]),
       ),
       isTaxEnforced: Boolean(rest.isTaxEnforced ?? form.isTaxEnforced),
       isCommissionEnforced: Boolean(
-        rest.isCommissionEnforced ?? form.isCommissionEnforced
+        rest.isCommissionEnforced ?? form.isCommissionEnforced,
       ),
       isCurrencyEnforced: Boolean(
-        rest.isCurrencyEnforced ?? form.isCurrencyEnforced
+        rest.isCurrencyEnforced ?? form.isCurrencyEnforced,
       ),
       isLocalizationEnforced: Boolean(
-        rest.isLocalizationEnforced ?? form.isLocalizationEnforced
+        rest.isLocalizationEnforced ?? form.isLocalizationEnforced,
       ),
       defaultCurrency: rest.defaultCurrency || DEFAULT_DISPLAY_CURRENCY,
       defaultLanguage: rest.defaultLanguage || "de",
@@ -195,8 +198,7 @@ export function SettingsForm() {
           rest.landingPageSettings?.businessName ||
           form.landingPageSettings.businessName,
         logoUrl: rest.landingPageSettings?.logoUrl || "",
-        footerDescription:
-          rest.landingPageSettings?.footerDescription || "",
+        footerDescription: rest.landingPageSettings?.footerDescription || "",
         supportEmail: rest.landingPageSettings?.supportEmail || "",
         supportPhone: rest.landingPageSettings?.supportPhone || "",
         address: rest.landingPageSettings?.address || "",
@@ -254,7 +256,7 @@ export function SettingsForm() {
 
   const updateField = <Key extends keyof SettingsFormValues>(
     key: Key,
-    value: SettingsFormValues[Key]
+    value: SettingsFormValues[Key],
   ) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
@@ -279,8 +281,8 @@ export function SettingsForm() {
         currencyFormat === "prefix"
           ? "SYMBOL_AMOUNT"
           : currencyFormat === "suffix"
-          ? "AMOUNT_CODE"
-          : "CODE_AMOUNT",
+            ? "AMOUNT_CODE"
+            : "CODE_AMOUNT",
 
       defaultLanguage: form.defaultLanguage,
 
@@ -288,8 +290,8 @@ export function SettingsForm() {
         dateFormat === "dd/mm/yyyy"
           ? "DD_MM_YYYY"
           : dateFormat === "mm/dd/yyyy"
-          ? "MM_DD_YYYY"
-          : "YYYY_MM_DD",
+            ? "MM_DD_YYYY"
+            : "YYYY_MM_DD",
 
       timezone: form.timezone,
       primaryColor: form.primaryColor,
@@ -441,259 +443,313 @@ export function SettingsForm() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-[48px] p-4 lg:p-[30px] bg-white rounded-[14px]">
-        <div className="hidden lg:block lg:col-span-4 space-y-8 relative">
-          <div className="flex items-center gap-[12px] cursor-pointer">
-            <Info size={18} className="text-gray" />
-            <span className="text-base font-semibold text-[#646982] group-hover:text-primary transition-colors">
-              {globalSettings("taxSettings")}
-            </span>
+      <div className="grid gap-6 rounded-[18px] border border-[#EAECF0] bg-white p-4 shadow-sm lg:grid-cols-[260px_minmax(0,1fr)] lg:p-7">
+        <div className="lg:sticky lg:top-24 lg:self-start">
+          <div className="rounded-2xl bg-[#F8F8FA] p-3">
+            <p className="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-[0.12em] text-gray">
+              {globalSettings("settingsNavigation")}
+            </p>
+            {[
+              ["tax", globalSettings("taxSettings")],
+              ["fees", globalSettings("commissionSettings")],
+              ["currency", globalSettings("currencySettings")],
+              ["localization", globalSettings("localizationSettings")],
+              ["platform-brand", globalSettings("brandingQuickSetup")],
+            ].map(([id, label]) => (
+              <a
+                key={id}
+                href={`#${id}`}
+                className="group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-[#646982] transition hover:bg-white hover:text-primary hover:shadow-sm"
+              >
+                <Info size={17} className="shrink-0" />
+                <span className="min-w-0 flex-1">{label}</span>
+                <ChevronRight
+                  size={15}
+                  className="opacity-0 transition group-hover:opacity-100"
+                />
+              </a>
+            ))}
           </div>
 
-          <div className="flex items-center gap-[12px] cursor-pointer absolute top-88">
-            <Info size={18} className="text-gray" />
-            <span className="text-base font-semibold text-[#646982] group-hover:text-primary transition-colors">
-              {globalSettings("commissionSettings")}
+          <Link
+            href="/theme-settings"
+            className="mt-4 flex items-center gap-3 rounded-2xl bg-primary p-4 text-white shadow-[0_14px_35px_rgba(193,0,10,0.2)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(193,0,10,0.28)]"
+          >
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/15">
+              <Palette size={19} />
             </span>
-          </div>
-
-          <div className="flex items-center gap-[12px] cursor-pointer absolute top-143">
-            <Info size={18} className="text-gray" />
-            <span className="text-base font-semibold text-[#646982] group-hover:text-primary transition-colors">
-              {globalSettings("currencySettings")}
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold">
+                {globalSettings("openBrandingWorkspace")}
+              </span>
+              <span className="mt-0.5 block text-xs leading-5 text-white/75">
+                {globalSettings("storefrontBrandingDescription")}
+              </span>
             </span>
-          </div>
-
-          <div className="flex items-center gap-[12px] cursor-pointer absolute bottom-143">
-            <Info size={18} className="text-gray" />
-            <span className="text-base font-semibold text-[#646982] group-hover:text-primary transition-colors">
-              {globalSettings("localizationSettings")}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-[12px] cursor-pointer absolute bottom-70">
-            <Info size={18} className="text-gray" />
-            <span className="text-base font-semibold text-[#646982] group-hover:text-primary transition-colors">
-              {globalSettings("brandingQuickSetup")}
-            </span>
-          </div>
+            <ChevronRight size={17} className="shrink-0" />
+          </Link>
         </div>
 
-        <div className="lg:col-span-8 space-y-[48px]">
-          <section className="space-y-[24px]">
-          <div className="space-y-[6px]">
-            <Label>{globalSettings("globalTax")}</Label>
-            <p className="text-sm text-gray mb-2">
-              {globalSettings("globalTaxDescription")}
-            </p>
-
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-dark font-medium">
-                %
-              </span>
-
-              <Input
-                type="number"
-                value={form.globalTaxPercentage}
-                onChange={(e) =>
-                  updateField("globalTaxPercentage", e.target.value)
-                }
-                className="pl-8 border-[#BBBBBB] focus:border-primary"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-[6px]">
-            <Label>{globalSettings("vatRules")}</Label>
-            <p className="text-sm text-gray">
-              {globalSettings("vatRulesDescription")}
-            </p>
-
-            <RadioGroup
-              value={(form.vatHandlingRule || "EXCLUSIVE").toLowerCase()}
-              onValueChange={(val) =>
-                updateField("vatHandlingRule", val.toUpperCase())
-              }
-              className="space-y-[24px]"
-            >
-              <div className="flex items-center gap-3">
-                <RadioGroupItem value="inclusive" />
-                <Label>{globalSettings("pricesInclusive")}</Label>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <RadioGroupItem value="exclusive" />
-                <Label>{globalSettings("pricesExclusive")}</Label>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <RadioGroupItem value="completed" />
-                <Label>{globalSettings("taxCompleted")}</Label>
-              </div>
-            </RadioGroup>
-          </div>
-        </section>
-
-        <section className="space-y-[24px]">
-          <FormGroup
-            label={globalSettings("defaultCommission")}
-            placeholder={globalSettings("addPercentage")}
-            prefix="%"
-            value={form.defaultCommissionPercentage}
-            onChange={(value) =>
-              updateField("defaultCommissionPercentage", value)
-            }
-          />
-
-          <FormGroup
-            label={globalSettings("defaultHybridFee")}
-            placeholder={globalSettings("addPercentage")}
-            prefix="%"
-            value={form.defaultHybridFeePercentage}
-            onChange={(value) =>
-              updateField("defaultHybridFeePercentage", value)
-            }
-          />
-        </section>
-
-        <section className="space-y-[24px]">
-          <div className="space-y-[6px]">
-            <Label>{globalSettings("defaultCurrency")}</Label>
-            <p className="text-sm text-gray mb-2">
-              {globalSettings("defaultCurrencyDescription")}
-            </p>
-
-            <Select
-              value={form.defaultCurrency}
-              onValueChange={(value) => updateField("defaultCurrency", value)}
-            >
-              <SelectTrigger className="h-[52px] border-[#BBBBBB]">
-                <div className="flex items-center gap-2">
-                  <span className="text-dark">
-                    {getCurrencySymbol(form.defaultCurrency)}
-                  </span>
-                  <SelectValue placeholder={globalSettings("selectCurrency")} />
-                </div>
-              </SelectTrigger>
-
-              <SelectContent>
-                {CURRENCY_OPTIONS.map((currency) => (
-                  <SelectItem key={currency.value} value={currency.value}>
-                    <div className="flex items-center gap-2">
-                      <span>{currency.label}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-[12px]">
-            <Label>{globalSettings("currencyDisplayFormat")}</Label>
-
-            <div className="grid grid-cols-3 gap-4">
-              <FormatBtn
-                label={`${getCurrencySymbol(form.defaultCurrency)}1,000.00`}
-                active={currencyFormat === "prefix"}
-                onClick={() => setCurrencyFormat("prefix")}
-              />
-
-              <FormatBtn
-                label={`1,000.00 ${form.defaultCurrency}`}
-                active={currencyFormat === "suffix"}
-                onClick={() => setCurrencyFormat("suffix")}
-              />
-
-              <FormatBtn
-                label={`${form.defaultCurrency} 1,000.00`}
-                active={currencyFormat === "iso"}
-                onClick={() => setCurrencyFormat("iso")}
-              />
-            </div>
-          </div>
-        </section>
-
-        <section className="space-y-[24px]">
-          <FormGroup
-            label={globalSettings("defaultLanguage")}
-            type="select"
-            placeholder={globalSettings("selectLanguage")}
-            value={form.defaultLanguage}
-            options={LANGUAGE_OPTIONS}
-            onChange={(value) => updateField("defaultLanguage", value)}
-          />
-
-          <div className="space-y-[12px]">
-            <Label>{globalSettings("dateFormat")}</Label>
-
-            <div className="grid grid-cols-3 gap-2">
-              <FormatBtn
-                label="DD/MM/YYYY"
-                active={dateFormat === "dd/mm/yyyy"}
-                onClick={() => setDateFormat("dd/mm/yyyy")}
-              />
-
-              <FormatBtn
-                label="MM/DD/YYYY"
-                active={dateFormat === "mm/dd/yyyy"}
-                onClick={() => setDateFormat("mm/dd/yyyy")}
-              />
-
-              <FormatBtn
-                label="YYYY-MM-DD"
-                active={dateFormat === "yyyy-mm-dd"}
-                onClick={() => setDateFormat("yyyy-mm-dd")}
-              />
-            </div>
-          </div>
-
-          <FormGroup
-            label={globalSettings("timezone")}
-            type="select"
-            placeholder={globalSettings("selectTimezone")}
-            value={form.timezone}
-            options={TIMEZONE_OPTIONS}
-            onChange={(value) => updateField("timezone", value)}
-          />
-        </section>
-
-        <section className="space-y-[24px]">
-          <div className="grid grid-cols-2 gap-[24px]">
-            <Input
-              value={form.primaryColor}
-              onChange={(e) => updateField("primaryColor", e.target.value)}
-            />
-
-            <Input
-              value={form.secondaryColor}
-              onChange={(e) => updateField("secondaryColor", e.target.value)}
-            />
-          </div>
-
-          <FormGroup
-            label={globalSettings("fontSelection")}
-            type="select"
-            placeholder={globalSettings("selectFont")}
-            value={form.fontFamily}
-            options={FONT_OPTIONS}
-            onChange={(value) => updateField("fontFamily", value)}
-          />
-        </section>
-
-        <section className="flex flex-col sm:flex-row gap-4 justify-end">
-          <Button variant="outline" disabled={isPending}>
-            {common("cancel")}
-          </Button>
-
-          <Button
-            onClick={handleSubmit}
-            disabled={isPending}
-            className="h-auto px-10 py-3"
+        <div className="min-w-0 space-y-10">
+          <p className="rounded-xl bg-blue-50 px-4 py-3 text-sm leading-6 text-blue-900">
+            {globalSettings("platformDefaultsDescription")}
+          </p>
+          <section
+            id="tax"
+            className="scroll-mt-28 space-y-[24px] border-b border-[#EAECF0] pb-10"
           >
-            {isPending ? common("saving") : globalSettings("saveActivate")}
-          </Button>
-        </section>
-      </div>
+            <div className="space-y-[6px]">
+              <Label>{globalSettings("globalTax")}</Label>
+              <p className="text-sm text-gray mb-2">
+                {globalSettings("globalTaxDescription")}
+              </p>
+
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-dark font-medium">
+                  %
+                </span>
+
+                <Input
+                  type="number"
+                  value={form.globalTaxPercentage}
+                  onChange={(e) =>
+                    updateField("globalTaxPercentage", e.target.value)
+                  }
+                  className="pl-8 border-[#BBBBBB] focus:border-primary"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-[6px]">
+              <Label>{globalSettings("vatRules")}</Label>
+              <p className="text-sm text-gray">
+                {globalSettings("vatRulesDescription")}
+              </p>
+
+              <RadioGroup
+                value={(form.vatHandlingRule || "EXCLUSIVE").toLowerCase()}
+                onValueChange={(val) =>
+                  updateField("vatHandlingRule", val.toUpperCase())
+                }
+                className="space-y-[24px]"
+              >
+                <div className="flex items-center gap-3">
+                  <RadioGroupItem value="inclusive" />
+                  <Label>{globalSettings("pricesInclusive")}</Label>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <RadioGroupItem value="exclusive" />
+                  <Label>{globalSettings("pricesExclusive")}</Label>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <RadioGroupItem value="completed" />
+                  <Label>{globalSettings("taxCompleted")}</Label>
+                </div>
+              </RadioGroup>
+            </div>
+          </section>
+
+          <section
+            id="fees"
+            className="scroll-mt-28 space-y-[24px] border-b border-[#EAECF0] pb-10"
+          >
+            <FormGroup
+              label={globalSettings("defaultCommission")}
+              placeholder={globalSettings("addPercentage")}
+              prefix="%"
+              value={form.defaultCommissionPercentage}
+              onChange={(value) =>
+                updateField("defaultCommissionPercentage", value)
+              }
+            />
+
+            <FormGroup
+              label={globalSettings("defaultHybridFee")}
+              placeholder={globalSettings("addPercentage")}
+              prefix="%"
+              value={form.defaultHybridFeePercentage}
+              onChange={(value) =>
+                updateField("defaultHybridFeePercentage", value)
+              }
+            />
+          </section>
+
+          <section
+            id="currency"
+            className="scroll-mt-28 space-y-[24px] border-b border-[#EAECF0] pb-10"
+          >
+            <div className="space-y-[6px]">
+              <Label>{globalSettings("defaultCurrency")}</Label>
+              <p className="text-sm text-gray mb-2">
+                {globalSettings("defaultCurrencyDescription")}
+              </p>
+
+              <Select
+                value={form.defaultCurrency}
+                onValueChange={(value) => updateField("defaultCurrency", value)}
+              >
+                <SelectTrigger className="h-[52px] border-[#BBBBBB]">
+                  <div className="flex items-center gap-2">
+                    <span className="text-dark">
+                      {getCurrencySymbol(form.defaultCurrency)}
+                    </span>
+                    <SelectValue
+                      placeholder={globalSettings("selectCurrency")}
+                    />
+                  </div>
+                </SelectTrigger>
+
+                <SelectContent>
+                  {CURRENCY_OPTIONS.map((currency) => (
+                    <SelectItem key={currency.value} value={currency.value}>
+                      <div className="flex items-center gap-2">
+                        <span>{currency.label}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-[12px]">
+              <Label>{globalSettings("currencyDisplayFormat")}</Label>
+
+              <div className="grid grid-cols-3 gap-4">
+                <FormatBtn
+                  label={`${getCurrencySymbol(form.defaultCurrency)}1,000.00`}
+                  active={currencyFormat === "prefix"}
+                  onClick={() => setCurrencyFormat("prefix")}
+                />
+
+                <FormatBtn
+                  label={`1,000.00 ${form.defaultCurrency}`}
+                  active={currencyFormat === "suffix"}
+                  onClick={() => setCurrencyFormat("suffix")}
+                />
+
+                <FormatBtn
+                  label={`${form.defaultCurrency} 1,000.00`}
+                  active={currencyFormat === "iso"}
+                  onClick={() => setCurrencyFormat("iso")}
+                />
+              </div>
+            </div>
+          </section>
+
+          <section
+            id="localization"
+            className="scroll-mt-28 space-y-[24px] border-b border-[#EAECF0] pb-10"
+          >
+            <FormGroup
+              label={globalSettings("defaultLanguage")}
+              type="select"
+              placeholder={globalSettings("selectLanguage")}
+              value={form.defaultLanguage}
+              options={LANGUAGE_OPTIONS}
+              onChange={(value) => updateField("defaultLanguage", value)}
+            />
+
+            <div className="space-y-[12px]">
+              <Label>{globalSettings("dateFormat")}</Label>
+
+              <div className="grid grid-cols-3 gap-2">
+                <FormatBtn
+                  label="DD/MM/YYYY"
+                  active={dateFormat === "dd/mm/yyyy"}
+                  onClick={() => setDateFormat("dd/mm/yyyy")}
+                />
+
+                <FormatBtn
+                  label="MM/DD/YYYY"
+                  active={dateFormat === "mm/dd/yyyy"}
+                  onClick={() => setDateFormat("mm/dd/yyyy")}
+                />
+
+                <FormatBtn
+                  label="YYYY-MM-DD"
+                  active={dateFormat === "yyyy-mm-dd"}
+                  onClick={() => setDateFormat("yyyy-mm-dd")}
+                />
+              </div>
+            </div>
+
+            <FormGroup
+              label={globalSettings("timezone")}
+              type="select"
+              placeholder={globalSettings("selectTimezone")}
+              value={form.timezone}
+              options={TIMEZONE_OPTIONS}
+              onChange={(value) => updateField("timezone", value)}
+            />
+          </section>
+
+          <section id="platform-brand" className="scroll-mt-28 space-y-[24px]">
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="platform-primary-color">
+                  {globalSettings("platformPrimaryColor")}
+                </Label>
+                <div className="flex gap-2">
+                  <span
+                    aria-hidden="true"
+                    className="size-[52px] shrink-0 rounded-xl border border-[#EAECF0] shadow-inner"
+                    style={{ backgroundColor: form.primaryColor }}
+                  />
+                  <Input
+                    id="platform-primary-color"
+                    value={form.primaryColor}
+                    onChange={(e) =>
+                      updateField("primaryColor", e.target.value)
+                    }
+                    className="h-[52px] font-mono uppercase"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="platform-secondary-color">
+                  {globalSettings("platformSecondaryColor")}
+                </Label>
+                <div className="flex gap-2">
+                  <span
+                    aria-hidden="true"
+                    className="size-[52px] shrink-0 rounded-xl border border-[#EAECF0] shadow-inner"
+                    style={{ backgroundColor: form.secondaryColor }}
+                  />
+                  <Input
+                    id="platform-secondary-color"
+                    value={form.secondaryColor}
+                    onChange={(e) =>
+                      updateField("secondaryColor", e.target.value)
+                    }
+                    className="h-[52px] font-mono uppercase"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <FormGroup
+              label={globalSettings("fontSelection")}
+              type="select"
+              placeholder={globalSettings("selectFont")}
+              value={form.fontFamily}
+              options={FONT_OPTIONS}
+              onChange={(value) => updateField("fontFamily", value)}
+            />
+          </section>
+
+          <section className="flex flex-col sm:flex-row gap-4 justify-end">
+            <Button
+              onClick={handleSubmit}
+              disabled={isPending}
+              className="h-auto px-10 py-3"
+            >
+              {isPending ? common("saving") : globalSettings("saveActivate")}
+            </Button>
+          </section>
+        </div>
       </div>
 
       <section className="rounded-[18px] border border-[#EAECF0] bg-white p-5 shadow-sm lg:p-7">
@@ -753,7 +809,9 @@ export function SettingsForm() {
             <LandingInput
               label={globalSettings("landingFooterDescription")}
               value={form.landingPageSettings.footerDescription}
-              onChange={(value) => updateLandingField("footerDescription", value)}
+              onChange={(value) =>
+                updateLandingField("footerDescription", value)
+              }
             />
             <LandingInput
               label={globalSettings("landingCopyright")}
@@ -764,7 +822,9 @@ export function SettingsForm() {
               (network) => (
                 <LandingInput
                   key={network}
-                  label={globalSettings(`landing${network[0].toUpperCase()}${network.slice(1)}`)}
+                  label={globalSettings(
+                    `landing${network[0].toUpperCase()}${network.slice(1)}`,
+                  )}
                   value={form.landingPageSettings.socialLinks[network]}
                   onChange={(value) => updateLandingSocialLink(network, value)}
                 />
@@ -911,7 +971,9 @@ export function SettingsForm() {
             className="w-full shadow-sm active:scale-[0.98] sm:w-auto"
           >
             <Save size={16} />
-            {isPending ? common("saving") : globalSettings("saveLandingSettings")}
+            {isPending
+              ? common("saving")
+              : globalSettings("saveLandingSettings")}
           </Button>
         </div>
       </section>

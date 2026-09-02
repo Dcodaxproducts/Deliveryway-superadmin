@@ -56,6 +56,20 @@ export const updateRestaurant = async (
   return data;
 };
 
+export type RestaurantBrandingUpdate = {
+  logoUrl?: string;
+  coverImage?: string;
+  branding: Record<string, unknown>;
+};
+
+export const updateRestaurantBranding = async (
+  id: string,
+  payload: RestaurantBrandingUpdate,
+): Promise<Restaurant> => {
+  const { data } = await api.patch(`/restaurants/${id}`, payload);
+  return data.data;
+};
+
 export const deleteRestaurant = async (id: string) => {
   const { data } = await api.delete(`/restaurants/${id}`);
   return data.data;

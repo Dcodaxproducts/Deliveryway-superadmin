@@ -8,6 +8,14 @@ import {
   updateGlobalSettings,
 } from "@/services/globalSettings";
 
+type ApiError = {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+};
+
 /**
  * ==============================
  * GET GLOBAL SETTINGS
@@ -37,9 +45,9 @@ export const useUpdateGlobalSettings = () => {
       toast.success(toasts("settingsUpdated"));
     },
 
-    onError: (err: any) => {
+    onError: (err: ApiError) => {
       toast.error(
-        err?.response?.data?.message || toasts("settingsUpdateFailed")
+        err?.response?.data?.message || toasts("settingsUpdateFailed"),
       );
     },
   });
@@ -59,12 +67,14 @@ export const useUpdateGlobalTaxTypes = () => {
   return useMutation({
     mutationFn: updateGlobalTaxTypes,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["global-settings", "tax-types"] });
+      queryClient.invalidateQueries({
+        queryKey: ["global-settings", "tax-types"],
+      });
       toast.success(toasts("settingsUpdated"));
     },
-    onError: (err: any) => {
+    onError: (err: ApiError) => {
       toast.error(
-        err?.response?.data?.message || toasts("settingsUpdateFailed")
+        err?.response?.data?.message || toasts("settingsUpdateFailed"),
       );
     },
   });

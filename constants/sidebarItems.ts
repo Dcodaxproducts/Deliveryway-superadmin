@@ -166,7 +166,12 @@ export const menuItems: SidebarMenuItem[] = [
     href: "/monitoring",
     permissionAccess: "dashboard",
   },
-  // { title: "Theme Setting", icon: Palette, href: "/theme-settings", permissionAccess: "storefront-settings" },
+  {
+    titleKey: "navigation.storefrontBranding",
+    icon: Palette,
+    href: "/theme-settings",
+    permissionAccess: "storefront-settings",
+  },
   {
     titleKey: "navigation.notificationSettings",
     icon: Bell,

@@ -3,7 +3,7 @@
 import NextTopLoader from "nextjs-toploader";
 
 const TopLoader = () => {
-  const primaryColor = "#CE181B";
+  const primaryColor = "var(--primary)";
 
   return (
     <NextTopLoader
