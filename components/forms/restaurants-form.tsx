@@ -340,7 +340,7 @@ const removeCover = () => {
       <FormSection label={restaurants("supportContact")}>
         <FormGroup
           label={restaurants("supportEmail")}
-          placeholder="support@brand.com"
+          placeholder="support@restaurant.example"
           error={errors.supportContact?.email?.message}
           {...register("supportContact.email")}
         />
@@ -348,14 +348,14 @@ const removeCover = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-[24px]">
           <FormGroup
             label={restaurants("whatsapp")}
-            placeholder="+92300..."
+            placeholder="+4915123456789"
             error={errors.supportContact?.whatsapp?.message}
             {...register("supportContact.whatsapp")}
           />
 
           <FormGroup
             label={restaurants("phone")}
-            placeholder="+92300..."
+            placeholder="+493012345678"
             error={errors.supportContact?.phone?.message}
             {...register("supportContact.phone")}
           />

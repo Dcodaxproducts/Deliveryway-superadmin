@@ -81,8 +81,8 @@ const GOOGLE_MAPS_API_KEY =
   process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "YOUR_GOOGLE_MAPS_API_KEY";
 
 const DEFAULT_MAP_CENTER: LatLngPoint = {
-  lat: 33.6844,
-  lng: 73.0479,
+  lat: 52.52,
+  lng: 13.405,
 };
 
 const scrollToPageTop = () => {
@@ -1869,7 +1869,7 @@ export default function BusinessOwnerForm({
       <FormSection label={businessOwners("tenantBusiness")}>
         <FormGroup
           label={`${businessOwners("businessName")} *`}
-          placeholder="Dcodax Foods"
+          placeholder="Riverside Hospitality"
           error={isEdit ? readError(errors, "name") : readError(errors, "tenant.name")}
           {...(isEdit ? register("name") : register("tenant.name"))}
         />
@@ -1913,13 +1913,13 @@ export default function BusinessOwnerForm({
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
               <FormGroup
                 label={businessOwners("website")}
-                placeholder="https://brand.com"
+                placeholder="https://business.example"
                 error={readError(errors, "tenant.socialLinks.website")}
                 {...register("tenant.socialLinks.website")}
               />
               <FormGroup
                 label={businessOwners("facebook")}
-                placeholder="https://facebook.com/brand"
+                placeholder="https://facebook.com/riversidehospitality"
                 error={readError(errors, "tenant.socialLinks.facebook")}
                 {...register("tenant.socialLinks.facebook")}
               />
@@ -1928,13 +1928,13 @@ export default function BusinessOwnerForm({
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
               <FormGroup
                 label={businessOwners("instagram")}
-                placeholder="https://instagram.com/brand"
+                placeholder="https://instagram.com/riversidehospitality"
                 error={readError(errors, "tenant.socialLinks.instagram")}
                 {...register("tenant.socialLinks.instagram")}
               />
               <FormGroup
                 label={businessOwners("linkedin")}
-                placeholder="https://linkedin.com/company/brand"
+                placeholder="https://linkedin.com/company/riversidehospitality"
                 error={readError(errors, "tenant.socialLinks.linkedin")}
                 {...register("tenant.socialLinks.linkedin")}
               />
@@ -1948,7 +1948,7 @@ export default function BusinessOwnerForm({
           <FormSection label={restaurants("restaurantSetup")}>
             <FormGroup
               label={`${restaurants("restaurantName")} *`}
-              placeholder="Dcodax Kitchen"
+              placeholder="Riverside Kitchen"
               error={readError(errors, "restaurant.name")}
               {...register("restaurant.name")}
             />
@@ -1969,7 +1969,7 @@ export default function BusinessOwnerForm({
 
             <FormGroup
               label={restaurants("customDomain")}
-              placeholder="order.brand.com"
+              placeholder="orders.restaurant.example"
               error={readError(errors, "restaurant.customDomain")}
               {...register("restaurant.customDomain")}
             />
@@ -2019,19 +2019,19 @@ export default function BusinessOwnerForm({
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-3">
               <FormGroup
                 label={restaurants("supportEmail")}
-                placeholder="support@brand.com"
+                placeholder="support@restaurant.example"
                 error={readError(errors, "restaurant.supportContact.email")}
                 {...register("restaurant.supportContact.email")}
               />
               <FormGroup
                 label={restaurants("whatsapp")}
-                placeholder="+923001234567"
+                placeholder="+4915123456789"
                 error={readError(errors, "restaurant.supportContact.whatsapp")}
                 {...register("restaurant.supportContact.whatsapp")}
               />
               <FormGroup
                 label={restaurants("phone")}
-                placeholder="+923001234567"
+                placeholder="+493012345678"
                 error={readError(errors, "restaurant.supportContact.phone")}
                 {...register("restaurant.supportContact.phone")}
               />
@@ -2256,13 +2256,13 @@ export default function BusinessOwnerForm({
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-2">
               <FormGroup
                 label={businessOwners("city")}
-                placeholder="Islamabad"
+                placeholder="Berlin"
                 error={readError(errors, "branch.city")}
                 {...register("branch.city")}
               />
               <FormGroup
                 label={businessOwners("state")}
-                placeholder="Punjab"
+                placeholder="Berlin"
                 error={readError(errors, "branch.state")}
                 {...register("branch.state")}
               />
@@ -2271,19 +2271,19 @@ export default function BusinessOwnerForm({
             <div className="grid grid-cols-1 gap-[24px] md:grid-cols-3">
               <FormGroup
                 label={businessOwners("country")}
-                placeholder="Pakistan"
+                placeholder="Germany"
                 error={readError(errors, "branch.country")}
                 {...register("branch.country")}
               />
               <FormGroup
                 label={businessOwners("latitude")}
-                placeholder="33.6844"
+                placeholder="52.5200"
                 error={readError(errors, "branch.lat")}
                 {...register("branch.lat")}
               />
               <FormGroup
                 label={businessOwners("longitude")}
-                placeholder="73.0479"
+                placeholder="13.4050"
                 error={readError(errors, "branch.lng")}
                 {...register("branch.lng")}
               />
