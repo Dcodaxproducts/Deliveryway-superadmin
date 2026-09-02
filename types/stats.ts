@@ -3,14 +3,14 @@ export type StatItem = {
   title?: string;
   titleKey?: string;
   value: string;
-  footerType: 'status' | 'trend' | 'plain';
+  footerType: "status" | "trend" | "plain";
   routeHref?: string;
   statusData?: {
     active: number;
     inactive: number;
   };
   trendData?: {
-    direction: 'up' | 'down';
+    direction: "up" | "down";
     percentage: string;
     label?: string;
     labelKey?: string;
@@ -39,6 +39,9 @@ export interface AdminDashboardOverview {
     total: number;
     active: number;
     inactive: number;
+  };
+  orders: {
+    total: number;
   };
 }
 

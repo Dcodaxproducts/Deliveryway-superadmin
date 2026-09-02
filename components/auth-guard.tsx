@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { isSuperAdmin } from "@/lib/auth-role";
+import { hasSuperAdminPanelAccess } from "@/lib/auth-role";
 
 const publicRoutes = new Set(["/auth/login"]);
 
@@ -37,7 +37,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const user = getStoredUser();
 
     if (isPublicRoute) {
-      if (token && isSuperAdmin(user)) {
+      if (token && hasSuperAdminPanelAccess(user)) {
         router.replace("/");
         return;
       }
@@ -53,7 +53,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (!isSuperAdmin(user)) {
+    if (!hasSuperAdminPanelAccess(user)) {
       clearStoredAuth();
       router.replace("/auth/login");
       setLoading(false);
