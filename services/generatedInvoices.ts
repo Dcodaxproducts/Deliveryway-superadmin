@@ -136,6 +136,13 @@ export const recreateGeneratedInvoice = async (invoiceId: string) => {
   return data;
 };
 
+export const resendGeneratedInvoice = async (invoiceId: string) => {
+  const { data } = await api.post(
+    `/admin/reports/generated-invoices/${invoiceId}/resend`,
+  );
+  return data;
+};
+
 export const getGeneratedInvoicePdf = async (
   invoiceId: string,
   kind?: GeneratedInvoiceKind | null,

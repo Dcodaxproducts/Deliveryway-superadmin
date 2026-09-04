@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { Eye, FileText, Loader2, Search } from "lucide-react";
+import { Eye, FileText, Loader2, Mail, Search } from "lucide-react";
 import { toast } from "sonner";
 
 import AsyncSelect from "@/components/ui/AsyncSelect";
@@ -27,6 +27,7 @@ import {
   useCancelGeneratedInvoice,
   useGetGeneratedInvoices,
   useRecreateGeneratedInvoice,
+  useResendGeneratedInvoice,
 } from "@/hooks/useGeneratedInvoices";
 import { formatMoney } from "@/lib/currency";
 import { cn } from "@/lib/utils";
@@ -213,6 +214,7 @@ export function GeneratedInvoicesHistoryTab() {
   const generatedInvoicesQuery = useGetGeneratedInvoices(params);
   const cancelInvoice = useCancelGeneratedInvoice();
   const recreateInvoice = useRecreateGeneratedInvoice();
+  const resendInvoice = useResendGeneratedInvoice();
   const [viewingInvoiceId, setViewingInvoiceId] = useState<string | null>(null);
 
   const handleViewInvoice = async (invoice: GeneratedInvoice) => {
@@ -554,22 +556,39 @@ export function GeneratedInvoicesHistoryTab() {
                             recreateInvoice.variables === invoice.id ? (
                               <Loader2 className="size-4 animate-spin" />
                             ) : null}
-                            Recreate
+                            Regenerate
                           </Button>
                         ) : (
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            disabled={cancelInvoice.isPending}
-                            onClick={() => cancelInvoice.mutate(invoice.id)}
-                          >
-                            {cancelInvoice.isPending &&
-                            cancelInvoice.variables === invoice.id ? (
-                              <Loader2 className="size-4 animate-spin" />
-                            ) : null}
-                            Cancel
-                          </Button>
+                          <>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              disabled={resendInvoice.isPending}
+                              onClick={() => resendInvoice.mutate(invoice.id)}
+                            >
+                              {resendInvoice.isPending &&
+                              resendInvoice.variables === invoice.id ? (
+                                <Loader2 className="size-4 animate-spin" />
+                              ) : (
+                                <Mail className="size-4" />
+                              )}
+                              Resend
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              disabled={cancelInvoice.isPending}
+                              onClick={() => cancelInvoice.mutate(invoice.id)}
+                            >
+                              {cancelInvoice.isPending &&
+                              cancelInvoice.variables === invoice.id ? (
+                                <Loader2 className="size-4 animate-spin" />
+                              ) : null}
+                              Cancel
+                            </Button>
+                          </>
                         )}
                       </div>
                     </TableCell>

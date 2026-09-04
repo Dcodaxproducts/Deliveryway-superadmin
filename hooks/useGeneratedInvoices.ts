@@ -6,6 +6,7 @@ import {
   cancelGeneratedInvoice,
   getGeneratedInvoices,
   recreateGeneratedInvoice,
+  resendGeneratedInvoice,
 } from "@/services/generatedInvoices";
 
 export const generatedInvoiceKeys = {
@@ -45,5 +46,18 @@ export const useRecreateGeneratedInvoice = () => {
       toast.success("A new invoice was created from the cancelled invoice");
     },
     onError: () => toast.error("Unable to recreate invoice"),
+  });
+};
+
+export const useResendGeneratedInvoice = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: resendGeneratedInvoice,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: generatedInvoiceKeys.lists() });
+      toast.success("Invoice resent to the restaurant billing email");
+    },
+    onError: () => toast.error("Unable to resend invoice"),
   });
 };
