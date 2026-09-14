@@ -89,6 +89,7 @@
   "dashboard": {
     "overview": "Dashboard Overview",
     "welcomeDescription": "Welcome back! Here's what's happening with your platform today.",
+    "overviewLoadError": "Dashboard totals could not be loaded. Please refresh the page or contact an administrator.",
     "totalRestaurants": "Total Restaurants",
     "totalOrders": "Total Orders",
     "totalRevenue": "Total Revenue",

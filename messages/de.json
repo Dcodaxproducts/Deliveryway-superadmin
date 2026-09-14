@@ -89,6 +89,7 @@
   "dashboard": {
     "overview": "Dashboard-Übersicht",
     "welcomeDescription": "Willkommen zurück! Das passiert heute auf Ihrer Plattform.",
+    "overviewLoadError": "Die Dashboard-Gesamtwerte konnten nicht geladen werden. Bitte laden Sie die Seite neu oder wenden Sie sich an einen Administrator.",
     "totalRestaurants": "Restaurants insgesamt",
     "totalOrders": "Bestellungen insgesamt",
     "totalRevenue": "Gesamtumsatz",

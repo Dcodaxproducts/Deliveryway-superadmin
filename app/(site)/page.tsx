@@ -9,6 +9,7 @@ import StatsSection from "@/components/shared/stats-section";
 import Header from "@/components/header";
 import { useStats } from "@/hooks/useStats";
 import type { StatItem } from "@/types/stats";
+import { formatMoney } from "@/lib/currency";
 
 type DashboardStatDetails = {
   total: number;
@@ -27,7 +28,7 @@ const DASHBOARD_STAT_TITLE_KEYS: Record<string, string> = {
 
 export default function Home() {
   const dashboard = useTranslations("dashboard");
-  const { data, isLoading } = useStats();
+  const { data, isLoading, isError } = useStats();
   const entityStats: StatItem[] = data
     ? (["tenants", "restaurants", "branches", "customers"] as const).map(
         (key) => {
@@ -56,13 +57,25 @@ export default function Home() {
           value: data.orders.total.toString(),
           footerType: "plain",
         },
+        {
+          _id: "total-revenue",
+          titleKey: DASHBOARD_STAT_TITLE_KEYS.revenue,
+          title: "Total Revenue",
+          value: formatMoney(data.orders.revenue, data.orders.currency),
+          footerType: "plain",
+        },
       ]
     : [];
   return (
     <Container>
+      {isError ? (
+        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {dashboard("overviewLoadError")}
+        </div>
+      ) : null}
       <StatsSection
         stats={statsData}
-        className="xl:grid-cols-4"
+        className="xl:grid-cols-3"
         isLoading={isLoading}
       />
 

@@ -42,6 +42,8 @@ export interface AdminDashboardOverview {
   };
   orders: {
     total: number;
+    revenue: number;
+    currency: string;
   };
 }
 
