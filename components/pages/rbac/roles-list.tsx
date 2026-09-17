@@ -13,7 +13,7 @@ type StaffRoleItem = {
     id: string;
     name: string;
     sub?: string;
-    description?: string;
+    description?: string | null;
     isEditing?: boolean;
 };
 

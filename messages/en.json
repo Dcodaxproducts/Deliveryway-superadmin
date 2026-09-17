@@ -888,6 +888,8 @@
     "manager": "Manager",
     "resetDefault": "Reset to default",
     "permissionsHelp": "Select which modules and actions are accessible for each role.",
+    "allRestaurantsAccess": "All restaurants access",
+    "allRestaurantsAccessDescription": "Apply this role to every current and future restaurant. Assigned admins inherit this scope unless they have an explicit restaurant selection.",
     "module": "Module",
     "accessRights": "Access Rights",
     "loadingRoles": "Loading roles...",

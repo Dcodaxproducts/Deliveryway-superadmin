@@ -888,6 +888,8 @@
     "manager": "Manager",
     "resetDefault": "Auf Standard zurücksetzen",
     "permissionsHelp": "Wähle aus, welche Module und Aktionen für jede Rolle zugänglich sind.",
+    "allRestaurantsAccess": "Zugriff auf alle Restaurants",
+    "allRestaurantsAccessDescription": "Diese Rolle gilt für alle aktuellen und zukünftigen Restaurants. Zugewiesene Admins übernehmen diesen Bereich, sofern keine bestimmte Restaurantauswahl festgelegt ist.",
     "module": "Modul",
     "accessRights": "Zugriffsrechte",
     "loadingRoles": "Rollen werden geladen...",

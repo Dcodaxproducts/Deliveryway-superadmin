@@ -12,6 +12,7 @@ import {
   updatePermissionModule,
   CreatePermissionModulePayload,
   UpdatePermissionModulePayload,
+  StaffRolePayload,
 } from "@/services/rbac";
 
 export const usePermissionModules = (
@@ -88,7 +89,7 @@ export const useUpdateStaffRole = () => {
   const toasts = useTranslations("toasts");
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => updateStaffRole(id, data),
+    mutationFn: ({ id, data }: { id: string; data: StaffRolePayload }) => updateStaffRole(id, data),
     onSuccess: () => {
       toast.success(toasts("roleUpdated"));
       queryClient.invalidateQueries({ queryKey: ["staff-roles"] });

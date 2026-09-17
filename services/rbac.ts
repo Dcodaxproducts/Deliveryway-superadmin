@@ -34,6 +34,36 @@ export type CreatePermissionModulePayload = {
 
 export type UpdatePermissionModulePayload = Partial<Omit<CreatePermissionModulePayload, "accessKey">>;
 
+export type StaffRolePermission = {
+  access: string;
+  operations: string[];
+};
+
+export type StaffRole = {
+  id: string;
+  name: string;
+  description?: string | null;
+  sub?: string;
+  isEditing?: boolean;
+  permissions: StaffRolePermission[];
+  restaurantAccess?: {
+    restaurantIds?: string[];
+    branchIds?: string[];
+    allRestaurants?: boolean;
+    hasAllRestaurantsAccess?: boolean;
+  } | null;
+};
+
+export type StaffRolePayload = {
+  name?: string;
+  description?: string;
+  permissions?: StaffRolePermission[];
+  allRestaurants?: boolean;
+  hasAllRestaurantsAccess?: boolean;
+  restaurantIds?: string[];
+  branchIds?: string[];
+};
+
 export const getPermissionModules = async (params?: { isActive?: boolean | null; limit?: number; page?: number }) => {
   const queryParams = { ...params };
   if (queryParams.isActive === null) {
@@ -54,22 +84,22 @@ export const updatePermissionModule = async (id: string, payload: UpdatePermissi
   return data.data;
 }
 
-export const getStaffRoles = async () => {
-  const { data } = await api.get("/staff-roles");
-  return data.data
+export const getStaffRoles = async (): Promise<StaffRole[]> => {
+  const { data } = await api.get<{ data: StaffRole[] }>("/staff-roles");
+  return data.data;
 }
 
-export const getStaffRoleById = async (id: string) => {
-  const { data } = await api.get(`/staff-roles/${id}`);
-  return data.data
+export const getStaffRoleById = async (id: string): Promise<StaffRole> => {
+  const { data } = await api.get<{ data: StaffRole }>(`/staff-roles/${id}`);
+  return data.data;
 }
 
-export const createStaffRole = async (roleData: any) => {
+export const createStaffRole = async (roleData: StaffRolePayload) => {
   const { data } = await api.post("/staff-roles", roleData);
   return data.data
 }
 
-export const updateStaffRole = async (id: string, roleData: any) => {
+export const updateStaffRole = async (id: string, roleData: StaffRolePayload) => {
   const { data } = await api.patch(`/staff-roles/${id}`, roleData);
   return data.data
 }

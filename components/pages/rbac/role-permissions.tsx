@@ -35,8 +35,15 @@ function RolePermissionsContent() {
   );
   const [permissions, setPermissions] = useState<Record<string, string[]>>({});
   const [permissionError, setPermissionError] = useState(false);
+  const [allRestaurants, setAllRestaurants] = useState(false);
 
   useEffect(() => {
+    const roleAccess = role?.restaurantAccess;
+    setAllRestaurants(
+      roleAccess?.allRestaurants === true ||
+        roleAccess?.hasAllRestaurantsAccess === true,
+    );
+
     if (role?.permissions && permissionModules.length > 0) {
       const rolePermissions = permissionModules.map((module) => {
         const rolePermission = role.permissions.find(
@@ -104,7 +111,17 @@ function RolePermissionsContent() {
 
     updateRole.mutate({
       id: roleId,
-      data: { permissions: nextPermissions satisfies StaffPermission[] },
+      data: {
+        permissions: nextPermissions satisfies StaffPermission[],
+        allRestaurants,
+        hasAllRestaurantsAccess: allRestaurants,
+        restaurantIds: allRestaurants
+          ? []
+          : role?.restaurantAccess?.restaurantIds ?? [],
+        branchIds: allRestaurants
+          ? []
+          : role?.restaurantAccess?.branchIds ?? [],
+      },
     });
   };
 
@@ -151,6 +168,28 @@ function RolePermissionsContent() {
           {rbac("selectAtLeastOnePermission")}
         </p>
       ) : null}
+
+      <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-4">
+        <div className="flex items-start gap-3">
+          <Checkbox
+            id="role-all-restaurants"
+            checked={allRestaurants}
+            onCheckedChange={(checked) => setAllRestaurants(checked === true)}
+            className="mt-0.5 h-5 w-5 data-[state=checked]:border-primary data-[state=checked]:bg-primary"
+          />
+          <div>
+            <label
+              htmlFor="role-all-restaurants"
+              className="cursor-pointer text-base font-semibold text-dark"
+            >
+              {rbac("allRestaurantsAccess")}
+            </label>
+            <p className="mt-1 text-sm text-gray-500">
+              {rbac("allRestaurantsAccessDescription")}
+            </p>
+          </div>
+        </div>
+      </div>
 
       <div className="w-full">
         <div className="grid grid-cols-12 py-[6px] border-y border-[#BBBBBB] text-gray font-semibold text-lg">

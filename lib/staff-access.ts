@@ -48,20 +48,35 @@ export const getStaffRestaurantAccess = (user?: AuthUserLike | null): StaffResta
   const authUser = unwrapUser(user);
   const directAccess = authUser?.restaurantAccess ?? {};
   const roleAccess = authUser?.staffRole?.restaurantAccess ?? {};
+  const directHasScope = Boolean(
+    directAccess.allRestaurants ||
+      directAccess.hasAllRestaurantsAccess ||
+      directAccess.restaurantIds?.length ||
+      directAccess.branchIds?.length,
+  );
+  const effectiveAccess = directHasScope ? directAccess : roleAccess;
+  const directRestaurantIds = authUser?.restaurantIds?.length
+    ? authUser.restaurantIds
+    : effectiveAccess.restaurantIds;
+  const directBranchIds = authUser?.branchIds?.length
+    ? authUser.branchIds
+    : effectiveAccess.branchIds;
 
   return {
-    restaurantIds: authUser?.restaurantIds ?? directAccess.restaurantIds ?? authUser?.staffRole?.restaurantIds ?? roleAccess.restaurantIds ?? [],
-    branchIds: authUser?.branchIds ?? directAccess.branchIds ?? authUser?.staffRole?.branchIds ?? roleAccess.branchIds ?? [],
-    allRestaurants:
-      authUser?.allRestaurants
-      ?? authUser?.hasAllRestaurantsAccess
-      ?? directAccess.allRestaurants
-      ?? directAccess.hasAllRestaurantsAccess
-      ?? authUser?.staffRole?.allRestaurants
-      ?? authUser?.staffRole?.hasAllRestaurantsAccess
-      ?? roleAccess.allRestaurants
-      ?? roleAccess.hasAllRestaurantsAccess
-      ?? false,
+    restaurantIds: directRestaurantIds?.length
+      ? directRestaurantIds
+      : authUser?.staffRole?.restaurantIds ?? [],
+    branchIds: directBranchIds?.length
+      ? directBranchIds
+      : authUser?.staffRole?.branchIds ?? [],
+    allRestaurants: Boolean(
+      authUser?.allRestaurants ||
+        authUser?.hasAllRestaurantsAccess ||
+        effectiveAccess.allRestaurants ||
+        effectiveAccess.hasAllRestaurantsAccess ||
+        authUser?.staffRole?.allRestaurants ||
+        authUser?.staffRole?.hasAllRestaurantsAccess,
+    ),
   };
 };
 

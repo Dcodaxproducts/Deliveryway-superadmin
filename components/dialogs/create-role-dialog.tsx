@@ -40,6 +40,7 @@ export function CreateRoleDialog() {
     Record<string, string[]>
   >({});
   const [permissionError, setPermissionError] = useState(false);
+  const [allRestaurants, setAllRestaurants] = useState(false);
 
   useEffect(() => {
     setSelectedPermissions((prev) => {
@@ -90,6 +91,7 @@ export function CreateRoleDialog() {
     setRoleDescription("");
     setSelectedPermissions({});
     setPermissionError(false);
+    setAllRestaurants(false);
   };
 
   const handleSubmit = () => {
@@ -114,6 +116,10 @@ export function CreateRoleDialog() {
       name: roleName.trim(),
       description: roleDescription.trim(),
       permissions,
+      allRestaurants,
+      hasAllRestaurantsAccess: allRestaurants,
+      restaurantIds: [],
+      branchIds: [],
     };
 
     createRole(roleData, {
@@ -166,6 +172,30 @@ export function CreateRoleDialog() {
           </div>
 
           <div>
+            <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="role-all-restaurants"
+                  checked={allRestaurants}
+                  onCheckedChange={(checked) =>
+                    setAllRestaurants(checked === true)
+                  }
+                  className="mt-0.5 h-5 w-5 data-[state=checked]:border-primary data-[state=checked]:bg-primary"
+                />
+                <div>
+                  <Label
+                    htmlFor="role-all-restaurants"
+                    className="cursor-pointer text-base font-semibold text-dark"
+                  >
+                    {rbac("allRestaurantsAccess")}
+                  </Label>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {rbac("allRestaurantsAccessDescription")}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <h3 className="text-base text-dark mb-[6px]">
               {rbac("permissions")}
             </h3>
