@@ -28,6 +28,7 @@ type ReviewPlanForm = {
   features: Record<string, boolean>;
   isActive: boolean;
   isDefault: boolean;
+  showOnLanding: boolean;
 };
 
 type StepReviewCreatePlanProps = {
@@ -68,9 +69,7 @@ const featureLabelKeys: Record<string, string> = {
   adminDelivery: "features.adminDelivery",
 };
 
-export function StepReviewCreatePlan({
-  form,
-}: StepReviewCreatePlanProps) {
+export function StepReviewCreatePlan({ form }: StepReviewCreatePlanProps) {
   const pricingModel = useTranslations("pricingModel");
   const currency = useGlobalCurrency();
   const selectedFeatures = Object.entries(form.features)
@@ -117,12 +116,9 @@ export function StepReviewCreatePlan({
               value={
                 form.applyCommissionCap
                   ? pricingModel("review.amountPerInterval", {
-                      amount: formatMoney(
-                        form.commissionCapAmount,
-                        currency
-                      ),
+                      amount: formatMoney(form.commissionCapAmount, currency),
                       interval: pricingModel(
-                        billingIntervalLabelKeys[form.billingInterval]
+                        billingIntervalLabelKeys[form.billingInterval],
                       ),
                     })
                   : pricingModel("review.noCap")

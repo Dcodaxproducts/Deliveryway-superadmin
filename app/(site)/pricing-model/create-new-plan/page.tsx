@@ -20,6 +20,7 @@ import {
 } from "@/hooks/usePackagePlans";
 import { useGetGlobalSettings } from "@/hooks/useGlobalSettings";
 import { DEFAULT_DISPLAY_CURRENCY } from "@/lib/currency";
+import { Switch } from "@/components/ui/switch";
 
 import type {
   CreatePackagePlanPayload,
@@ -57,6 +58,7 @@ type PlanFormState = {
   features: Record<string, boolean>;
   isActive: boolean;
   isDefault: boolean;
+  showOnLanding: boolean;
 };
 
 type ConfigurePlanForm = Pick<
@@ -108,11 +110,11 @@ type PackagePlanDetail = {
   features?: Record<string, boolean> | null;
   isActive?: boolean | null;
   isDefault?: boolean | null;
+  showOnLanding?: boolean | null;
 };
 
 type ExtendedPackagePlanPayload = (
-  | CreatePackagePlanPayload
-  | UpdatePackagePlanPayload
+  CreatePackagePlanPayload | UpdatePackagePlanPayload
 ) & {
   commissionType?: CommissionChargeType;
   commissionFixedAmount?: number;
@@ -163,6 +165,7 @@ const defaultForm: PlanFormState = {
   features: defaultFeatures,
   isActive: true,
   isDefault: false,
+  showOnLanding: false,
 };
 
 const toNumber = (value: string, fallback = 0) => {
@@ -214,7 +217,7 @@ const normalizePayoutCycle = (value?: string | null): PayoutCycle => {
 
 const normalizeCommissionChargeType = (
   value?: string | null,
-  fixedAmountValue?: string | number | null
+  fixedAmountValue?: string | number | null,
 ): CommissionChargeType => {
   if (value === "FIXED") return "FIXED";
   if (value === "PERCENTAGE") return "PERCENTAGE";
@@ -229,7 +232,7 @@ const normalizeCommissionChargeType = (
 };
 
 const unwrapPackagePlanDetail = (
-  response: unknown
+  response: unknown,
 ): PackagePlanDetail | null => {
   if (!response || typeof response !== "object") return null;
 
@@ -261,7 +264,7 @@ const mapPackagePlanToForm = (plan: PackagePlanDetail): PlanFormState => {
 
     commissionChargeType: normalizeCommissionChargeType(
       plan.commissionType,
-      fixedAmountValue
+      fixedAmountValue,
     ),
     commissionPercentage: toSafeString(plan.commissionPercentage, "0"),
     commissionFixedFee: toSafeString(fixedAmountValue, "0"),
@@ -281,6 +284,7 @@ const mapPackagePlanToForm = (plan: PackagePlanDetail): PlanFormState => {
     },
     isActive: Boolean(plan.isActive),
     isDefault: Boolean(plan.isDefault),
+    showOnLanding: Boolean(plan.showOnLanding),
   };
 };
 
@@ -324,7 +328,11 @@ function CreatePackagePlanContent() {
 
   useEffect(() => {
     const defaultCurrency = globalSettingsQuery.data?.defaultCurrency;
-    if (!isEditMode && defaultCurrency && form.currency === DEFAULT_DISPLAY_CURRENCY) {
+    if (
+      !isEditMode &&
+      defaultCurrency &&
+      form.currency === DEFAULT_DISPLAY_CURRENCY
+    ) {
       setForm((current) => ({ ...current, currency: defaultCurrency }));
     }
   }, [form.currency, globalSettingsQuery.data?.defaultCurrency, isEditMode]);
@@ -339,7 +347,7 @@ function CreatePackagePlanContent() {
 
   const updateForm = <K extends keyof PlanFormState>(
     key: K,
-    value: PlanFormState[K]
+    value: PlanFormState[K],
   ) => {
     setForm((prev) => ({
       ...prev,
@@ -349,7 +357,7 @@ function CreatePackagePlanContent() {
 
   const updateConfigureForm = <K extends keyof ConfigurePlanForm>(
     key: K,
-    value: ConfigurePlanForm[K]
+    value: ConfigurePlanForm[K],
   ) => {
     setForm((prev) => ({
       ...prev,
@@ -359,7 +367,7 @@ function CreatePackagePlanContent() {
 
   const updateFeaturesVatForm = <K extends keyof FeaturesVatForm>(
     key: K,
-    value: FeaturesVatForm[K]
+    value: FeaturesVatForm[K],
   ) => {
     setForm((prev) => ({
       ...prev,
@@ -409,6 +417,7 @@ function CreatePackagePlanContent() {
       features: form.features,
       isActive,
       isDefault: form.isDefault,
+      showOnLanding: form.showOnLanding,
     };
   };
 
@@ -496,7 +505,7 @@ function CreatePackagePlanContent() {
         });
       } else {
         await createPackagePlan.mutateAsync(
-          payload as CreatePackagePlanPayload
+          payload as CreatePackagePlanPayload,
         );
       }
 
@@ -510,30 +519,30 @@ function CreatePackagePlanContent() {
     step === 1
       ? pricingModel("create.steps.selectPricingModelTitle")
       : step === 2
-      ? isEditMode
-        ? pricingModel("actions.updatePlan")
-        : pricingModel("create.configurePlan")
-      : step === 3
-      ? pricingModel("steps.featuresVat")
-      : isEditMode
-      ? pricingModel("create.steps.reviewUpdateTitle")
-      : pricingModel("create.steps.reviewConfirmTitle");
+        ? isEditMode
+          ? pricingModel("actions.updatePlan")
+          : pricingModel("create.configurePlan")
+        : step === 3
+          ? pricingModel("steps.featuresVat")
+          : isEditMode
+            ? pricingModel("create.steps.reviewUpdateTitle")
+            : pricingModel("create.steps.reviewConfirmTitle");
 
   const description =
     step === 1
       ? pricingModel("create.steps.selectPricingModelDescription")
       : step === 2
-      ? pricingModel("create.steps.configureDescription")
-      : step === 3
-      ? pricingModel("create.steps.featuresVatDescription")
-      : "";
+        ? pricingModel("create.steps.configureDescription")
+        : step === 3
+          ? pricingModel("create.steps.featuresVatDescription")
+          : "";
 
   const stepModeLabel =
     step === 1
       ? pricingModel("create.steps.stepOneOfFour")
       : isEditMode
-      ? pricingModel("create.steps.editMode")
-      : pricingModel("create.steps.configurationMode");
+        ? pricingModel("create.steps.editMode")
+        : pricingModel("create.steps.configurationMode");
 
   if (isEditMode && packagePlanDetailQuery.isLoading) {
     return (
@@ -609,8 +618,8 @@ function CreatePackagePlanContent() {
                       isActive
                         ? "bg-primary text-white shadow-sm"
                         : isCompleted
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-transparent text-slate-400"
+                          ? "bg-emerald-50 text-emerald-700"
+                          : "bg-transparent text-slate-400"
                     }
                   `}
                 >
@@ -646,7 +655,27 @@ function CreatePackagePlanContent() {
           />
         )}
 
-        {step === 4 && <StepReviewCreatePlan form={form} />}
+        {step === 4 && (
+          <div className="space-y-5">
+            <StepReviewCreatePlan form={form} />
+            <div className="flex items-center justify-between gap-5 rounded-2xl bg-white px-7 py-6 shadow-sm lg:px-10">
+              <div>
+                <p className="font-semibold text-[#1F2328]">
+                  {pricingModel("fields.showOnLanding")}
+                </p>
+                <p className="mt-1 text-sm text-[#684848]">
+                  {pricingModel("fields.showOnLandingHelp")}
+                </p>
+              </div>
+              <Switch
+                checked={form.showOnLanding}
+                onCheckedChange={(checked) =>
+                  updateForm("showOnLanding", checked)
+                }
+              />
+            </div>
+          </div>
+        )}
 
         <div className="mt-10 flex items-center justify-between gap-4">
           <button
@@ -692,8 +721,8 @@ function CreatePackagePlanContent() {
                       ? pricingModel("actions.updating")
                       : pricingModel("actions.creating")
                     : isEditMode
-                    ? pricingModel("actions.updatePlan")
-                    : pricingModel("actions.createPlan")}
+                      ? pricingModel("actions.updatePlan")
+                      : pricingModel("actions.createPlan")}
                 </button>
               </>
             )}

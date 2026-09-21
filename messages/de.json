@@ -951,7 +951,9 @@
       "endsAt": "Endet am",
       "nextBillingAt": "Nächste Abrechnung am",
       "payoutCycleOverride": "Auszahlungszyklus überschreiben",
-      "note": "Notiz"
+      "note": "Notiz",
+      "showOnLanding": "Auf der öffentlichen Landingpage anzeigen",
+      "showOnLandingHelp": "Nur aktive Pläne mit aktivierter Option erscheinen auf der öffentlichen Preisseite."
     },
     "placeholders": {
       "planName": "z. B. Enterprise Plus",

@@ -43,6 +43,7 @@ export type PackagePlan = {
   features?: PackagePlanFeatures;
   isActive: boolean;
   isDefault: boolean;
+  showOnLanding?: boolean;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -64,6 +65,7 @@ export type CreatePackagePlanPayload = {
   features?: PackagePlanFeatures;
   isActive?: boolean;
   isDefault?: boolean;
+  showOnLanding?: boolean;
 };
 
 export type UpdatePackagePlanPayload = Partial<CreatePackagePlanPayload>;

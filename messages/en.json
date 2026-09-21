@@ -951,7 +951,9 @@
       "endsAt": "Ends At",
       "nextBillingAt": "Next Billing At",
       "payoutCycleOverride": "Payout cycle override",
-      "note": "Note"
+      "note": "Note",
+      "showOnLanding": "Show on public landing page",
+      "showOnLandingHelp": "Only active plans with this option enabled appear on the public pricing page."
     },
     "placeholders": {
       "planName": "e.g. Enterprise Plus",
