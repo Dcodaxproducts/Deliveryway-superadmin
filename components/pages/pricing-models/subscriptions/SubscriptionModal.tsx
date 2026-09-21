@@ -328,6 +328,18 @@ export function SubscriptionModal({
 
   const isSubmitting =
     createSubscription.isPending || updateSubscription.isPending;
+  const scheduleErrorKey =
+    form.startsAt && form.endsAt && form.startsAt >= form.endsAt
+      ? "fields.endAfterStartError"
+      : form.startsAt &&
+          form.nextBillingAt &&
+          form.nextBillingAt <= form.startsAt
+        ? "fields.invoiceAfterStartError"
+        : form.endsAt &&
+            form.nextBillingAt &&
+            form.nextBillingAt > form.endsAt
+          ? "fields.invoiceBeforeEndError"
+          : null;
 
   useEffect(() => {
     if (!open) return;
@@ -400,7 +412,10 @@ export function SubscriptionModal({
   };
 
   const submitDisabled =
-    isSubmitting || !form.packagePlanId || (!form.tenantId && !form.restaurantId);
+    isSubmitting ||
+    Boolean(scheduleErrorKey) ||
+    !form.packagePlanId ||
+    (!form.tenantId && !form.restaurantId);
 
   if (!open) return null;
 
@@ -629,6 +644,14 @@ export function SubscriptionModal({
               />
             </div>
           </div>
+          <p className="rounded-lg bg-gray-50 px-4 py-3 text-xs leading-5 text-gray">
+            {pricingModel("fields.invoiceTimingHelp")}
+          </p>
+          {scheduleErrorKey ? (
+            <p className="rounded-lg bg-red-50 px-4 py-3 text-xs font-medium text-primary">
+              {pricingModel(scheduleErrorKey)}
+            </p>
+          ) : null}
 
           <div>
             <label className="text-xs font-semibold text-gray">

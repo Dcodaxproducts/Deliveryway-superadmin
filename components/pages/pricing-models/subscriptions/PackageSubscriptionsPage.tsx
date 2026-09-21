@@ -5,14 +5,9 @@ import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Container from "@/components/container";
 import Header from "@/components/header";
-import {
-  useDownloadPackageSubscriptionInvoicePdf,
-  useGetPackageSubscriptions,
-  useSendPackageSubscriptionInvoiceEmail,
-} from "@/hooks/usePackagePlans";
+import { useGetPackageSubscriptions } from "@/hooks/usePackagePlans";
 import type { PackageSubscription } from "@/services/packagePlans";
 import { SubscriptionModal } from "./SubscriptionModal";
-import { SubscriptionInvoiceModal } from "./SubscriptionInvoiceModal";
 import { SubscriptionChargesModal } from "./SubscriptionChargesModal";
 import { SubscriptionsFilters } from "./SubscriptionsFilters";
 import { SubscriptionsTable } from "./SubscriptionsTable";
@@ -65,16 +60,9 @@ export function PackageSubscriptionsPage() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editData, setEditData] = useState<PackageSubscription | null>(null);
-  const [invoiceData, setInvoiceData] = useState<PackageSubscription | null>(
-    null
-  );
   const [chargesData, setChargesData] = useState<PackageSubscription | null>(
     null
   );
-  const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<
-    string | null
-  >(null);
-  const [sendingInvoiceId, setSendingInvoiceId] = useState<string | null>(null);
 
   const debouncedSearch = useDebouncedValue(search.trim());
 
@@ -92,8 +80,6 @@ export function PackageSubscriptionsPage() {
   }, [page, debouncedSearch, status]);
 
   const subscriptionsQuery = useGetPackageSubscriptions(params);
-  const downloadInvoiceMutation = useDownloadPackageSubscriptionInvoicePdf();
-  const sendInvoiceEmailMutation = useSendPackageSubscriptionInvoiceEmail();
 
   const response = subscriptionsQuery.data as PackageSubscriptionsResponse | undefined;
 
@@ -119,36 +105,6 @@ export function PackageSubscriptionsPage() {
   const handleEdit = (item: PackageSubscription) => {
     setEditData(item);
     setModalOpen(true);
-  };
-
-  const handleViewInvoice = (item: PackageSubscription) => {
-    setInvoiceData(item);
-  };
-
-  const handleDownloadInvoice = (subscriptionId: string) => {
-    setDownloadingInvoiceId(subscriptionId);
-
-    downloadInvoiceMutation.mutate(subscriptionId, {
-      onSettled: () => {
-        setDownloadingInvoiceId(null);
-      },
-    });
-  };
-
-  const handleSendInvoiceEmail = (subscriptionId: string, email?: string) => {
-    setSendingInvoiceId(subscriptionId);
-
-    sendInvoiceEmailMutation.mutate(
-      {
-        id: subscriptionId,
-        payload: email ? { email } : undefined,
-      },
-      {
-        onSettled: () => {
-          setSendingInvoiceId(null);
-        },
-      }
-    );
   };
 
   const handleStatusChange = (value: SubscriptionStatusFilter) => {
@@ -197,31 +153,12 @@ export function PackageSubscriptionsPage() {
           onPageChange={setPage}
           onEdit={handleEdit}
           onManageCharges={setChargesData}
-          onViewInvoice={handleViewInvoice}
-          onDownloadInvoice={handleDownloadInvoice}
-          onSendInvoiceEmail={(item) => handleSendInvoiceEmail(item.id)}
-          downloadingInvoiceId={downloadingInvoiceId}
-          sendingInvoiceId={sendingInvoiceId}
         />
 
         <SubscriptionModal
           open={modalOpen}
           onOpenChange={setModalOpen}
           initialData={editData}
-        />
-
-        <SubscriptionInvoiceModal
-          open={!!invoiceData}
-          subscription={invoiceData}
-          downloading={
-            !!invoiceData?.id && downloadingInvoiceId === invoiceData.id
-          }
-          sending={!!invoiceData?.id && sendingInvoiceId === invoiceData.id}
-          onOpenChange={(open) => {
-            if (!open) setInvoiceData(null);
-          }}
-          onDownload={handleDownloadInvoice}
-          onSendEmail={handleSendInvoiceEmail}
         />
 
         <SubscriptionChargesModal

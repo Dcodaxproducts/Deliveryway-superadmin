@@ -6,10 +6,6 @@ import {
   ChevronLeft,
   ChevronRight,
   CreditCard,
-  Download,
-  Eye,
-  Loader2,
-  Mail,
   Pencil,
   ReceiptText,
 } from "lucide-react";
@@ -29,11 +25,6 @@ type SubscriptionsTableProps = {
   onPageChange: (page: number) => void;
   onEdit?: (subscription: PackageSubscription) => void;
   onManageCharges?: (subscription: PackageSubscription) => void;
-  onViewInvoice: (subscription: PackageSubscription) => void;
-  onDownloadInvoice: (subscriptionId: string) => void;
-  onSendInvoiceEmail: (subscription: PackageSubscription) => void;
-  downloadingInvoiceId?: string | null;
-  sendingInvoiceId?: string | null;
 };
 
 const formatDate = (value?: string | null) => {
@@ -144,11 +135,6 @@ export function SubscriptionsTable({
   onPageChange,
   onEdit,
   onManageCharges,
-  onViewInvoice,
-  onDownloadInvoice,
-  onSendInvoiceEmail,
-  downloadingInvoiceId,
-  sendingInvoiceId,
 }: SubscriptionsTableProps) {
   const pricingModel = useTranslations("pricingModel");
   const common = useTranslations("common");
@@ -200,9 +186,6 @@ export function SubscriptionsTable({
                 const plan = item.packagePlan;
                 const paymentStatus = item.paymentStatus || "N/A";
                 const subscriptionStatus = item.status || "N/A";
-                const isDownloading = downloadingInvoiceId === item.id;
-                const isSending = sendingInvoiceId === item.id;
-
                 return (
                   <tr
                     key={item.id}
@@ -320,40 +303,6 @@ export function SubscriptionsTable({
 
                     <td className="px-6 py-5">
                       <div className="flex justify-end gap-1">
-                        <button
-                          type="button"
-                          onClick={() => onViewInvoice(item)}
-                          className="inline-flex size-8 items-center justify-center rounded-lg text-gray transition hover:bg-red-50 hover:text-primary"
-                          title={pricingModel("invoice.viewInvoice")}
-                        >
-                          <Eye size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => onDownloadInvoice(item.id)}
-                          disabled={isDownloading}
-                          className="inline-flex size-8 items-center justify-center rounded-lg text-gray transition hover:bg-red-50 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
-                          title={pricingModel("invoice.downloadPdf")}
-                        >
-                          {isDownloading ? (
-                            <Loader2 size={16} className="animate-spin" />
-                          ) : (
-                            <Download size={16} />
-                          )}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => onSendInvoiceEmail(item)}
-                          disabled={isSending}
-                          className="inline-flex size-8 items-center justify-center rounded-lg text-gray transition hover:bg-red-50 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
-                          title={pricingModel("invoice.sendEmail")}
-                        >
-                          {isSending ? (
-                            <Loader2 size={16} className="animate-spin" />
-                          ) : (
-                            <Mail size={16} />
-                          )}
-                        </button>
                         {onEdit ? (
                           <button
                             type="button"
