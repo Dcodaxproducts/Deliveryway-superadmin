@@ -3,6 +3,7 @@
 import {
   ArrowDown,
   ArrowUp,
+  Building2,
   FileText,
   Languages,
   Loader2,
@@ -10,6 +11,7 @@ import {
   MapPin,
   Phone,
   Plus,
+  ReceiptText,
   Save,
   Trash2,
 } from "lucide-react";
@@ -30,6 +32,7 @@ import {
 import { useFileUpload } from "@/hooks/useFileUpload";
 import type {
   LandingHomeSettings,
+  GlobalLegalProfile,
   LandingPageFaq,
   LandingPageHero,
   LandingPagePages,
@@ -60,6 +63,20 @@ const RICH_TEXT_PAGE_KEYS = new Set<PageKey>([
   "termsOfService",
 ]);
 
+const EMPTY_GLOBAL_LEGAL_PROFILE: GlobalLegalProfile = {
+  ownerName: null,
+  legalBusinessName: null,
+  taxNumber: null,
+  businessAddress: {
+    street: null,
+    shopNumber: null,
+    postalCode: null,
+    city: null,
+    country: null,
+  },
+  contractText: null,
+};
+
 export function LandingContentForm() {
   const t = useTranslations("landingContent");
   const { data, isLoading, isError } = useLandingPageSettings();
@@ -76,7 +93,12 @@ export function LandingContentForm() {
   >([]);
 
   useEffect(() => {
-    if (data) setDraft(data);
+    if (data) {
+      setDraft({
+        ...data,
+        legalProfile: data.legalProfile ?? EMPTY_GLOBAL_LEGAL_PROFILE,
+      });
+    }
   }, [data]);
 
   useEffect(() => {
@@ -403,6 +425,16 @@ export function LandingContentForm() {
         onImageRemove={(key) => updateManagedImage(key, null)}
       />
 
+      <GlobalLegalProfileEditor
+        profile={draft.legalProfile}
+        disabled={isPending}
+        onChange={(legalProfile) =>
+          setDraft((current) =>
+            current ? { ...current, legalProfile } : current,
+          )
+        }
+      />
+
       <section className="overflow-hidden rounded-[18px] border border-[#EAECF0] bg-white shadow-sm">
         <div className="border-b border-[#EAECF0] bg-[linear-gradient(135deg,#fff7f7_0%,#ffffff_52%,#f8fafc_100%)] p-5 lg:p-7">
           <div className="flex items-start gap-4">
@@ -653,6 +685,117 @@ export function LandingContentForm() {
         </Button>
       </div>
     </div>
+  );
+}
+
+function GlobalLegalProfileEditor({
+  profile,
+  disabled,
+  onChange,
+}: {
+  profile: GlobalLegalProfile;
+  disabled: boolean;
+  onChange: (profile: GlobalLegalProfile) => void;
+}) {
+  const t = useTranslations("landingContent");
+  const updateField = (
+    key: "ownerName" | "legalBusinessName" | "taxNumber",
+    value: string,
+  ) => onChange({ ...profile, [key]: value || null });
+  const updateAddress = (
+    key: keyof GlobalLegalProfile["businessAddress"],
+    value: string,
+  ) =>
+    onChange({
+      ...profile,
+      businessAddress: {
+        ...profile.businessAddress,
+        [key]: value || null,
+      },
+    });
+
+  return (
+    <section className="overflow-hidden rounded-[18px] border border-[#EAECF0] bg-white shadow-sm">
+      <div className="border-b border-[#EAECF0] bg-[linear-gradient(135deg,#fff7f7_0%,#ffffff_52%,#f8fafc_100%)] p-5 lg:p-7">
+        <div className="flex items-start gap-4">
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-primary text-white shadow-[0_12px_28px_rgba(220,38,38,0.22)]">
+            <ReceiptText className="size-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-dark">
+              {t("globalLegalTitle")}
+            </h2>
+            <p className="mt-1 max-w-3xl text-sm leading-6 text-gray">
+              {t("globalLegalDescription")}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-6 p-5 lg:p-7">
+        <div className="grid gap-4 md:grid-cols-3">
+          <ContentInput
+            label={t("legalOwnerName")}
+            value={profile.ownerName ?? ""}
+            onChange={(value) => updateField("ownerName", value)}
+            maxLength={300}
+          />
+          <ContentInput
+            label={t("legalBusinessName")}
+            value={profile.legalBusinessName ?? ""}
+            onChange={(value) => updateField("legalBusinessName", value)}
+            maxLength={300}
+          />
+          <ContentInput
+            label={t("legalTaxNumber")}
+            value={profile.taxNumber ?? ""}
+            onChange={(value) => updateField("taxNumber", value)}
+            maxLength={200}
+          />
+        </div>
+
+        <div className="rounded-[16px] border border-[#EAECF0] bg-[#FCFCFD] p-5">
+          <div className="flex items-center gap-3">
+            <Building2 className="size-5 text-primary" />
+            <h3 className="font-semibold text-dark">{t("legalAddress")}</h3>
+          </div>
+          <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+            {(
+              [
+                ["street", "legalStreet"],
+                ["shopNumber", "legalShopNumber"],
+                ["postalCode", "legalPostalCode"],
+                ["city", "legalCity"],
+                ["country", "legalCountry"],
+              ] as const
+            ).map(([key, label]) => (
+              <ContentInput
+                key={key}
+                label={t(label)}
+                value={profile.businessAddress[key] ?? ""}
+                onChange={(value) => updateAddress(key, value)}
+                maxLength={key === "street" ? 300 : 200}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <Label>{t("globalLegalText")}</Label>
+          <p className="mb-3 mt-1 text-sm text-gray">
+            {t("globalLegalTextDescription")}
+          </p>
+          <LandingRichTextEditor
+            value={profile.contractText ?? ""}
+            onChange={(contractText) =>
+              onChange({ ...profile, contractText: contractText || null })
+            }
+            placeholder={t("globalLegalTextPlaceholder")}
+            disabled={disabled}
+          />
+        </div>
+      </div>
+    </section>
   );
 }
 

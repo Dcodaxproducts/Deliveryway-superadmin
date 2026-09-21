@@ -43,6 +43,20 @@ export type LandingPagePages = {
   contact: LandingPageContent;
 };
 
+export type GlobalLegalProfile = {
+  ownerName: string | null;
+  legalBusinessName: string | null;
+  taxNumber: string | null;
+  businessAddress: {
+    street: string | null;
+    shopNumber: string | null;
+    postalCode: string | null;
+    city: string | null;
+    country: string | null;
+  };
+  contractText: string | null;
+};
+
 export type LandingHomeContentBlock = {
   headingEn: string | null;
   headingDe: string | null;
@@ -106,6 +120,7 @@ export type LandingPageSettings = {
   };
   home: LandingHomeSettings;
   pages: LandingPagePages;
+  legalProfile: GlobalLegalProfile;
   faqs: LandingPageFaq[];
 };
 
