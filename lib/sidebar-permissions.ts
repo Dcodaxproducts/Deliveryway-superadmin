@@ -28,7 +28,9 @@ const canAccessItem = (
   user: AuthUserLike | null,
   item: SidebarMenuItem,
   inheritedAccess?: string | string[],
-) => hasStaffPermission(user, item.permissionAccess ?? inheritedAccess, "read");
+) =>
+  !(item.ownerOnly && isStaffUser(user)) &&
+  hasStaffPermission(user, item.permissionAccess ?? inheritedAccess, "read");
 
 export const filterSidebarItemsForUser = (items: SidebarMenuItem[], user: AuthUserLike | null) => {
   if (!isStaffUser(user)) return items;

@@ -21,6 +21,7 @@ import {
   Utensils,
   PanelsTopLeft,
   LockKeyhole,
+  ScrollText,
 } from "lucide-react";
 import { PiUsersThree } from "react-icons/pi";
 
@@ -30,6 +31,7 @@ export type SidebarMenuItem = {
   icon: ElementType;
   href?: string;
   permissionAccess?: string | string[];
+  ownerOnly?: boolean;
   children?: SidebarMenuItem[];
 };
 
@@ -81,6 +83,12 @@ export const menuItems: SidebarMenuItem[] = [
     icon: PiUsersThree,
     href: "/employee-settings",
     permissionAccess: "employees",
+  },
+  {
+    titleKey: "navigation.activityLogs",
+    icon: ScrollText,
+    href: "/activity-logs",
+    ownerOnly: true,
   },
   {
     titleKey: "navigation.productOverview",
