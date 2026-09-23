@@ -28,13 +28,17 @@ const getTrophyColor = (rank: number) => {
   return "";
 };
 
-export default function TopPerformingRestaurants() {
+export default function TopPerformingRestaurants({
+  restaurantId,
+}: {
+  restaurantId?: string;
+}) {
   const models = useTranslations("models");
   const {
     data: topRestaurantsResponse,
     isLoading,
     isFetching,
-  } = useGetTopPerformingRestaurants();
+  } = useGetTopPerformingRestaurants({ restaurantId });
 
   const items = topRestaurantsResponse?.data?.items || [];
   const loading = isLoading || isFetching;

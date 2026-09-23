@@ -21,11 +21,13 @@ type OrdersGraphProps = {
   type?: string;
   title?: string;
   description?: string;
+  restaurantId?: string;
 };
 
 const OrdersGraph = ({
   title = "Orders Trend",
   description,
+  restaurantId,
 }: OrdersGraphProps) => {
   const common = useTranslations("common");
   const dashboard = useTranslations("dashboard");
@@ -38,6 +40,7 @@ const OrdersGraph = ({
     refetch,
   } = useGetOrdersTrend({
     range,
+    restaurantId,
   });
 
   const trendData = ordersTrendResponse?.data;

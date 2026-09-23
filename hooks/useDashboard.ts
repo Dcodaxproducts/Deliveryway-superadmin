@@ -80,6 +80,8 @@ export const useGetRevenueTrend = (params?: DashboardTrendParams) => {
     queryKey: [
       "dashboard",
       "revenue-trend",
+      params?.restaurantId,
+      params?.branchId,
       params?.range,
       params?.from,
       params?.to,

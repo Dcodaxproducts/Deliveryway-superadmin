@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileDown, FileText, Loader2 } from "lucide-react";
+import { FileDown, FileText, Loader2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -24,6 +24,9 @@ import {
   exportOrdersReport,
   CsvExportResponse,
 } from "@/services/reports";
+import AsyncSelect from "@/components/ui/AsyncSelect";
+import Image from "@/components/MyImage";
+import type { Restaurant } from "@/types/restaurant";
 
 type DateRangeValue =
   | "all-time"
@@ -62,7 +65,21 @@ interface AnalyticsFilterProps {
   exportParams?: {
     fromDate?: string;
     toDate?: string;
+    restaurantId?: string;
   };
+
+  restaurant: Restaurant | null;
+  onRestaurantChange: (restaurant: Restaurant | null) => void;
+  fetchRestaurantOptions: (params: { search: string; page: number }) => Promise<{
+    data: Restaurant[];
+    meta?: {
+      page?: number;
+      limit?: number;
+      total?: number;
+      totalPages?: number;
+      hasNext?: boolean;
+    };
+  }>;
 }
 
 const REPORT_LABELS: Record<ExportType, string> = {
@@ -668,6 +685,9 @@ export function AnalyticsFilter({
   exportType,
   onExportTypeChange,
   exportParams,
+  restaurant,
+  onRestaurantChange,
+  fetchRestaurantOptions,
 }: AnalyticsFilterProps) {
   const analytics = useTranslations("analytics");
   const toasts = useTranslations("toasts");
@@ -688,7 +708,7 @@ export function AnalyticsFilter({
       return exportCustomersReport(exportParams ?? {});
     }
 
-    return exportMenuReport({});
+    return exportMenuReport(exportParams ?? {});
   };
 
   const handleExport = async (format: ExportFormat) => {
@@ -742,7 +762,51 @@ export function AnalyticsFilter({
 
   return (
     <div className="rounded-[14px] border border-gray-100 bg-white p-4 shadow-sm lg:p-[30px]">
-      <div className="flex w-full flex-col gap-[24px] lg:flex-row lg:items-end">
+      <div className="grid w-full gap-5 md:grid-cols-2 xl:grid-cols-4 xl:items-end">
+        <div className="min-w-0 space-y-[12px]">
+          <Label>{analytics("restaurant")}</Label>
+          <div className="flex items-center gap-2">
+            <AsyncSelect
+              value={restaurant}
+              onChange={onRestaurantChange}
+              fetchOptions={fetchRestaurantOptions}
+              placeholder={analytics("allRestaurants")}
+              searchPlaceholder={analytics("searchRestaurants")}
+              labelKey="name"
+              valueKey="id"
+              renderOption={(option: Restaurant) => (
+                <span className="flex min-w-0 items-center gap-3">
+                  <Image
+                    src={option.logoUrl}
+                    alt={option.name}
+                    width={30}
+                    height={30}
+                    className="size-[30px] rounded-lg border border-gray-100 bg-white object-cover"
+                    fallbackSrc="/fallback.png"
+                  />
+                  <span className="min-w-0">
+                    <span className="block truncate font-semibold text-dark">
+                      {option.name}
+                    </span>
+                    <span className="block truncate text-xs text-gray">
+                      {option.customDomain || option.slug}
+                    </span>
+                  </span>
+                </span>
+              )}
+            />
+            {restaurant ? (
+              <button
+                type="button"
+                onClick={() => onRestaurantChange(null)}
+                className="flex size-[52px] shrink-0 cursor-pointer items-center justify-center rounded-xl border border-gray-200 text-gray transition hover:border-primary hover:bg-primary/5 hover:text-primary"
+                aria-label={analytics("clearRestaurantFilter")}
+              >
+                <X className="size-4" />
+              </button>
+            ) : null}
+          </div>
+        </div>
         <div className="w-full flex-1 space-y-[12px]">
           <Label>{analytics("dateRange")}</Label>
 

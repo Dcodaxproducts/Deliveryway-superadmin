@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import Container from "../../../components/container";
 import RevenueGraph from "@/components/graphs/revenue-graph";
@@ -13,6 +13,8 @@ import { useGetOrdersReport } from "@/hooks/useReports";
 import { StatItem } from "@/types/stats";
 import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
 import { formatMoney } from "@/lib/currency";
+import { getRestaurants } from "@/services/restaurant";
+import type { Restaurant } from "@/types/restaurant";
 
 type DateRangeValue =
   | "all-time"
@@ -106,6 +108,8 @@ const AnalyticsPage = () => {
   const analytics = useTranslations("analytics");
   const globalCurrency = useGlobalCurrency();
   const [dateRange, setDateRange] = useState<DateRangeValue>("all-time");
+  const [selectedRestaurant, setSelectedRestaurant] =
+    useState<Restaurant | null>(null);
 
   const [customFromDate, setCustomFromDate] = useState("");
   const [customToDate, setCustomToDate] = useState("");
@@ -115,11 +119,40 @@ const AnalyticsPage = () => {
   );
 
   const reportParams = useMemo(() => {
-    return getDateRangeParams(dateRange, {
-      fromDate: customFromDate,
-      toDate: customToDate,
-    });
-  }, [dateRange, customFromDate, customToDate]);
+    return {
+      ...getDateRangeParams(dateRange, {
+        fromDate: customFromDate,
+        toDate: customToDate,
+      }),
+      restaurantId: selectedRestaurant?.id,
+    };
+  }, [dateRange, customFromDate, customToDate, selectedRestaurant?.id]);
+
+  const fetchRestaurantOptions = useCallback(
+    async ({ search, page }: { search: string; page: number }) => {
+      const response = (await getRestaurants({
+        page,
+        limit: 20,
+        search: search || undefined,
+        includeInactive: true,
+      })) as {
+        data?: Restaurant[];
+        meta?: {
+          page?: number;
+          limit?: number;
+          total?: number;
+          totalPages?: number;
+          hasNext?: boolean;
+        };
+      };
+
+      return {
+        data: Array.isArray(response.data) ? response.data : [],
+        meta: response.meta,
+      };
+    },
+    [],
+  );
 
   const {
     data: ordersReportResponse,
@@ -206,15 +239,18 @@ const AnalyticsPage = () => {
         exportType={exportType}
         onExportTypeChange={setExportType}
         exportParams={reportParams}
+        restaurant={selectedRestaurant}
+        onRestaurantChange={setSelectedRestaurant}
+        fetchRestaurantOptions={fetchRestaurantOptions}
       />
 
       <StatsSection stats={statsData} isLoading={isLoading || isFetching} />
 
-      <OrdersGraph />
+      <OrdersGraph restaurantId={selectedRestaurant?.id} />
 
-      <RevenueGraph type="analytics" />
+      <RevenueGraph type="analytics" restaurantId={selectedRestaurant?.id} />
 
-      <TopPerformingRestaurants />
+      <TopPerformingRestaurants restaurantId={selectedRestaurant?.id} />
     </Container>
   );
 };

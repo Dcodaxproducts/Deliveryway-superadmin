@@ -18,7 +18,13 @@ import { useGlobalCurrency } from "@/hooks/useGlobalCurrency";
 
 type TrendRange = "daily" | "weekly" | "monthly";
 
-const RevenueGraph = ({ type = "home" }: { type?: string }) => {
+const RevenueGraph = ({
+  type = "home",
+  restaurantId,
+}: {
+  type?: string;
+  restaurantId?: string;
+}) => {
   const common = useTranslations("common");
   const dashboard = useTranslations("dashboard");
   const globalCurrency = useGlobalCurrency();
@@ -31,6 +37,7 @@ const RevenueGraph = ({ type = "home" }: { type?: string }) => {
     refetch,
   } = useGetRevenueTrend({
     range,
+    restaurantId,
   });
 
   const trendData = revenueTrendResponse?.data;
