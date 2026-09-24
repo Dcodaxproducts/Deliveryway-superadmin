@@ -1624,7 +1624,14 @@
     "orders": "Orders",
     "ordersRevenueSummary": "Orders & Revenue Summary",
     "orderTrends": "Order Trends",
-    "superAdmin": "Super Admin"
+    "superAdmin": "Super Admin",
+    "superAdminStaff": "Super Admin Staff",
+    "restaurantAdminStaff": "Restaurant Admin Staff",
+    "branchAdminStaff": "Branch Admin Staff",
+    "staff": "Staff",
+    "businessAdmin": "Business Admin",
+    "branchAdmin": "Branch Admin",
+    "admin": "Admin"
   },
   "branches": {
     "address": "Address",

@@ -1624,7 +1624,14 @@
     "orders": "Bestellungen",
     "ordersRevenueSummary": "Bestell- & Umsatzübersicht",
     "orderTrends": "Bestelltrends",
-    "superAdmin": "Super Admin"
+    "superAdmin": "Super Admin",
+    "superAdminStaff": "Superadmin-Mitarbeiter",
+    "restaurantAdminStaff": "Restaurantadmin-Mitarbeiter",
+    "branchAdminStaff": "Filialadmin-Mitarbeiter",
+    "staff": "Mitarbeiter",
+    "businessAdmin": "Unternehmensadministrator",
+    "branchAdmin": "Filialadministrator",
+    "admin": "Administrator"
   },
   "branches": {
     "address": "Adresse",
