@@ -15,7 +15,7 @@ import {
   Save,
   Trash2,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { LandingRichTextEditor } from "@/components/forms/landing-rich-text-editor";
@@ -30,6 +30,7 @@ import {
   useUpdateLandingPageSettings,
 } from "@/hooks/useLandingPageSettings";
 import { useFileUpload } from "@/hooks/useFileUpload";
+import { useGetPackagePlans } from "@/hooks/usePackagePlans";
 import type {
   LandingHomeSettings,
   GlobalLegalProfile,
@@ -38,9 +39,11 @@ import type {
   LandingPagePages,
   LandingPageSettings,
 } from "@/services/globalSettings";
+import type { PackagePlan } from "@/services/packagePlans";
 import { getRestaurants } from "@/services/restaurant";
 
 type PageKey = keyof LandingPagePages;
+const MAX_LANDING_PACKAGE_PLANS = 3;
 type Language = "en" | "de";
 type RestaurantChoice = { id: string; name: string };
 type ManagedImageKey =
@@ -81,6 +84,13 @@ export function LandingContentForm() {
   const t = useTranslations("landingContent");
   const { data, isLoading, isError } = useLandingPageSettings();
   const { mutate, isPending } = useUpdateLandingPageSettings();
+  const packagePlansQuery = useGetPackagePlans({
+    page: 1,
+    limit: 100,
+    includeInactive: false,
+    sortBy: "createdAt",
+    sortOrder: "ASC",
+  });
   const { uploadFile, uploading, progress } = useFileUpload();
   const [draft, setDraft] = useState<LandingPageSettings | null>(null);
   const [uploadingImage, setUploadingImage] = useState<ManagedImageKey | null>(
@@ -100,6 +110,78 @@ export function LandingContentForm() {
       });
     }
   }, [data]);
+
+  const packagePlans = useMemo(() => {
+    const response = packagePlansQuery.data;
+    if (!response || typeof response !== "object") return [];
+    const items = (response as { data?: unknown }).data;
+    return Array.isArray(items)
+      ? items.filter(
+          (item): item is PackagePlan =>
+            Boolean(item) &&
+            typeof item === "object" &&
+            typeof (item as PackagePlan).id === "string" &&
+            (item as PackagePlan).isActive !== false,
+        )
+      : [];
+  }, [packagePlansQuery.data]);
+
+  const selectedPackagePlanIds = useMemo(() => {
+    if (!draft) return [];
+    if (Array.isArray(draft.packagePlanIds)) {
+      if (packagePlansQuery.isLoading || packagePlansQuery.isError) {
+        return draft.packagePlanIds;
+      }
+      const activeIds = new Set(packagePlans.map((plan) => plan.id));
+      return draft.packagePlanIds.filter((id) => activeIds.has(id));
+    }
+    return packagePlans
+      .filter((plan) => plan.showOnLanding)
+      .map((plan) => plan.id);
+  }, [
+    draft,
+    packagePlans,
+    packagePlansQuery.isError,
+    packagePlansQuery.isLoading,
+  ]);
+
+  const setSelectedPackagePlanIds = (packagePlanIds: string[]) => {
+    setDraft((current) => (current ? { ...current, packagePlanIds } : current));
+  };
+
+  const togglePackagePlan = (id: string, selected: boolean) => {
+    if (
+      selected &&
+      !selectedPackagePlanIds.includes(id) &&
+      selectedPackagePlanIds.length >= MAX_LANDING_PACKAGE_PLANS
+    ) {
+      return;
+    }
+    setSelectedPackagePlanIds(
+      selected
+        ? [...selectedPackagePlanIds, id]
+        : selectedPackagePlanIds.filter((planId) => planId !== id),
+    );
+  };
+
+  const movePackagePlan = (id: string, direction: -1 | 1) => {
+    const currentIndex = selectedPackagePlanIds.indexOf(id);
+    const nextIndex = currentIndex + direction;
+    if (
+      currentIndex < 0 ||
+      nextIndex < 0 ||
+      nextIndex >= selectedPackagePlanIds.length
+    ) {
+      return;
+    }
+
+    const next = [...selectedPackagePlanIds];
+    [next[currentIndex], next[nextIndex]] = [
+      next[nextIndex],
+      next[currentIndex],
+    ];
+    setSelectedPackagePlanIds(next);
+  };
 
   useEffect(() => {
     void getRestaurants({ page: 1, limit: 100 })
@@ -425,6 +507,148 @@ export function LandingContentForm() {
         onImageRemove={(key) => updateManagedImage(key, null)}
       />
 
+      <section className="overflow-hidden rounded-[18px] border border-[#EAECF0] bg-white shadow-sm">
+        <div className="border-b border-[#EAECF0] bg-[linear-gradient(135deg,#fff7f7_0%,#ffffff_52%,#f8fafc_100%)] p-5 lg:p-7">
+          <div className="flex items-start gap-4">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-primary text-white shadow-[0_12px_28px_rgba(220,38,38,0.22)]">
+              <ReceiptText className="size-5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-dark">
+                {t("pricingPlans")}
+              </h2>
+              <p className="mt-1 max-w-3xl text-sm leading-6 text-gray">
+                {t("pricingPlansDescription")}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-5 p-5 lg:p-7">
+          {packagePlansQuery.isLoading ? (
+            <div className="flex min-h-28 items-center justify-center">
+              <Loader2 className="size-6 animate-spin text-primary" />
+            </div>
+          ) : packagePlansQuery.isError ? (
+            <div className="rounded-[14px] border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
+              {t("pricingPlansLoadFailed")}
+            </div>
+          ) : packagePlans.length === 0 ? (
+            <div className="rounded-[14px] border border-dashed border-[#D0D5DD] bg-[#F8FAFC] p-5 text-sm text-gray">
+              {t("pricingPlansEmpty")}
+            </div>
+          ) : (
+            <>
+              <div>
+                <div className="mb-3 flex items-center justify-between gap-4">
+                  <h3 className="text-sm font-semibold text-dark">
+                    {t("selectedPricingPlans")}
+                  </h3>
+                  <span className="rounded-full bg-[#FEE2E2] px-3 py-1 text-xs font-semibold text-primary">
+                    {t("pricingPlansSelectedCount", {
+                      count: selectedPackagePlanIds.length,
+                      max: MAX_LANDING_PACKAGE_PLANS,
+                    })}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {selectedPackagePlanIds.length === 0 ? (
+                    <div className="rounded-[14px] border border-dashed border-[#D0D5DD] bg-[#F8FAFC] p-4 text-sm text-gray">
+                      {t("noPricingPlansSelected")}
+                    </div>
+                  ) : (
+                    selectedPackagePlanIds.flatMap((id, index) => {
+                      const plan = packagePlans.find((item) => item.id === id);
+                      if (!plan) return [];
+
+                      return [
+                        <div
+                          key={plan.id}
+                          className="flex flex-col gap-3 rounded-[14px] border border-[#EAECF0] bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
+                        >
+                          <div className="flex min-w-0 items-center gap-3">
+                            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white">
+                              {index + 1}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="truncate font-semibold text-dark">
+                                {plan.name}
+                              </p>
+                              <p className="text-xs text-gray">
+                                {t("pricingPlanOrder", { position: index + 1 })}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-end gap-1">
+                            <IconButton
+                              label={t("movePricingPlanUp")}
+                              disabled={index === 0}
+                              onClick={() => movePackagePlan(plan.id, -1)}
+                              icon={ArrowUp}
+                            />
+                            <IconButton
+                              label={t("movePricingPlanDown")}
+                              disabled={
+                                index === selectedPackagePlanIds.length - 1
+                              }
+                              onClick={() => movePackagePlan(plan.id, 1)}
+                              icon={ArrowDown}
+                            />
+                            <Switch
+                              checked
+                              aria-label={t("hidePricingPlan", {
+                                name: plan.name,
+                              })}
+                              onCheckedChange={(checked) =>
+                                togglePackagePlan(plan.id, checked)
+                              }
+                            />
+                          </div>
+                        </div>,
+                      ];
+                    })
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="mb-3 text-sm font-semibold text-dark">
+                  {t("availablePricingPlans")}
+                </h3>
+                <p className="mb-3 text-xs text-gray">
+                  {t("pricingPlansLimit", { max: MAX_LANDING_PACKAGE_PLANS })}
+                </p>
+                <div className="grid gap-2 md:grid-cols-2">
+                  {packagePlans
+                    .filter((plan) => !selectedPackagePlanIds.includes(plan.id))
+                    .map((plan) => (
+                      <div
+                        key={plan.id}
+                        className="flex items-center justify-between gap-4 rounded-[14px] border border-[#EAECF0] bg-[#FCFCFD] p-4"
+                      >
+                        <span className="min-w-0 truncate text-sm font-medium text-dark">
+                          {plan.name}
+                        </span>
+                        <Switch
+                          checked={false}
+                          disabled={
+                            selectedPackagePlanIds.length >=
+                            MAX_LANDING_PACKAGE_PLANS
+                          }
+                          aria-label={t("showPricingPlan", { name: plan.name })}
+                          onCheckedChange={(checked) =>
+                            togglePackagePlan(plan.id, checked)
+                          }
+                        />
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </section>
+
       <GlobalLegalProfileEditor
         profile={draft.legalProfile}
         disabled={isPending}
@@ -672,8 +896,16 @@ export function LandingContentForm() {
         <Button
           type="button"
           variant="primary"
-          disabled={isPending || uploading || hasInvalidFaq}
-          onClick={() => mutate(draft)}
+          disabled={
+            isPending ||
+            uploading ||
+            hasInvalidFaq ||
+            packagePlansQuery.isLoading ||
+            packagePlansQuery.isError
+          }
+          onClick={() =>
+            mutate({ ...draft, packagePlanIds: selectedPackagePlanIds })
+          }
           className="h-12 min-w-44 rounded-[12px] px-7 shadow-[0_16px_34px_rgba(220,38,38,0.24)]"
         >
           {isPending ? (

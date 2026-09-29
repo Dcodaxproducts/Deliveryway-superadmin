@@ -105,6 +105,8 @@ export type LandingHomeSettings = {
 };
 
 export type LandingPageSettings = {
+  /** null is the legacy/unconfigured state; [] explicitly shows no plans. */
+  packagePlanIds: string[] | null;
   businessName: string;
   logoUrl: string | null;
   footerDescription: string | null;
