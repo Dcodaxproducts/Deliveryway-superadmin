@@ -170,9 +170,10 @@ export function StepFeaturesVat({
               <button
                 key={feature.key}
                 type="button"
+                aria-pressed={isSelected}
                 onClick={() => toggleFeature(feature.key)}
                 className={`
-                  rounded-full border px-5 py-2 text-sm transition
+                  cursor-pointer rounded-full border px-5 py-2 text-sm transition
                   ${
                     isSelected
                       ? "border-primary bg-red-50 text-primary"
@@ -207,8 +208,9 @@ export function StepFeaturesVat({
 
           <button
             type="button"
+            aria-pressed={form.vatEnabled}
             onClick={() => onChange("vatEnabled", !form.vatEnabled)}
-            className="flex items-center gap-3"
+            className="flex cursor-pointer items-center gap-3"
           >
             <span className="text-xs font-semibold uppercase tracking-[0.06em] text-[#1F2328]">
               {pricingModel("fields.applyVat")}
@@ -323,7 +325,7 @@ export function StepFeaturesVat({
               type="button"
               disabled={uploading}
               onClick={() => fileInputRef.current?.click()}
-              className="mt-5 rounded-md border border-primary px-4 py-2 text-xs font-bold uppercase tracking-[0.04em] text-primary transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-5 cursor-pointer rounded-md border border-primary px-4 py-2 text-xs font-bold uppercase tracking-[0.04em] text-primary transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {pricingModel("actions.selectFile")}
             </button>

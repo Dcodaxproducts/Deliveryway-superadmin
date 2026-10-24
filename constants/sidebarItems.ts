@@ -13,7 +13,6 @@ import {
   ShieldAlert,
   Bell,
   Palette,
-  FilePlus2,
   ListChecks,
   Calculator,
   FileText,
@@ -28,6 +27,7 @@ export type SidebarMenuItem = {
   title?: string;
   icon: ElementType;
   href?: string;
+  activePathPrefix?: string;
   permissionAccess?: string | string[];
   children?: SidebarMenuItem[];
 };
@@ -102,37 +102,11 @@ export const menuItems: SidebarMenuItem[] = [
   // { title: "Business Models", icon: Gift, href: "/models" },
 
   {
-    titleKey: "navigation.pricingModelFinancials",
+    titleKey: "navigation.pricingModel",
     icon: BarChart3,
-    href: "/pricing-model",
+    href: "/pricing-model/plans-listing",
+    activePathPrefix: "/pricing-model",
     permissionAccess: "payment-settings",
-    children: [
-      {
-        titleKey: "navigation.createNewPlan",
-        icon: FilePlus2,
-        href: "/pricing-model/create-new-plan",
-      },
-      {
-        titleKey: "navigation.plansListing",
-        icon: ListChecks,
-        href: "/pricing-model/plans-listing",
-      },
-      // {
-      //   title: "Pricing Engine",
-      //   icon: Calculator,
-      //   href: "/pricing-model/pricing-engine",
-      // },
-      // {
-      //   title: "Invoices & VAT",
-      //   icon: FileText,
-      //   href: "/pricing-model/invoices-vat",
-      // },
-      // {
-      //   title: "Restaurant billing",
-      //   icon: Building2,
-      //   href: "/pricing-model/restaurant-billing",
-      // },
-    ],
   },
 
   {

@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { DEFAULT_DISPLAY_CURRENCY } from "@/lib/currency";
+import { getPricingModelFieldVisibility } from "@/lib/pricing-model-wizard";
 
 type PricingModelOption = "HYBRID" | "PLAN" | "COMMISSION";
 type BillingInterval = "MONTHLY" | "YEARLY" | "WEEKLY" | "DAILY";
@@ -42,7 +43,8 @@ export function StepConfigurePlan({
   onChange,
 }: StepConfigurePlanProps) {
   const pricingModel = useTranslations("pricingModel");
-  const showCommissionFields = form.pricingModel !== "PLAN";
+  const { showSubscriptionFields, showCommissionFields } =
+    getPricingModelFieldVisibility(form.pricingModel);
   const isFixedCommission = form.commissionChargeType === "FIXED";
 
   const handleCommissionTypeChange = (value: CommissionChargeType) => {
@@ -91,6 +93,7 @@ export function StepConfigurePlan({
         </div>
       </div>
 
+      {showSubscriptionFields && (
       <div className="mt-10">
         <h3 className="text-base font-bold text-[#1F2328]">
           {pricingModel("fields.subscription")}
@@ -147,6 +150,7 @@ export function StepConfigurePlan({
           </div>
         </div>
       </div>
+      )}
 
       {showCommissionFields && (
         <div className="mt-10 rounded-2xl bg-slate-100 px-6 py-6">

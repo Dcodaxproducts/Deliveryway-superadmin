@@ -49,9 +49,10 @@ export const findPermissionAccessForPath = (pathname: string, items: SidebarMenu
 
   const visit = (item: SidebarMenuItem, inheritedAccess?: string | string[]) => {
     const access = item.permissionAccess ?? inheritedAccess;
+    const accessPath = item.activePathPrefix ?? item.href;
 
-    if (item.href && isRouteMatch(pathname, item.href)) {
-      matches.push({ href: item.href, access });
+    if (accessPath && isRouteMatch(pathname, accessPath)) {
+      matches.push({ href: accessPath, access });
     }
 
     item.children?.forEach((child) => visit(child, access));

@@ -20,6 +20,11 @@ import {
 } from "@/hooks/usePackagePlans";
 import { useGetGlobalSettings } from "@/hooks/useGlobalSettings";
 import { DEFAULT_DISPLAY_CURRENCY } from "@/lib/currency";
+import {
+  getPricingModelPayloadAmounts,
+  getPricingModelValidationError,
+  getWizardStepState,
+} from "@/lib/pricing-model-wizard";
 
 import type {
   CreatePackagePlanPayload,
@@ -373,30 +378,22 @@ function CreatePackagePlanContent() {
   };
 
   const buildPayload = (isActive: boolean): ExtendedPackagePlanPayload => {
-    const isPlanOnly = form.pricingModel === "PLAN";
-    const isFixedCommission =
-      form.pricingModel === "COMMISSION" &&
-      form.commissionChargeType === "FIXED";
+    const pricingAmounts = getPricingModelPayloadAmounts({
+      pricingModel: form.pricingModel,
+      planPrice: toNumber(form.planPrice),
+      commissionChargeType: form.commissionChargeType,
+      commissionPercentage: toNumber(form.commissionPercentage),
+      commissionFixedFee: toNumber(form.commissionFixedFee),
+      commissionCapAmount: toNumber(form.commissionCapAmount),
+      applyCommissionCap: form.applyCommissionCap,
+    });
 
     return {
       name: form.name.trim(),
       description: form.description.trim(),
       billingModel: form.pricingModel,
       billingInterval: form.billingInterval,
-      planPrice: toNumber(form.planPrice),
-
-      commissionType: isPlanOnly ? "PERCENTAGE" : form.commissionChargeType,
-      commissionPercentage:
-        isPlanOnly || isFixedCommission
-          ? 0
-          : toNumber(form.commissionPercentage),
-      commissionFixedAmount: isFixedCommission
-        ? toNumber(form.commissionFixedFee)
-        : 0,
-      commissionCapAmount:
-        isPlanOnly || isFixedCommission || !form.applyCommissionCap
-          ? 0
-          : toNumber(form.commissionCapAmount),
+      ...pricingAmounts,
 
       vatPercentage: form.vatEnabled ? toNumber(form.vatPercentage) : 0,
       payoutCycle: form.payoutCycle,
@@ -418,24 +415,19 @@ function CreatePackagePlanContent() {
       return false;
     }
 
-    if (
-      step === 2 &&
-      form.pricingModel === "COMMISSION" &&
-      form.commissionChargeType === "FIXED" &&
-      toNumber(form.commissionFixedFee) <= 0
-    ) {
-      toast.error(validation("fixedFeeGreaterThanZero"));
-      return false;
-    }
+    if (step === 2) {
+      const pricingValidationError = getPricingModelValidationError({
+        pricingModel: form.pricingModel,
+        planPrice: toNumber(form.planPrice),
+        commissionChargeType: form.commissionChargeType,
+        commissionPercentage: toNumber(form.commissionPercentage),
+        commissionFixedFee: toNumber(form.commissionFixedFee),
+      });
 
-    if (
-      step === 2 &&
-      form.pricingModel !== "PLAN" &&
-      form.commissionChargeType === "PERCENTAGE" &&
-      toNumber(form.commissionPercentage) < 0
-    ) {
-      toast.error(validation("commissionPercentageNonNegative"));
-      return false;
+      if (pricingValidationError) {
+        toast.error(validation(pricingValidationError));
+        return false;
+      }
     }
 
     if (step === 3 && selectedFeaturesCount === 0) {
@@ -470,12 +462,16 @@ function CreatePackagePlanContent() {
       return;
     }
 
-    if (
-      form.pricingModel === "COMMISSION" &&
-      form.commissionChargeType === "FIXED" &&
-      toNumber(form.commissionFixedFee) <= 0
-    ) {
-      toast.error(validation("fixedFeeGreaterThanZero"));
+    const pricingValidationError = getPricingModelValidationError({
+      pricingModel: form.pricingModel,
+      planPrice: toNumber(form.planPrice),
+      commissionChargeType: form.commissionChargeType,
+      commissionPercentage: toNumber(form.commissionPercentage),
+      commissionFixedFee: toNumber(form.commissionFixedFee),
+    });
+
+    if (pricingValidationError) {
+      toast.error(validation(pricingValidationError));
       goToStep(2);
       return;
     }
@@ -567,7 +563,7 @@ function CreatePackagePlanContent() {
             <button
               type="button"
               onClick={() => router.push("/pricing-model/plans-listing")}
-              className="mt-6 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white"
+              className="mt-6 cursor-pointer rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white"
             >
               {pricingModel("actions.backToPlansListing")}
             </button>
@@ -597,20 +593,24 @@ function CreatePackagePlanContent() {
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
             {steps.map((item) => {
-              const isActive = step === item.value;
-              const isCompleted = step > item.value;
+              const { isActive, isCompleted, isInteractive } =
+                getWizardStepState(step, item.value);
 
               return (
-                <div
+                <button
                   key={item.value}
+                  type="button"
+                  disabled={!isInteractive}
+                  aria-current={isActive ? "step" : undefined}
+                  onClick={() => goToStep(item.value)}
                   className={`
                     flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold transition-all
                     ${
                       isActive
-                        ? "bg-primary text-white shadow-sm"
+                        ? "cursor-default bg-primary text-white shadow-sm"
                         : isCompleted
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-transparent text-slate-400"
+                        ? "cursor-pointer bg-emerald-50 text-emerald-700 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
+                        : "cursor-not-allowed bg-transparent text-slate-400"
                     }
                   `}
                 >
@@ -621,7 +621,7 @@ function CreatePackagePlanContent() {
                   )}
 
                   <span>{pricingModel(item.labelKey)}</span>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -652,7 +652,7 @@ function CreatePackagePlanContent() {
           <button
             type="button"
             onClick={handleBack}
-            className="text-sm font-semibold text-[#7A4B4B] transition-colors hover:text-primary"
+            className="cursor-pointer text-sm font-semibold text-[#7A4B4B] transition-colors hover:text-primary"
           >
             {step === 1
               ? pricingModel("actions.cancelSetup")
@@ -664,7 +664,7 @@ function CreatePackagePlanContent() {
               <button
                 type="button"
                 onClick={handleNext}
-                className="min-w-[160px] rounded-xl bg-primary px-8 py-4 text-sm font-bold text-white shadow-lg shadow-red-900/10 transition hover:opacity-90"
+                className="min-w-[160px] cursor-pointer rounded-xl bg-primary px-8 py-4 text-sm font-bold text-white shadow-lg shadow-red-900/10 transition hover:opacity-90"
               >
                 {step === 3
                   ? pricingModel("actions.continueToReview")
@@ -676,7 +676,7 @@ function CreatePackagePlanContent() {
                   type="button"
                   disabled={isSubmitting}
                   onClick={() => handleSubmitPlan(true)}
-                  className="min-w-[150px] rounded-xl border border-primary bg-white px-6 py-4 text-sm font-bold text-primary transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="min-w-[150px] cursor-pointer rounded-xl border border-primary bg-white px-6 py-4 text-sm font-bold text-primary transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {pricingModel("actions.saveAsDraft")}
                 </button>
@@ -685,7 +685,7 @@ function CreatePackagePlanContent() {
                   type="button"
                   disabled={isSubmitting}
                   onClick={() => handleSubmitPlan(false)}
-                  className="min-w-[170px] rounded-xl bg-primary px-8 py-4 text-sm font-bold text-white shadow-lg shadow-red-900/10 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="min-w-[170px] cursor-pointer rounded-xl bg-primary px-8 py-4 text-sm font-bold text-white shadow-lg shadow-red-900/10 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting
                     ? isEditMode

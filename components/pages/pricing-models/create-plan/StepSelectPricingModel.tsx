@@ -59,9 +59,10 @@ export function StepSelectPricingModel({
           <button
             key={model.value}
             type="button"
+            aria-pressed={isSelected}
             onClick={() => onChange(model.value)}
             className={`
-              relative min-h-[178px] rounded-2xl border p-7 text-left transition-all
+              relative min-h-[178px] cursor-pointer rounded-2xl border p-7 text-left transition-all
               ${
                 isSelected
                   ? "border-primary bg-red-50/40"

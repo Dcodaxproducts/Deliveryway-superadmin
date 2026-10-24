@@ -50,9 +50,8 @@ const SidebarItem = ({
   const title = t(item.titleKey);
 
   const parentClasses = `
-    flex items-center gap-[12px] w-full transition-all pl-[23px] pr-[18px]
+    flex cursor-pointer items-center gap-[12px] w-full transition-all pl-[23px] pr-[18px]
     ${isActive ? "bg-[#FDE8E8] py-[9px]" : "bg-transparent"}
-    ${hasChildren ? "cursor-pointer" : ""}
   `;
 
   const iconClasses = `
@@ -101,7 +100,7 @@ const SidebarItem = ({
                     key={child.href ?? child.titleKey}
                     href={child.href || "#"}
                     onClick={onLinkClick}
-                    className="flex items-center gap-[14px] px-[22px] py-[8px] text-gray transition-colors hover:text-primary"
+                    className="flex cursor-pointer items-center gap-[14px] px-[22px] py-[8px] text-gray transition-colors hover:text-primary"
                   >
                     <div className="flex items-center justify-center size-8 shrink-0 text-primary">
                       <ChildIcon size={20} strokeWidth={2} />
@@ -185,7 +184,10 @@ export function Sidebar({ onLinkClick }: SidebarProps) {
       <div className="flex-1 overflow-y-auto overscroll-contain xl:overflow-y-hidden xl:hover:overflow-y-auto [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600">
         <nav className="flex flex-col gap-[12px]">
           {visibleMenuItems.map((item) => {
-            const isParentRouteActive = isRouteActive(pathname, item.href);
+            const isParentRouteActive = isRouteActive(
+              pathname,
+              item.activePathPrefix ?? item.href
+            );
 
             const isChildRouteActive = Boolean(
               item.children?.some((child) => isRouteActive(pathname, child.href))
